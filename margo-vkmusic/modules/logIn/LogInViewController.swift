@@ -8,13 +8,18 @@
 
 import UIKit
 
-class ViewController: UIViewController {
+protocol LogInViewControllerProtocol {
+    
+}
 
+
+class LogInViewController: UIViewController, LogInViewControllerProtocol {
+
+    var presenter: LogInPresenter?
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view.
+        presenter?.viewDidLoad()
     }
-
-
 }
 

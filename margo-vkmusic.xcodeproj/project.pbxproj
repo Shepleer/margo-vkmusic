@@ -8,24 +8,28 @@
 
 /* Begin PBXBuildFile section */
 		2C1EA69622CA084F009C27E2 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C1EA69522CA084F009C27E2 /* AppDelegate.swift */; };
-		2C1EA69822CA084F009C27E2 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C1EA69722CA084F009C27E2 /* ViewController.swift */; };
+		2C1EA69822CA084F009C27E2 /* LogInViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C1EA69722CA084F009C27E2 /* LogInViewController.swift */; };
 		2C1EA69B22CA084F009C27E2 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2C1EA69922CA084F009C27E2 /* Main.storyboard */; };
 		2C1EA69E22CA084F009C27E2 /* margo_telegram.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 2C1EA69C22CA084F009C27E2 /* margo_telegram.xcdatamodeld */; };
 		2C1EA6A022CA0850009C27E2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2C1EA69F22CA0850009C27E2 /* Assets.xcassets */; };
 		2C1EA6A322CA0850009C27E2 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2C1EA6A122CA0850009C27E2 /* LaunchScreen.storyboard */; };
 		2C1EA6AB22CA0A0E009C27E2 /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = 2C1EA6AA22CA0A0E009C27E2 /* .gitignore */; };
+		2C1EA6AF22CA202C009C27E2 /* LogInPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C1EA6AE22CA202C009C27E2 /* LogInPresenter.swift */; };
+		2C1EA6B122CA2120009C27E2 /* Private_Keys.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C1EA6B022CA2120009C27E2 /* Private_Keys.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		2C1EA69222CA084F009C27E2 /* margo-telegram.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "margo-telegram.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		2C1EA69222CA084F009C27E2 /* margo-vkmusic.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "margo-vkmusic.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		2C1EA69522CA084F009C27E2 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		2C1EA69722CA084F009C27E2 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		2C1EA69722CA084F009C27E2 /* LogInViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogInViewController.swift; sourceTree = "<group>"; };
 		2C1EA69A22CA084F009C27E2 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		2C1EA69D22CA084F009C27E2 /* margo_telegram.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = margo_telegram.xcdatamodel; sourceTree = "<group>"; };
 		2C1EA69F22CA0850009C27E2 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		2C1EA6A222CA0850009C27E2 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		2C1EA6A422CA0850009C27E2 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		2C1EA6AA22CA0A0E009C27E2 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
+		2C1EA6AE22CA202C009C27E2 /* LogInPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogInPresenter.swift; sourceTree = "<group>"; };
+		2C1EA6B022CA2120009C27E2 /* Private_Keys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Private_Keys.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -43,7 +47,7 @@
 			isa = PBXGroup;
 			children = (
 				2C1EA6AA22CA0A0E009C27E2 /* .gitignore */,
-				2C1EA69422CA084F009C27E2 /* margo-telegram */,
+				2C1EA69422CA084F009C27E2 /* margo-vkmusic */,
 				2C1EA69322CA084F009C27E2 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -51,31 +55,49 @@
 		2C1EA69322CA084F009C27E2 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				2C1EA69222CA084F009C27E2 /* margo-telegram.app */,
+				2C1EA69222CA084F009C27E2 /* margo-vkmusic.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		2C1EA69422CA084F009C27E2 /* margo-telegram */ = {
+		2C1EA69422CA084F009C27E2 /* margo-vkmusic */ = {
 			isa = PBXGroup;
 			children = (
+				2C1EA6AC22CA200B009C27E2 /* modules */,
 				2C1EA69522CA084F009C27E2 /* AppDelegate.swift */,
-				2C1EA69722CA084F009C27E2 /* ViewController.swift */,
 				2C1EA69922CA084F009C27E2 /* Main.storyboard */,
 				2C1EA69F22CA0850009C27E2 /* Assets.xcassets */,
 				2C1EA6A122CA0850009C27E2 /* LaunchScreen.storyboard */,
 				2C1EA6A422CA0850009C27E2 /* Info.plist */,
 				2C1EA69C22CA084F009C27E2 /* margo_telegram.xcdatamodeld */,
+				2C1EA6B022CA2120009C27E2 /* Private_Keys.swift */,
 			);
-			path = "margo-telegram";
+			path = "margo-vkmusic";
+			sourceTree = "<group>";
+		};
+		2C1EA6AC22CA200B009C27E2 /* modules */ = {
+			isa = PBXGroup;
+			children = (
+				2C1EA6AD22CA2013009C27E2 /* logIn */,
+			);
+			path = modules;
+			sourceTree = "<group>";
+		};
+		2C1EA6AD22CA2013009C27E2 /* logIn */ = {
+			isa = PBXGroup;
+			children = (
+				2C1EA69722CA084F009C27E2 /* LogInViewController.swift */,
+				2C1EA6AE22CA202C009C27E2 /* LogInPresenter.swift */,
+			);
+			path = logIn;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		2C1EA69122CA084F009C27E2 /* margo-telegram */ = {
+		2C1EA69122CA084F009C27E2 /* margo-vkmusic */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 2C1EA6A722CA0850009C27E2 /* Build configuration list for PBXNativeTarget "margo-telegram" */;
+			buildConfigurationList = 2C1EA6A722CA0850009C27E2 /* Build configuration list for PBXNativeTarget "margo-vkmusic" */;
 			buildPhases = (
 				2C1EA68E22CA084F009C27E2 /* Sources */,
 				2C1EA68F22CA084F009C27E2 /* Frameworks */,
@@ -85,9 +107,9 @@
 			);
 			dependencies = (
 			);
-			name = "margo-telegram";
+			name = "margo-vkmusic";
 			productName = "margo-telegram";
-			productReference = 2C1EA69222CA084F009C27E2 /* margo-telegram.app */;
+			productReference = 2C1EA69222CA084F009C27E2 /* margo-vkmusic.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -105,7 +127,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 2C1EA68D22CA084F009C27E2 /* Build configuration list for PBXProject "margo-telegram" */;
+			buildConfigurationList = 2C1EA68D22CA084F009C27E2 /* Build configuration list for PBXProject "margo-vkmusic" */;
 			compatibilityVersion = "Xcode 9.3";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -118,7 +140,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				2C1EA69122CA084F009C27E2 /* margo-telegram */,
+				2C1EA69122CA084F009C27E2 /* margo-vkmusic */,
 			);
 		};
 /* End PBXProject section */
@@ -142,7 +164,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2C1EA69822CA084F009C27E2 /* ViewController.swift in Sources */,
+				2C1EA6AF22CA202C009C27E2 /* LogInPresenter.swift in Sources */,
+				2C1EA69822CA084F009C27E2 /* LogInViewController.swift in Sources */,
+				2C1EA6B122CA2120009C27E2 /* Private_Keys.swift in Sources */,
 				2C1EA69622CA084F009C27E2 /* AppDelegate.swift in Sources */,
 				2C1EA69E22CA084F009C27E2 /* margo_telegram.xcdatamodeld in Sources */,
 			);
@@ -296,7 +320,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "com.itechart.com.margo-telegram";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.itechart.com.margo-vkmusic";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -313,7 +337,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "com.itechart.com.margo-telegram";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.itechart.com.margo-vkmusic";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -323,7 +347,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		2C1EA68D22CA084F009C27E2 /* Build configuration list for PBXProject "margo-telegram" */ = {
+		2C1EA68D22CA084F009C27E2 /* Build configuration list for PBXProject "margo-vkmusic" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				2C1EA6A522CA0850009C27E2 /* Debug */,
@@ -332,7 +356,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		2C1EA6A722CA0850009C27E2 /* Build configuration list for PBXNativeTarget "margo-telegram" */ = {
+		2C1EA6A722CA0850009C27E2 /* Build configuration list for PBXNativeTarget "margo-vkmusic" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				2C1EA6A822CA0850009C27E2 /* Debug */,

@@ -2,6 +2,6 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "self:margo-telegram.xcodeproj">
+      location = "self:/Users/ivan/Documents/margo-telegram/margo-vkmusic.xcodeproj">
    </FileRef>
 </Workspace>
