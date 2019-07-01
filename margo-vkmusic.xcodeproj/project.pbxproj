@@ -16,6 +16,7 @@
 		2C1EA6AB22CA0A0E009C27E2 /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = 2C1EA6AA22CA0A0E009C27E2 /* .gitignore */; };
 		2C1EA6AF22CA202C009C27E2 /* LogInPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C1EA6AE22CA202C009C27E2 /* LogInPresenter.swift */; };
 		2C1EA6B122CA2120009C27E2 /* Private_Keys.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C1EA6B022CA2120009C27E2 /* Private_Keys.swift */; };
+		2C4690E222CA2FB60026C508 /* Account.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C4690E122CA2FB60026C508 /* Account.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -30,6 +31,7 @@
 		2C1EA6AA22CA0A0E009C27E2 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 		2C1EA6AE22CA202C009C27E2 /* LogInPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogInPresenter.swift; sourceTree = "<group>"; };
 		2C1EA6B022CA2120009C27E2 /* Private_Keys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Private_Keys.swift; sourceTree = "<group>"; };
+		2C4690E122CA2FB60026C508 /* Account.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Account.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -88,6 +90,7 @@
 			children = (
 				2C1EA69722CA084F009C27E2 /* LogInViewController.swift */,
 				2C1EA6AE22CA202C009C27E2 /* LogInPresenter.swift */,
+				2C4690E122CA2FB60026C508 /* Account.swift */,
 			);
 			path = logIn;
 			sourceTree = "<group>";
@@ -169,6 +172,7 @@
 				2C1EA6B122CA2120009C27E2 /* Private_Keys.swift in Sources */,
 				2C1EA69622CA084F009C27E2 /* AppDelegate.swift in Sources */,
 				2C1EA69E22CA084F009C27E2 /* margo_telegram.xcdatamodeld in Sources */,
+				2C4690E222CA2FB60026C508 /* Account.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
