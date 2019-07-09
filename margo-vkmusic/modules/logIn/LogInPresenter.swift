@@ -8,15 +8,23 @@
 
 import Foundation
 
+
 protocol LogInPresenterProtocol {
     func viewDidLoad()
+    func LogIn()
 }
 
-class LogInPresenter: LogInPresenterProtocol {
-    var vc: LogInViewController?
-    
+class LogInPresenter {
+    weak var vc: LogInViewController?
+    var router: LogInRouter?
+}
+
+extension LogInPresenter: LogInPresenterProtocol {
     func viewDidLoad() {
         
     }
     
+    func LogIn() {
+        router?.presentWebView()
+    }
 }

@@ -16,7 +16,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
+        let rootVC: UIViewController
+        let tokenEndDate = UserDefaults.standard.double(forKey: "lifetime")
+        if UserDefaults.standard.string(forKey: "accessToken") != nil && tokenEndDate > NSTimeIntervalSince1970{
+            rootVC = Builder.shared.createMusicPlayerVC()
+        } else {
+            rootVC = Builder.shared.BuildLogInScreen()
+        }
+        window?.rootViewController = rootVC
+        window?.makeKeyAndVisible()
         return true
     }
 
