@@ -8,9 +8,16 @@
 
 import UIKit
 
+protocol ImagesViewControllerProtocol: class {
+    func configureWithPhotos()
+    func loadAvatar(image: UIImage)
+    func setFriends(friends: Int)
+    func setFollowers(followers: Int)
+}
+
 class ImagesViewController: UIViewController {
     
-    var presenter: ImagePresenter?
+    var presenter: ImagePresenterProtocol?
 
     @IBOutlet weak var headerViewBottom: NSLayoutConstraint!
     @IBOutlet weak var secondHeaderBottom: NSLayoutConstraint!
@@ -32,10 +39,25 @@ class ImagesViewController: UIViewController {
         configureUI()
     }
     
+    func downloadImage(url: String, complection: @escaping (_ image: UIImage?,_ response: URLResponse?,_ error: Error?) -> ()) {
+        presenter?.loadImage(url: url, complection: { (img, res, err) in
+            complection(img, res, err)
+        })
+    }
+}
+
+extension ImagesViewController: ImagesViewControllerProtocol {
+    func configureWithPhotos() {
+        imageCollectionView.reloadData()
+        view.layoutIfNeeded()
+        let scrollViewContentSize = CGSize(width: view.frame.width, height: headerView.frame.height + headerViewBottom.accessibilityFrame.height + secondHeaderView.frame.height + secondHeaderBottom.accessibilityFrame.height + imageCollectionView.contentSize.height)
+        mainScrollView.contentSize = scrollViewContentSize
+    }
+    
     func loadAvatar(image: UIImage) {
         avatarImageView.image = image
     }
-
+    
     func setFriends(friends: Int) {
         DispatchQueue.main.async {
             self.friendsCountLabel.text = "Friends: \(String(friends))"
@@ -46,13 +68,6 @@ class ImagesViewController: UIViewController {
         DispatchQueue.main.async {
             self.followersCountLabel.text = "Followers: \(String(followers))"
         }
-    }
-    
-    
-    func configureWithPhotos() {
-        imageCollectionView.reloadData()
-        view.layoutIfNeeded()
-        mainScrollView.contentSize = CGSize(width: view.frame.width, height: headerView.frame.height + headerViewBottom.accessibilityFrame.height + secondHeaderView.frame.height + secondHeaderBottom.accessibilityFrame.height + imageCollectionView.contentSize.height)
     }
 }
 
@@ -86,7 +101,8 @@ extension ImagesViewController: UICollectionViewDelegate {
         let cellIdentifier = "imgCell"
         let cell = imageCollectionView.dequeueReusableCell(withReuseIdentifier: cellIdentifier, for: indexPath) as? ImageCollectionViewCell
         let image = presenter?.getImage(indexPath: indexPath)
-        cell?.configure(data: image!)
+        cell?.data = image
+        cell?.configure(vc: self)
         return cell!
     }
 }
@@ -96,7 +112,8 @@ private extension ImagesViewController {
         self.view.layoutIfNeeded()
         imageCollectionView.backgroundColor = UIColor.white
         mainScrollView.frame = self.view.frame
-        mainScrollView.contentSize = CGSize(width: view.frame.width, height: headerView.frame.height + headerViewBottom.accessibilityFrame.height + secondHeaderView.frame.height + secondHeaderBottom.accessibilityFrame.height + imageCollectionView.contentSize.height)
+        let scrollViewContentSize = CGSize(width: view.frame.width, height: headerView.frame.height + headerViewBottom.accessibilityFrame.height + secondHeaderView.frame.height + secondHeaderBottom.accessibilityFrame.height + imageCollectionView.contentSize.height)
+        mainScrollView.contentSize = scrollViewContentSize
         view.layoutIfNeeded()
         mainScrollView.isHidden = true
         mainScrollView.contentInsetAdjustmentBehavior = .never
@@ -108,5 +125,9 @@ private extension ImagesViewController {
         imageCollectionView.delegate = self
         self.mainScrollView.delegate = self
         avatarImageView.layer.cornerRadius = avatarImageView.frame.width / 2
+        avatarImageView.layer.borderColor = UIColor.gray.cgColor
+        avatarImageView.layer.borderWidth = 3
+        imageCollectionView.backgroundColor = UIColor(white: 1, alpha: 0)
+        self.view.setGradientBackground(firstColor: UIColor.darkGray, secondColor: UIColor.lightGray)
     }
 }

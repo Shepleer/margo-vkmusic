@@ -8,7 +8,6 @@
 
 import Foundation
 
-
 protocol LogInPresenterProtocol {
     func viewDidLoad()
     func LogIn()

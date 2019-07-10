@@ -11,4 +11,5 @@ import UIKit
 
 struct Image {
     var img: UIImage?
+    var url: String?
 }

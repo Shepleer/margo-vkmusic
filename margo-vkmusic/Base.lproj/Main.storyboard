@@ -61,7 +61,7 @@
                                                     <rect key="frame" x="0.0" y="0.0" width="130" height="130"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <subviews>
-                                                        <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="iXt-74-wwa">
+                                                        <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="playceholder" translatesAutoresizingMaskIntoConstraints="NO" id="iXt-74-wwa">
                                                             <rect key="frame" x="0.0" y="0.0" width="130" height="130"/>
                                                         </imageView>
                                                     </subviews>
@@ -219,4 +219,7 @@
             <point key="canvasLocation" x="259" y="96"/>
         </scene>
     </scenes>
+    <resources>
+        <image name="playceholder" width="640" height="480"/>
+    </resources>
 </document>

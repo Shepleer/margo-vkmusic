@@ -10,7 +10,7 @@ import UIKit
 
 protocol APIServiceProtocol {
     func getData(urlStr: String, method: requestMethod, body: Dictionary<String, Any>?, headers: Dictionary<String, String>?, completion: @escaping (_ outDictionary: Dictionary<String, Any>?, _ error: Error?) -> ())
-    func getImage(url: String, method: requestMethod, body: Dictionary<String, Any>?, headers: Dictionary<String, String>?, completion: @escaping (_ responseImage: UIImage?, _ error: Error?) -> ())
+    func getImage(url: String, method: requestMethod, body: Dictionary<String, Any>?, headers: Dictionary<String, String>?, completion: @escaping (_ responseImage: UIImage?, _ response: URLResponse?, _ error: Error?) -> ())
 }
 
 enum RequestError: Error {
@@ -69,28 +69,28 @@ class APIService: APIServiceProtocol {
         }
     }
     
-    func getImage(url: String, method: requestMethod, body: Dictionary<String, Any>? = nil, headers: Dictionary<String, String>? = nil, completion: @escaping (_ responseImage: UIImage?, _ error: Error?) -> ()) {
+    func getImage(url: String, method: requestMethod, body: Dictionary<String, Any>? = nil, headers: Dictionary<String, String>? = nil, completion: @escaping (_ responseImage: UIImage?, _ response: URLResponse?, _ error: Error?) -> ()) {
         queue.async {
             var request: URLRequest?
             do {
                 request = try (self.builder?.build(url: url, method: method, body, headers))!
             } catch {
-                completion(nil, error)
+                completion(nil, nil, error)
                 return
             }
-            self.runner?.run(request: request!, completion: { (data, err) in
+            self.runner?.runImageDataTask(request: request!, completion: { (data, res, err) in
                 if let error = err {
-                    completion(nil, error)
+                    completion(nil, res, error)
                     return
                 }
                 do {
                     let image = try (self.parser?.parseImage(data: data!))
                     DispatchQueue.main.async {
-                        completion(image, nil)
+                        completion(image, res, nil)
                     }
                 } catch {
                     DispatchQueue.main.async {
-                        completion(nil, error)
+                        completion(nil, res, error)
                     }
                 }
             })

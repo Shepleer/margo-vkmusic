@@ -9,12 +9,7 @@
 import UIKit
 import WebKit
 
-protocol ConformViewControllerProtocol: class {
-    
-}
-
-
-class ConformViewController: UIViewController {
+class ConformViewController: UIViewController, WKUIDelegate {
 
     private struct Constants {
         static let loginURL = "https://oauth.vk.com/authorize?client_id=7040198&display=mobile&redirect_uri=https://oauth.vk.com/blank.html&scope=photos,friends&response_type=token"
@@ -26,7 +21,6 @@ class ConformViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        presenter?.viewDidLoad()
         navigationController?.isNavigationBarHidden = false
         ConfigureWebView()
     }
@@ -43,14 +37,6 @@ private extension ConformViewController {
         let req = URLRequest(url: url!)
         logInWebView.load(req)
     }
-}
-
-extension ConformViewController: ConformViewControllerProtocol {
-    
-}
-
-extension ConformViewController: WKUIDelegate {
-    
 }
 
 extension ConformViewController: WKNavigationDelegate {

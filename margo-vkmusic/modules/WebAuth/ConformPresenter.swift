@@ -8,19 +8,19 @@
 
 import Foundation
 
-
 protocol ConformPresenterProtocol {
     func parseUserCredentials(redirectString: String)
+    func moveToMusicPlayerVC()
 }
 
 class ConformPresenter {
-    
-    
     var router: ConformRouterProtocol?
-    weak var vc: ConformViewControllerProtocol?
-    
-    func viewDidLoad() {
-        
+    weak var vc: ConformViewController?
+}
+
+extension ConformPresenter: ConformPresenterProtocol {
+    func moveToMusicPlayerVC() {
+        router?.moveToMainVC()
     }
     
     func parseUserCredentials(redirectString: String) {
@@ -33,10 +33,3 @@ class ConformPresenter {
         UserDefaults.standard.set(lifetime, forKey: "lifetime")
     }
 }
-
-extension ConformPresenter: ConformPresenterProtocol {
-    func moveToMusicPlayerVC() {
-        router?.moveToMainVC()
-    }
-}
-

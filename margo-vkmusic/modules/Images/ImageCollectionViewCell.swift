@@ -12,8 +12,13 @@ class ImageCollectionViewCell: UICollectionViewCell {
     
     @IBOutlet weak var imageView: UIImageView!
     
-    func configure(data: Image) {
-        imageView.image = data.img
+    var data: Image?
+
+    func configure(vc: ImagesViewController) {
+        vc.downloadImage(url: (data?.url!)!) { (img, res, err) in
+            if res?.url?.absoluteString == self.data?.url {
+                self.imageView.image = img
+            }
+        }
     }
-    
 }

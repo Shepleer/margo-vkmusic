@@ -9,11 +9,6 @@
 import UIKit
 import WebKit
 
-protocol LogInViewControllerProtocol {
-    
-}
-
-
 class LogInViewController: UIViewController {
 
     var presenter: LogInPresenter?
@@ -23,9 +18,9 @@ class LogInViewController: UIViewController {
         presenter?.viewDidLoad()
         ConfigureUI()
     }
+    
     @IBAction func LogInButton(_ sender: UIButton) {
         presenter?.LogIn()
-        
     }
 }
 
@@ -36,8 +31,5 @@ private extension LogInViewController {
     }
 }
 
-extension LogInViewController: LogInViewControllerProtocol {
-    
-}
 
 
