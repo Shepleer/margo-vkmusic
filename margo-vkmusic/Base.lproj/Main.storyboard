@@ -140,6 +140,7 @@
                                 </subviews>
                                 <constraints>
                                     <constraint firstItem="2mH-gb-Ve6" firstAttribute="trailing" secondItem="JV8-ag-wqt" secondAttribute="trailing" id="3a4-rL-S4V"/>
+                                    <constraint firstItem="2mH-gb-Ve6" firstAttribute="top" secondItem="Tp7-c3-8AK" secondAttribute="bottom" constant="8" id="48d-KF-DCK"/>
                                     <constraint firstAttribute="trailing" secondItem="Tp7-c3-8AK" secondAttribute="trailing" id="4gq-uZ-hfF"/>
                                     <constraint firstAttribute="bottom" secondItem="JV8-ag-wqt" secondAttribute="bottom" id="JPF-rB-zYy"/>
                                     <constraint firstItem="Tp7-c3-8AK" firstAttribute="trailing" secondItem="2mH-gb-Ve6" secondAttribute="trailing" id="Okx-Tt-5b3"/>
@@ -147,7 +148,6 @@
                                     <constraint firstItem="2mH-gb-Ve6" firstAttribute="leading" secondItem="JV8-ag-wqt" secondAttribute="leading" id="QId-xY-d7e"/>
                                     <constraint firstItem="JV8-ag-wqt" firstAttribute="top" secondItem="2mH-gb-Ve6" secondAttribute="bottom" constant="8" symbolic="YES" id="dSg-LU-SNE"/>
                                     <constraint firstItem="Tp7-c3-8AK" firstAttribute="leading" secondItem="f85-lt-XzI" secondAttribute="leading" id="gIi-uJ-whn"/>
-                                    <constraint firstItem="2mH-gb-Ve6" firstAttribute="top" secondItem="Tp7-c3-8AK" secondAttribute="bottom" constant="8" symbolic="YES" id="lVR-Vi-TEi"/>
                                     <constraint firstItem="Tp7-c3-8AK" firstAttribute="leading" secondItem="2mH-gb-Ve6" secondAttribute="leading" id="mh8-5Q-dEJ"/>
                                 </constraints>
                                 <viewLayoutGuide key="safeArea" id="VvO-pz-ATs"/>
@@ -167,7 +167,7 @@
                         <outlet property="followersCountLabel" destination="gHa-pd-ez6" id="7F5-4f-zsG"/>
                         <outlet property="friendsCountLabel" destination="NNx-VA-vfz" id="ka5-q9-9fc"/>
                         <outlet property="headerView" destination="Tp7-c3-8AK" id="0HJ-Gv-9br"/>
-                        <outlet property="headerViewBottom" destination="lVR-Vi-TEi" id="90g-CS-gu4"/>
+                        <outlet property="headerViewBottom" destination="48d-KF-DCK" id="Nsb-JD-H4u"/>
                         <outlet property="imageCollectionView" destination="JV8-ag-wqt" id="iD0-oS-gOV"/>
                         <outlet property="secondHeaderBottom" destination="dSg-LU-SNE" id="wy6-X1-fni"/>
                         <outlet property="secondHeaderView" destination="2mH-gb-Ve6" id="cYX-eB-cz8"/>

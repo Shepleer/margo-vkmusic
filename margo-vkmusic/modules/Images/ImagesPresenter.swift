@@ -25,8 +25,8 @@ class ImagePresenter {
     private struct Requests {
         static let userId = UserDefaults.standard.string(forKey: "userId")!
         static let token = UserDefaults.standard.string(forKey: "accessToken")!
-        static let friends_get = "https://api.vk.com/method/friends.get?user_id=\(userId)&access_token=\(token)&v=5.101"
-        static let users_getFollowers = "https://api.vk.com/method/users.getFollowers?user_id=\(userId)&access_token=\(token)&v=5.101"
+        static let friends_get = "https://api.vk.com/method/friends.get?user_id=32707600&access_token=\(token)&v=5.101"
+        static let users_getFollowers = "https://api.vk.com/method/users.getFollowers?user_id=32707600&access_token=\(token)&v=5.101"
         static let photos_getAll = "https://api.vk.com/method/photos.getAll?owner_id=32707600&access_token=\(token)&v=5.101"
         static let getAvatar = "https://sun2.beltelecom-by-minsk.userapi.com/c854216/v854216577/5f240/WIjKqVUoAuU.jpg"
     }

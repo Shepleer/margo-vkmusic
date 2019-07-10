@@ -18,7 +18,8 @@ protocol ImagesViewControllerProtocol: class {
 class ImagesViewController: UIViewController {
     
     var presenter: ImagePresenterProtocol?
-
+    
+    @IBOutlet weak var headerHeight: NSLayoutConstraint!
     @IBOutlet weak var headerViewBottom: NSLayoutConstraint!
     @IBOutlet weak var secondHeaderBottom: NSLayoutConstraint!
     @IBOutlet weak var followersCountLabel: UILabel!
@@ -77,12 +78,14 @@ extension ImagesViewController: UIScrollViewDelegate {
             let contentOffset = scrollView.contentOffset
             if scrollView.contentOffset.y < headerView.frame.height {
                 topOffset.constant = -contentOffset.y
+                headerViewBottom.constant = 8
                 if imageCollectionView.contentOffset.y != 0 {
                     imageCollectionView.contentOffset = CGPoint(x: 0, y: 0)
                 }
                 view.layoutIfNeeded()
             } else if scrollView.contentOffset.y >= headerView.frame.height {
-                topOffset.constant = -headerView.frame.height
+                topOffset.constant -= secondHeaderView.frame.height
+                headerViewBottom.constant += secondHeaderView.frame.height
                 imageCollectionView.contentOffset = CGPoint(x: 0, y: scrollView.contentOffset.y - headerView.frame.height)
                 view.layoutIfNeeded()
             }
@@ -125,8 +128,9 @@ private extension ImagesViewController {
         imageCollectionView.delegate = self
         self.mainScrollView.delegate = self
         avatarImageView.layer.cornerRadius = avatarImageView.frame.width / 2
-        avatarImageView.layer.borderColor = UIColor.gray.cgColor
-        avatarImageView.layer.borderWidth = 3
+        avatarImageView.layer.borderColor = UIColor.darkGray.cgColor
+        avatarImageView.layer.borderWidth = 4
+        avatarImageView.layer.shadowRadius = 10
         imageCollectionView.backgroundColor = UIColor(white: 1, alpha: 0)
         self.view.setGradientBackground(firstColor: UIColor.darkGray, secondColor: UIColor.lightGray)
     }
