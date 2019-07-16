@@ -4,6 +4,5 @@ use_frameworks!
 target 'margo-vkmusic' do
 
 
-    # Pods for Oreado
-    pod 'GoogleSignIn'
+    # Pods for margo-vkmusic
 end
