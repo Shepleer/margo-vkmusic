@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 51;
+	objectVersion = 50;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -22,6 +22,7 @@
 		2C1EA6AF22CA202C009C27E2 /* LogInPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C1EA6AE22CA202C009C27E2 /* LogInPresenter.swift */; };
 		2C1EA6B122CA2120009C27E2 /* Private_Keys.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C1EA6B022CA2120009C27E2 /* Private_Keys.swift */; };
 		2C23309322D499CB004F2B2E /* ImagesCollectionViewFlowLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C23309222D499CB004F2B2E /* ImagesCollectionViewFlowLayout.swift */; };
+		2C384B6E22E0DF8900DEBBAB /* ProgressIndicatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C384B6D22E0DF8900DEBBAB /* ProgressIndicatorView.swift */; };
 		2C39810A22CE0FE00042B1AE /* ImageCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C39810922CE0FE00042B1AE /* ImageCollectionViewCell.swift */; };
 		2C39810C22CE10340042B1AE /* ImagesPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C39810B22CE10340042B1AE /* ImagesPresenter.swift */; };
 		2C39810E22CE103F0042B1AE /* Image.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C39810D22CE103F0042B1AE /* Image.swift */; };
@@ -33,6 +34,8 @@
 		2C4690F422CA47F50026C508 /* APIRunner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C4690F122CA47F50026C508 /* APIRunner.swift */; };
 		2C4690F522CA47F50026C508 /* APIBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C4690EE22CA47F50026C508 /* APIBuilder.swift */; };
 		2C4690F822CA4C2B0026C508 /* Builder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C4690F722CA4C2B0026C508 /* Builder.swift */; };
+		2CB3C36C22DE06B700D58C9D /* DownloadService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CB3C36B22DE06B700D58C9D /* DownloadService.swift */; };
+		2CB6383122DF4FA6003A9E15 /* Download.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CB6383022DF4FA6003A9E15 /* Download.swift */; };
 		3C7D80713C070E1E4517A3C6 /* Pods_margo_vkmusic.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5DE5C286CAD577A89C12D93F /* Pods_margo_vkmusic.framework */; };
 /* End PBXBuildFile section */
 
@@ -54,6 +57,7 @@
 		2C1EA6AE22CA202C009C27E2 /* LogInPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogInPresenter.swift; sourceTree = "<group>"; };
 		2C1EA6B022CA2120009C27E2 /* Private_Keys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Private_Keys.swift; sourceTree = "<group>"; };
 		2C23309222D499CB004F2B2E /* ImagesCollectionViewFlowLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagesCollectionViewFlowLayout.swift; sourceTree = "<group>"; };
+		2C384B6D22E0DF8900DEBBAB /* ProgressIndicatorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressIndicatorView.swift; sourceTree = "<group>"; };
 		2C39810922CE0FE00042B1AE /* ImageCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageCollectionViewCell.swift; sourceTree = "<group>"; };
 		2C39810B22CE10340042B1AE /* ImagesPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagesPresenter.swift; sourceTree = "<group>"; };
 		2C39810D22CE103F0042B1AE /* Image.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Image.swift; sourceTree = "<group>"; };
@@ -65,6 +69,8 @@
 		2C4690F022CA47F50026C508 /* APIParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIParser.swift; sourceTree = "<group>"; };
 		2C4690F122CA47F50026C508 /* APIRunner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIRunner.swift; sourceTree = "<group>"; };
 		2C4690F722CA4C2B0026C508 /* Builder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Builder.swift; sourceTree = "<group>"; };
+		2CB3C36B22DE06B700D58C9D /* DownloadService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadService.swift; sourceTree = "<group>"; };
+		2CB6383022DF4FA6003A9E15 /* Download.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Download.swift; sourceTree = "<group>"; };
 		2F72739BCAF9F371472FF3F9 /* Pods-margo-vkmusic.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-margo-vkmusic.debug.xcconfig"; path = "Target Support Files/Pods-margo-vkmusic/Pods-margo-vkmusic.debug.xcconfig"; sourceTree = "<group>"; };
 		5DE5C286CAD577A89C12D93F /* Pods_margo_vkmusic.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_margo_vkmusic.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		CC99C6F1EFCD87B27E04842A /* Pods-margo-vkmusic.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-margo-vkmusic.release.xcconfig"; path = "Target Support Files/Pods-margo-vkmusic/Pods-margo-vkmusic.release.xcconfig"; sourceTree = "<group>"; };
@@ -98,6 +104,7 @@
 				2C1B93DA22CBA69900209DEB /* ImagesViewController.swift */,
 				2C39810922CE0FE00042B1AE /* ImageCollectionViewCell.swift */,
 				2C23309222D499CB004F2B2E /* ImagesCollectionViewFlowLayout.swift */,
+				2C384B6D22E0DF8900DEBBAB /* ProgressIndicatorView.swift */,
 				2C39810B22CE10340042B1AE /* ImagesPresenter.swift */,
 				2C39810D22CE103F0042B1AE /* Image.swift */,
 			);
@@ -167,6 +174,8 @@
 			isa = PBXGroup;
 			children = (
 				2C4690E922CA47190026C508 /* api */,
+				2CB3C36B22DE06B700D58C9D /* DownloadService.swift */,
+				2CB6383022DF4FA6003A9E15 /* Download.swift */,
 			);
 			path = services;
 			sourceTree = "<group>";
@@ -176,9 +185,6 @@
 			children = (
 				2C4690EF22CA47F50026C508 /* APIService.swift */,
 				2C4690F622CA48010026C508 /* executor */,
-				2C4690EE22CA47F50026C508 /* APIBuilder.swift */,
-				2C4690F022CA47F50026C508 /* APIParser.swift */,
-				2C4690F122CA47F50026C508 /* APIRunner.swift */,
 			);
 			path = api;
 			sourceTree = "<group>";
@@ -186,6 +192,9 @@
 		2C4690F622CA48010026C508 /* executor */ = {
 			isa = PBXGroup;
 			children = (
+				2C4690EE22CA47F50026C508 /* APIBuilder.swift */,
+				2C4690F022CA47F50026C508 /* APIParser.swift */,
+				2C4690F122CA47F50026C508 /* APIRunner.swift */,
 			);
 			path = executor;
 			sourceTree = "<group>";
@@ -204,7 +213,6 @@
 				2F72739BCAF9F371472FF3F9 /* Pods-margo-vkmusic.debug.xcconfig */,
 				CC99C6F1EFCD87B27E04842A /* Pods-margo-vkmusic.release.xcconfig */,
 			);
-			name = Pods;
 			path = Pods;
 			sourceTree = "<group>";
 		};
@@ -219,8 +227,6 @@
 				2C1EA68E22CA084F009C27E2 /* Sources */,
 				2C1EA68F22CA084F009C27E2 /* Frameworks */,
 				2C1EA69022CA084F009C27E2 /* Resources */,
-				B763E35DB34B801C74BA61D7 /* [CP] Embed Pods Frameworks */,
-				12FE4268BDABFE972FCD6FC0 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -279,23 +285,6 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		12FE4268BDABFE972FCD6FC0 /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-margo-vkmusic/Pods-margo-vkmusic-resources-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Copy Pods Resources";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-margo-vkmusic/Pods-margo-vkmusic-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-margo-vkmusic/Pods-margo-vkmusic-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
 		51C6B4D595C72A47321FC713 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -318,23 +307,6 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		B763E35DB34B801C74BA61D7 /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-margo-vkmusic/Pods-margo-vkmusic-frameworks-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-margo-vkmusic/Pods-margo-vkmusic-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-margo-vkmusic/Pods-margo-vkmusic-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -351,12 +323,15 @@
 				2C4690E222CA2FB60026C508 /* Account.swift in Sources */,
 				2C39810E22CE103F0042B1AE /* Image.swift in Sources */,
 				2C1B93DB22CBA69900209DEB /* ImagesViewController.swift in Sources */,
+				2CB3C36C22DE06B700D58C9D /* DownloadService.swift in Sources */,
 				2C4690F822CA4C2B0026C508 /* Builder.swift in Sources */,
 				2C1B93D822CBA5C300209DEB /* ConformRouter.swift in Sources */,
 				2C4690F222CA47F50026C508 /* APIService.swift in Sources */,
+				2CB6383122DF4FA6003A9E15 /* Download.swift in Sources */,
 				2C4690F522CA47F50026C508 /* APIBuilder.swift in Sources */,
 				2C4690E422CA331B0026C508 /* StyleManager.swift in Sources */,
 				2C23309322D499CB004F2B2E /* ImagesCollectionViewFlowLayout.swift in Sources */,
+				2C384B6E22E0DF8900DEBBAB /* ProgressIndicatorView.swift in Sources */,
 				2C4690F322CA47F50026C508 /* APIParser.swift in Sources */,
 				2C39810C22CE10340042B1AE /* ImagesPresenter.swift in Sources */,
 				2C1B93D122CB7D9000209DEB /* LogInRouter.swift in Sources */,

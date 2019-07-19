@@ -9,7 +9,7 @@
 import UIKit
 
 protocol ImagesViewControllerProtocol: class {
-    func configureWithPhotos()
+    func configureWithPhotos(images: [Image])
     func loadAvatar(image: UIImage)
     func setFriends(friends: Int)
     func setFollowers(followers: Int)
@@ -30,33 +30,48 @@ class ImagesViewController: UIViewController {
     @IBOutlet weak var headerView: UIView!
     @IBOutlet weak var imageCollectionView: UICollectionView!
     
-    let mainScrollView = UIScrollView()
+    var images = [Image]()
     
+    let mainScrollView = UIScrollView()
     override func viewDidLoad() {
         super.viewDidLoad()
-        presenter?.getAllPhotos()
-        presenter?.getAvatar()
+        //presenter?.getAvatar()
         presenter?.viewDidLoad()
+        
         configureUI()
     }
     
-    func downloadImage(url: String, complection: @escaping (_ image: UIImage?,_ response: URLResponse?,_ error: Error?) -> ()) {
-        presenter?.loadImage(url: url, complection: { (img, res, err) in
-            complection(img, res, err)
-        })
+    func downloadImage(image: Image) {
+        //presenter?.loadImage(image: image)
+    }
+    
+    func configureDataSource(data: Image) {
+        if let i = images.firstIndex(where: { (image) -> Bool in
+            return image.url == data.url
+        }) {
+            images[i].img = data.img
+        }
+        presenter!.configureDataSource(images: images)
+    }
+    
+    func cancellingDownload(image: Image) {
+        presenter?.cancelDownload(image: image)
     }
 }
 
-extension ImagesViewController: ImagesViewControllerProtocol {
-    func configureWithPhotos() {
+extension ImagesViewController: ImagesViewControllerProtocol {    
+    func configureWithPhotos(images: [Image]) {
+        self.images = images
         imageCollectionView.reloadData()
-        view.layoutIfNeeded()
-        let scrollViewContentSize = CGSize(width: view.frame.width, height: headerView.frame.height + headerViewBottom.accessibilityFrame.height + secondHeaderView.frame.height + secondHeaderBottom.accessibilityFrame.height + imageCollectionView.contentSize.height)
+        let scrollViewContentSize = CGSize(width: view.frame.width, height: headerView.frame.height + headerViewBottom.accessibilityFrame.height + secondHeaderView.frame.height + secondHeaderBottom.accessibilityFrame.height + imageCollectionView.collectionViewLayout.collectionViewContentSize.height)
         mainScrollView.contentSize = scrollViewContentSize
+        presenter?.imagesDownloaded()
     }
     
     func loadAvatar(image: UIImage) {
-        avatarImageView.image = image
+        DispatchQueue.main.async {
+            self.avatarImageView.image = image
+        }
     }
     
     func setFriends(friends: Int) {
@@ -70,24 +85,42 @@ extension ImagesViewController: ImagesViewControllerProtocol {
             self.followersCountLabel.text = "Followers: \(String(followers))"
         }
     }
+    
+    func cellIsLoading(url: String, progress: @escaping (_ progress: Float) -> (), completion: @escaping (_ image: UIImage) -> ()) {
+        presenter?.loadImage(url: url, progress: progress, completion: completion)
+    }
 }
 
 extension ImagesViewController: UIScrollViewDelegate {
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        var endScrollRecommendedOffset: CGFloat {
+            if let layout = imageCollectionView.collectionViewLayout as? UICollectionViewFlowLayout {
+                return layout.itemSize.height * 3
+            }
+            return 0
+        }
         if scrollView == mainScrollView {
             let contentOffset = scrollView.contentOffset
             if scrollView.contentOffset.y < headerView.frame.height {
                 topOffset.constant = -contentOffset.y
-                headerViewBottom.constant = 8
                 if imageCollectionView.contentOffset.y != 0 {
                     imageCollectionView.contentOffset = CGPoint(x: 0, y: 0)
                 }
+                headerView.isHidden = false
                 view.layoutIfNeeded()
             } else if scrollView.contentOffset.y >= headerView.frame.height {
-                topOffset.constant -= secondHeaderView.frame.height
-                headerViewBottom.constant += secondHeaderView.frame.height
+                headerView.isHidden = true
+                topOffset.constant = -headerView.frame.height
                 imageCollectionView.contentOffset = CGPoint(x: 0, y: scrollView.contentOffset.y - headerView.frame.height)
                 view.layoutIfNeeded()
+            }
+            
+            let currentOffset = scrollView.contentOffset.y + scrollView.frame.size.height
+            let maximumOffset = scrollView.contentSize.height
+            let deltaOffset = maximumOffset - currentOffset
+            
+            if deltaOffset <= endScrollRecommendedOffset {
+                presenter?.getAllPhotos()
             }
         }
     }
@@ -95,7 +128,7 @@ extension ImagesViewController: UIScrollViewDelegate {
 
 extension ImagesViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return (presenter?.getCountOfCells())!
+        return images.count
     }
 }
 
@@ -103,9 +136,11 @@ extension ImagesViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cellIdentifier = "imgCell"
         let cell = imageCollectionView.dequeueReusableCell(withReuseIdentifier: cellIdentifier, for: indexPath) as? ImageCollectionViewCell
-        let image = presenter?.getImage(indexPath: indexPath)
+        let image = images[indexPath.row]
+        //let url = URL(string: (image?.url!)!)
         cell?.data = image
-        cell?.configure(vc: self)
+        cell?.vc = self
+        cell?.configure()
         return cell!
     }
 }

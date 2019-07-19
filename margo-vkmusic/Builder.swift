@@ -52,17 +52,17 @@ class Builder {
     func createMusicPlayerVC() -> UIViewController {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         let vc = storyboard.instantiateViewController(withIdentifier: "ImagesVC") as! ImagesViewController
-        let service = APIService()
-        let requestBuilder = APIBuilder()
-        let runner = APIRunner()
-        let parser = APIParser()
+        let service = BuildAPIService()
         let presenter = ImagePresenter()
+        let downloadService = DownloadService()
+        let configuration = URLSessionConfiguration.default
+        configuration.urlCache = URLCache.shared
+        configuration.requestCachePolicy = .useProtocolCachePolicy
+        downloadService.session = URLSession(configuration: .default, delegate: downloadService, delegateQueue: nil)
         vc.presenter = presenter
         presenter.vc = vc
         presenter.service = service
-        service.builder = requestBuilder
-        service.runner = runner
-        service.parser = parser
+        presenter.downloadService = downloadService
         return vc
     }
     
