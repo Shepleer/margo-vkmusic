@@ -10,7 +10,6 @@ import UIKit
 import WebKit
 
 class ConformViewController: UIViewController, WKUIDelegate {
-
     private struct Constants {
         static let loginURL = "https://oauth.vk.com/authorize?client_id=7040198&display=mobile&redirect_uri=https://oauth.vk.com/blank.html&scope=photos,friends&response_type=token"
         static let redirectURL = "https://oauth.vk.com/blank.html#"

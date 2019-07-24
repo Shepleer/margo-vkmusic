@@ -24,25 +24,28 @@ class ImageCollectionViewCell: UICollectionViewCell {
     override func awakeFromNib() {
     }
 
-    func configure() {
-        if let res = URLCache.shared.cachedResponse(for: URLRequest(url: URL(string: data!.url!)!)) {
+    func configure(imageData: Image) {
+        guard data?.url != imageData.url else {
+            return
+        }
+        self.data = imageData
+        imageView.image = placeholder
+        progressIndicatorView.progressColor = UIColor.black
+        progressIndicatorView.backgroundColor = UIColor(white: 0, alpha: 0)
+        //if data?.img != nil {
+        //    progressIndicatorView.isHidden = true
+        //    imageView.image = data?.img
+        
+        progressIndicatorView.isHidden = false
+        loadImage(url: self.data!.url!, progress: { (progress) in
+            DispatchQueue.main.async {
+                self.updateProgressView(progress: progress)
+            }
+        }) { (img) in
             DispatchQueue.main.async {
                 self.isLoaded = true
-                self.imageView.image = UIImage(data: res.data)
-            }
-        } else {
-            progressIndicatorView.isHidden = false
-            loadImage(url: data!.url!, progress: { (progress) in
-                DispatchQueue.main.async {
-                    self.updateProgressView(progress: progress)
-                }
-            }) { (img) in
-                DispatchQueue.main.async {
-                    self.isLoaded = true
-                    self.progressIndicatorView.isHidden = true
-                    self.imageView.image = img
-                    self.data?.img = img
-                }
+                self.progressIndicatorView.isHidden = true
+                self.imageView.image = img
             }
         }
     }
@@ -55,15 +58,16 @@ class ImageCollectionViewCell: UICollectionViewCell {
     }
     
     func updateProgressView(progress: Float) {
-        progressIndicatorView.setProgressWithAnimation(duration: 0.7, value: progress)
+        DispatchQueue.main.async {
+            if progress == 1.0 { self.isLoaded = true }
+            if self.isLoaded == false {
+                self.isLoaded = false
+                self.progressIndicatorView.setProgressWithAnimation(duration: 1, value: progress)
+            }
+        }
     }
     
     override func prepareForReuse() {
-        if isLoaded == false {
-            vc?.cancellingDownload(image: data!)
-        } else {
-            imageView.image = placeholder
-        }
         progressIndicatorView.isHidden = true
     }
 }

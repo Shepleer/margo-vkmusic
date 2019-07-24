@@ -10,16 +10,10 @@ import UIKit
 
 protocol ImagePresenterProtocol {
     func viewDidLoad()
-    func getCountOfCells() -> Int
-    func getImage(indexPath: IndexPath) -> Image
-    func getAllPhotos()
-    func getAvatar()
+    func getPhotosUrl()
     func loadImage(url: String, progress: @escaping (_ progress: Float) -> (), completion: @escaping (_ image: UIImage) -> ())
     func imagesDownloaded()
-    func configureDataSource(images: [Image])
     func cancelDownload(image: Image)
-    var downloadService: DownloadService? { get }
-    
 }
 
 class ImagePresenter: NSObject {
@@ -41,11 +35,10 @@ class ImagePresenter: NSObject {
 }
 
 extension ImagePresenter: ImagePresenterProtocol {
-    
     func viewDidLoad() {
         DispatchQueue.global().async {
             self.getAvatar()
-            self.getAllPhotos()
+            self.getPhotosUrl()
             self.getCountOfFriendsAndFolowers()
         }
     }
@@ -54,27 +47,13 @@ extension ImagePresenter: ImagePresenterProtocol {
         downloadService?.cancelDownload(image: image)
     }
     
-    func configureDataSource(images: [Image]) {
-        self.images = images
-    }
-    
-    func getCountOfCells() -> Int {
-        return images.count
-    }
-    
-    func getImage(indexPath: IndexPath) -> Image {
-        return images[indexPath.row]
-    }
-    
     func getCountOfFriendsAndFolowers() {
         DispatchQueue.global().async {
-            self.service?.getData(urlStr: Requests.friends_get, method: .get, body: nil, headers: nil, completion: { (response, err) in
-                let res = response!["response"] as! Dictionary<String, Any>
-                self.vc?.setFriends(friends: res["count"] as! Int)
+            self.service?.getData(urlStr: Requests.friends_get, method: .get, body: nil, headers: nil, completion: { (account: Account?, err) in
+                self.vc?.setFriends(friends: account!.followersCount!)
             })
-            self.service?.getData(urlStr: Requests.users_getFollowers, method: .get, body: nil, headers: nil, completion: { (response, err) in
-                let res = response!["response"] as! Dictionary<String, Any>
-                self.vc?.setFollowers(followers: res["count"] as! Int)
+            self.service?.getData(urlStr: Requests.users_getFollowers, method: .get, body: nil, headers: nil, completion: { (account: Account?, err) in
+                self.vc?.setFollowers(followers: account!.followersCount!)
             })
         }
     }
@@ -96,39 +75,46 @@ extension ImagePresenter: ImagePresenterProtocol {
         }
     }
     
-    func parseImagesUrl(json: Dictionary<String, Any>) {
-        if let schema = json["response"] as? Dictionary<String, Any> {
-            let items = schema["items"] as! Array<Dictionary<String, Any>>
+    func fetchDataSource(response: Photos) {
+        if let items = response.items {
             for item in items {
-                let sizes = item["sizes"] as! Array<Dictionary<String, Any>>
-                for photo in sizes {
-                    if photo["width"] as! Int >= 130 && photo["height"] as! Int >= 130 {
-                        DispatchQueue.main.async {
-                            self.images.append(Image(img: nil, url: (photo["url"] as! String)))
-                            self.vc?.configureWithPhotos(images: self.images)
+                if let sizes = item.sizes {
+                    for size in sizes {
+                        if size.type == "z" {
+                            images.append(Image(img: nil, url: size.url))
+                            break
                         }
-                        break
                     }
                 }
             }
-        } else {
-            print(json)
-            //5e+9 == 5 sec
-            
-            DispatchQueue.global().asyncAfter(deadline: DispatchTime.now() + 5) {
-                self.getAllPhotos()
-            }
+        vc?.configureWithPhotos(images: images)
         }
     }
     
-    func getAllPhotos() {
+    func getPhotosUrl() {
         if isLoading == false {
             isLoading = true
-            let url = "https://api.vk.com/method/photos.getAll?owner_id=32707600&offset=\(Requests.offset)&count=30&access_token=\(Requests.token)&v=5.101"
-            service?.getData(urlStr: url, method: .get, body: nil, headers: nil, completion: { (response, err) in
+            let state = vc?.getViewModeState()
+            var url: String = ""
+            if state == 0 {
+                url = "https://api.vk.com/method/photos.getAll?owner_id=150261846&offset=\(Requests.offset)&photo_sizes=1&count=30&access_token=\(Requests.token)&v=5.101"
+            } else if state == 1 {
+                url = "https://api.vk.com/method/photos.getAll?owner_id=150261846&offset=\(Requests.offset)&photo_sizes=1&count=2&access_token=\(Requests.token)&v=5.101"
+            }
+            service?.getData(urlStr: url, method: .get, body: nil, headers: nil, completion: { (response: Photos?, err) in
                 if let response = response {
-                    self.parseImagesUrl(json: response)
-                    Requests.offset += 30
+                    self.fetchDataSource(response: response)
+                    if state == 0 {
+                        Requests.offset += 30
+                    } else if state == 1 {
+                        Requests.offset += 2
+                    }
+                    print(Requests.offset)
+                } else {
+                    DispatchQueue.global().asyncAfter(deadline: DispatchTime.now() + 5, execute: {
+                        self.isLoading = false
+                        self.getPhotosUrl()
+                    })
                 }
             })
         }

@@ -7,10 +7,12 @@
 //
 
 import UIKit
+import ObjectMapper
+
 
 protocol APIServiceProtocol {
-    func getData(urlStr: String, method: requestMethod, body: Dictionary<String, Any>?, headers: Dictionary<String, String>?, completion: @escaping (_ outDictionary: Dictionary<String, Any>?, _ error: Error?) -> ())
-    func getImage(url: String, method: requestMethod, body: Dictionary<String, Any>?, headers: Dictionary<String, String>?, completion: @escaping (_ responseImage: UIImage?, _ response: URLResponse?, _ error: Error?) -> ())
+    func getData<T: Mappable>(urlStr: String, method: requestMethod, body: Dictionary<String, Any>?, headers: Dictionary<String, String>?, completion: @escaping (_ response: T?, _ error: Error?) -> ())
+    func getData<T: Mappable>(urlStr: String, method: requestMethod, body: Dictionary<String, Any>?, headers: Dictionary<String, String>?, completion: @escaping (_ response: [T]?, _ error: Error?) -> ())
 }
 
 enum RequestError: Error {
@@ -41,7 +43,8 @@ class APIService: APIServiceProtocol {
     var parser: APIParserProtocol?
     
     let queue = DispatchQueue.global(qos: .background)
-    func getData(urlStr: String, method: requestMethod, body: Dictionary<String, Any>? = nil, headers: Dictionary<String, String>? = nil, completion: @escaping (_ outDictionary: Dictionary<String, Any>?, _ error: Error?) -> ()) {
+    func getData<T: Mappable>(urlStr: String, method: requestMethod, body: Dictionary<String, Any>? = nil,
+                              headers: Dictionary<String, String>? = nil, completion: @escaping (_ outArray: T?, _ error: Error?) -> ()) {
         queue.async {
             var req: URLRequest?
             do {
@@ -56,9 +59,9 @@ class APIService: APIServiceProtocol {
                     return
                 }
                 do {
-                    let outDictionary = try self.parser?.parse(data: data!)
+                    let response: T = try (self.parser?.parse(data: data!))!
                     DispatchQueue.main.async {
-                        completion(outDictionary, nil)
+                        completion(response, nil)
                     }
                 } catch {
                     DispatchQueue.main.async {
@@ -69,32 +72,32 @@ class APIService: APIServiceProtocol {
         }
     }
     
-    func getImage(url: String, method: requestMethod, body: Dictionary<String, Any>? = nil, headers: Dictionary<String, String>? = nil, completion: @escaping (_ responseImage: UIImage?, _ response: URLResponse?, _ error: Error?) -> ()) {
+    func getData<T: Mappable>(urlStr: String, method: requestMethod, body: Dictionary<String, Any>? = nil,
+                              headers: Dictionary<String, String>? = nil, completion: @escaping (_ outArray: [T]?, _ error: Error?) -> ()) {
         queue.async {
-            var request: URLRequest?
+            var req: URLRequest?
             do {
-                request = try (self.builder?.build(url: url, method: method, body, headers))!
+                req = try (self.builder?.build(url: urlStr, method: method, body, headers))!
             } catch {
-                completion(nil, nil, error)
+                completion(nil, error)
                 return
             }
-            self.runner?.runImageDataTask(request: request!, completion: { (data, res, err) in
-                if let error = err {
-                    completion(nil, res, error)
+            self.runner?.run(request: req!, completion: { (data, error) in
+                if let error = error {
+                    completion(nil, error)
                     return
                 }
                 do {
-                    let image = try (self.parser?.parseImage(data: data!))
+                    let response: [T] = try (self.parser?.parse(data: data!))!
                     DispatchQueue.main.async {
-                        completion(image, res, nil)
+                        completion(response, nil)
                     }
                 } catch {
                     DispatchQueue.main.async {
-                        completion(nil, res, error)
+                        completion(nil, error)
                     }
                 }
             })
         }
     }
-    
 }

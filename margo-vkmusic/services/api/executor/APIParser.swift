@@ -6,32 +6,44 @@
 //  Copyright © 2019 Ivan Shpileuski. All rights reserved.
 //
 
-import UIKit
+import Foundation
+import ObjectMapper
 
 protocol APIParserProtocol {
-    func parse(data: Data)throws -> Dictionary<String, Any>
-    func parseImage(data: Data)throws -> UIImage
+    func parse<T: Mappable>(data: Data) throws -> T?
+    func parse<T: Mappable>(data: Data) throws -> Array<T>
 }
 
 class APIParser: APIParserProtocol {
-    func parse(data: Data)throws -> Dictionary<String, Any> {
+    func parse<T: Mappable>(data: Data) throws -> T? {
         do {
-            let json = try JSONSerialization.jsonObject(with: data, options: [])
-            if let out = json as? [String: Any] {
-                return out
-            } else {
+            let json = try JSONSerialization.jsonObject(with: data, options: .allowFragments)
+            guard let dictionary = json as? [String: Any] else {
                 throw RequestError.invalidJSON
             }
-        }catch {
-            throw error
+            if let schema = dictionary["response"] as? Dictionary<String, Any> {
+                if let model = Mapper<T>().map(JSON: schema) {
+                    return model
+                } else {
+                    throw RequestError.parseError
+                }
+            } else {
+                print("Too many requests")
+            }
+        } catch {
+            throw RequestError.invalidJSON
         }
+        return nil
     }
     
-    func parseImage(data: Data) throws -> UIImage {
-        return UIImage(data: data)!
-        if let image =  UIImage(data: data) {
-            return image
-        } else {
+    func parse<T: Mappable>(data: Data) throws -> Array<T> {
+        do {
+            let json = try JSONSerialization.jsonObject(with: data, options: .allowFragments) as! [String: Any]
+            guard let response = json["response"] as? [String: Any] else {
+                throw RequestError.invalidJSON
+            }
+            return Mapper<T>().mapArray(JSONArray: [response])
+        } catch {
             throw RequestError.parseError
         }
     }

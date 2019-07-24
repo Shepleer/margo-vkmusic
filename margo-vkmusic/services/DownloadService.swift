@@ -20,7 +20,7 @@ class DownloadService: NSObject {
     
     let queue = DispatchQueue(label: "download_queue")
     func downloadImage(image: Image, progress: @escaping (_ progress: Float) -> (), completion: @escaping (_ image: UIImage) -> () ) {
-        queue.sync {
+        queue.async {
             let url = URL(string: image.url!)!
             let req = URLRequest(url: url)
             if let res = URLCache.shared.cachedResponse(for: req) {
@@ -38,7 +38,6 @@ class DownloadService: NSObject {
     
     func cancelDownload(image: Image) {
         queue.async {
-            print("Cancel!!!!!!")
             let url = image.url
             if let task = self.activeDownloads[url!]?.task {
                 task.cancel()
@@ -49,7 +48,6 @@ class DownloadService: NSObject {
 }
 
 extension DownloadService: URLSessionDownloadDelegate {
-    
     func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didFinishDownloadingTo location: URL) {
         do {
             let data = try Data(contentsOf: location)
@@ -59,9 +57,7 @@ extension DownloadService: URLSessionDownloadDelegate {
                 let req = downloadTask.originalRequest
                 let url = downloadTask.originalRequest?.url?.absoluteString
                 if let comp = self.activeDownloads[url!]?.completion {
-                    //if data != nil && URLCache.shared.cachedResponse(for: req!) == nil {
                     if URLCache.shared.cachedResponse(for: req!) == nil {
-                        // store the response
                         URLCache.shared.storeCachedResponse(CachedURLResponse(response: downloadTask.response!, data: data), for: req!)
                     }
                     comp(img!)
@@ -81,9 +77,5 @@ extension DownloadService: URLSessionDownloadDelegate {
                 comp(progress)
             }
         }
-    }
-    
-    func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didResumeAtOffset fileOffset: Int64, expectedTotalBytes: Int64) {
-        
     }
 }

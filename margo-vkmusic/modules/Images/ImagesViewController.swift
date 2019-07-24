@@ -13,6 +13,7 @@ protocol ImagesViewControllerProtocol: class {
     func loadAvatar(image: UIImage)
     func setFriends(friends: Int)
     func setFollowers(followers: Int)
+    func getViewModeState() -> Int
 }
 
 class ImagesViewController: UIViewController {
@@ -28,21 +29,39 @@ class ImagesViewController: UIViewController {
     @IBOutlet weak var secondHeaderView: UIView!
     @IBOutlet weak var topOffset: NSLayoutConstraint!
     @IBOutlet weak var headerView: UIView!
-    @IBOutlet weak var imageCollectionView: UICollectionView!
+
+    @IBOutlet weak var gridModeButton: UIButton!
+    @IBOutlet weak var tapeModeButton: UIButton!
+    
+    @IBOutlet weak var imageCollectionView: UICollectionView! {
+        didSet {
+            self.imageCollectionView.delegate = self
+        }
+    }
+    @IBOutlet weak var mainScrollView: UIScrollView! {
+        didSet {
+            self.mainScrollView.delegate = self
+        }
+    }
+    var flowLayout: ImagesCollectionViewFlowLayout? = nil
+    
+    var isDonwloading: Bool = false
     
     var images = [Image]()
     
-    let mainScrollView = UIScrollView()
+    
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        //presenter?.getAvatar()
         presenter?.viewDidLoad()
+        gridModeButton.setTitleColor(UIColor.black, for: .selected)
+        tapeModeButton.setTitleColor(UIColor.black, for: .selected)
         
         configureUI()
     }
     
-    func downloadImage(image: Image) {
-        //presenter?.loadImage(image: image)
+    func getViewModeState() -> Int {
+        return self.flowLayout!.cellType
     }
     
     func configureDataSource(data: Image) {
@@ -51,11 +70,33 @@ class ImagesViewController: UIViewController {
         }) {
             images[i].img = data.img
         }
-        presenter!.configureDataSource(images: images)
     }
     
     func cancellingDownload(image: Image) {
         presenter?.cancelDownload(image: image)
+    }
+    
+    @IBAction func gridModeButtonTapped(_ sender: UIButton) {
+        if flowLayout?.cellType != 0 {
+            flowLayout?.setGridView()
+            tapeModeButton.isSelected = false
+            gridModeButton.isSelected = true
+        }
+        imageCollectionView.reloadData()
+    }
+    
+    @IBAction func tapeModeButtonTapped(_ sender: UIButton) {
+        if flowLayout?.cellType != 1 {
+            flowLayout?.setTapeView()
+            tapeModeButton.isSelected = true
+            gridModeButton.isSelected = false
+        }
+    }
+    
+    func changeViewMode() {
+        flowLayout?.prepare()
+        let scrollViewContentSize = CGSize(width: view.frame.width, height: headerView.frame.height + headerViewBottom.accessibilityFrame.height + secondHeaderView.frame.height + secondHeaderBottom.accessibilityFrame.height + imageCollectionView.collectionViewLayout.collectionViewContentSize.height)
+        mainScrollView.contentSize = scrollViewContentSize
     }
 }
 
@@ -66,6 +107,7 @@ extension ImagesViewController: ImagesViewControllerProtocol {
         let scrollViewContentSize = CGSize(width: view.frame.width, height: headerView.frame.height + headerViewBottom.accessibilityFrame.height + secondHeaderView.frame.height + secondHeaderBottom.accessibilityFrame.height + imageCollectionView.collectionViewLayout.collectionViewContentSize.height)
         mainScrollView.contentSize = scrollViewContentSize
         presenter?.imagesDownloaded()
+        self.isDonwloading = false
     }
     
     func loadAvatar(image: UIImage) {
@@ -119,8 +161,9 @@ extension ImagesViewController: UIScrollViewDelegate {
             let maximumOffset = scrollView.contentSize.height
             let deltaOffset = maximumOffset - currentOffset
             
-            if deltaOffset <= endScrollRecommendedOffset {
-                presenter?.getAllPhotos()
+            if deltaOffset <= endScrollRecommendedOffset && isDonwloading == false {
+                isDonwloading = true
+                presenter?.getPhotosUrl()
             }
         }
     }
@@ -137,31 +180,27 @@ extension ImagesViewController: UICollectionViewDelegate {
         let cellIdentifier = "imgCell"
         let cell = imageCollectionView.dequeueReusableCell(withReuseIdentifier: cellIdentifier, for: indexPath) as? ImageCollectionViewCell
         let image = images[indexPath.row]
-        //let url = URL(string: (image?.url!)!)
-        cell?.data = image
         cell?.vc = self
-        cell?.configure()
+        cell?.configure(imageData: image)
         return cell!
     }
 }
 
 private extension ImagesViewController {
     func configureUI() {
+        if let layout = imageCollectionView.collectionViewLayout as? ImagesCollectionViewFlowLayout {
+            flowLayout = layout
+            flowLayout?.vc = self
+        }
         self.view.layoutIfNeeded()
         imageCollectionView.backgroundColor = UIColor.white
         mainScrollView.frame = self.view.frame
         let scrollViewContentSize = CGSize(width: view.frame.width, height: headerView.frame.height + headerViewBottom.accessibilityFrame.height + secondHeaderView.frame.height + secondHeaderBottom.accessibilityFrame.height + imageCollectionView.contentSize.height)
         mainScrollView.contentSize = scrollViewContentSize
         view.layoutIfNeeded()
-        mainScrollView.isHidden = true
         mainScrollView.contentInsetAdjustmentBehavior = .never
-        self.view.addSubview(mainScrollView)
-        let view = UIView()
-        view.frame = self.view.frame
-        view.addGestureRecognizer(mainScrollView.panGestureRecognizer)
-        self.view.addSubview(view)
+        self.view.addGestureRecognizer(mainScrollView.panGestureRecognizer)
         imageCollectionView.delegate = self
-        self.mainScrollView.delegate = self
         avatarImageView.layer.cornerRadius = avatarImageView.frame.width / 2
         avatarImageView.layer.borderColor = UIColor.darkGray.cgColor
         avatarImageView.layer.borderWidth = 4
