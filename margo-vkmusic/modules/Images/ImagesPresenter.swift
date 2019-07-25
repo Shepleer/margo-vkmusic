@@ -11,9 +11,9 @@ import UIKit
 protocol ImagePresenterProtocol {
     func viewDidLoad()
     func getPhotosUrl()
-    func loadImage(url: String, progress: @escaping (_ progress: Float) -> (), completion: @escaping (_ image: UIImage) -> ())
     func imagesDownloaded()
     func cancelDownload(image: Image)
+    func loadImage(url: String, progress: @escaping (_ progress: Float) -> (), completion: @escaping (_ image: UIImage, _ url: String) -> ())
 }
 
 class ImagePresenter: NSObject {
@@ -36,11 +36,9 @@ class ImagePresenter: NSObject {
 
 extension ImagePresenter: ImagePresenterProtocol {
     func viewDidLoad() {
-        DispatchQueue.global().async {
-            self.getAvatar()
-            self.getPhotosUrl()
-            self.getCountOfFriendsAndFolowers()
-        }
+        self.getAvatar()
+        self.getPhotosUrl()
+        self.getCountOfFriendsAndFolowers()
     }
     
     func cancelDownload(image: Image) {
@@ -48,31 +46,28 @@ extension ImagePresenter: ImagePresenterProtocol {
     }
     
     func getCountOfFriendsAndFolowers() {
-        DispatchQueue.global().async {
             self.service?.getData(urlStr: Requests.friends_get, method: .get, body: nil, headers: nil, completion: { (account: Account?, err) in
                 self.vc?.setFriends(friends: account!.followersCount!)
             })
             self.service?.getData(urlStr: Requests.users_getFollowers, method: .get, body: nil, headers: nil, completion: { (account: Account?, err) in
                 self.vc?.setFollowers(followers: account!.followersCount!)
             })
-        }
     }
     
     func imagesDownloaded() {
+        print("123412412412432123123213")
         isLoading = false
     }
     
     func getAvatar() {
         downloadService?.downloadImage(image: Image(img: nil, url: "https://pp.userapi.com/c850632/v850632368/12f83a/F_KkO78daRs.jpg"), progress: { (progress) in
-        }, completion: { (img) in
+        }, completion: { (img, url) in
             self.vc?.loadAvatar(image: img)
         })
     }
     
-    func loadImage(url: String, progress: @escaping (_ progress: Float) -> (), completion: @escaping (_ image: UIImage) -> ()) {
-        DispatchQueue.global().sync {
-            downloadService?.downloadImage(image: Image(img: nil, url: url), progress: progress, completion: completion)
-        }
+    func loadImage(url: String, progress: @escaping (_ progress: Float) -> (), completion: @escaping (_ image: UIImage, _ url: String) -> ()) {
+        downloadService?.downloadImage(image: Image(img: nil, url: url), progress: progress, completion: completion)
     }
     
     func fetchDataSource(response: Photos) {
@@ -103,13 +98,12 @@ extension ImagePresenter: ImagePresenterProtocol {
             }
             service?.getData(urlStr: url, method: .get, body: nil, headers: nil, completion: { (response: Photos?, err) in
                 if let response = response {
-                    self.fetchDataSource(response: response)
                     if state == 0 {
                         Requests.offset += 30
                     } else if state == 1 {
                         Requests.offset += 2
                     }
-                    print(Requests.offset)
+                    self.fetchDataSource(response: response)
                 } else {
                     DispatchQueue.global().asyncAfter(deadline: DispatchTime.now() + 5, execute: {
                         self.isLoading = false

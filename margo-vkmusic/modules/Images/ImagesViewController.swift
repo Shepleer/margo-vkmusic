@@ -45,8 +45,6 @@ class ImagesViewController: UIViewController {
     }
     var flowLayout: ImagesCollectionViewFlowLayout? = nil
     
-    var isDonwloading: Bool = false
-    
     var images = [Image]()
     
     
@@ -56,20 +54,11 @@ class ImagesViewController: UIViewController {
         presenter?.viewDidLoad()
         gridModeButton.setTitleColor(UIColor.black, for: .selected)
         tapeModeButton.setTitleColor(UIColor.black, for: .selected)
-        
         configureUI()
     }
     
     func getViewModeState() -> Int {
-        return self.flowLayout!.cellType
-    }
-    
-    func configureDataSource(data: Image) {
-        if let i = images.firstIndex(where: { (image) -> Bool in
-            return image.url == data.url
-        }) {
-            images[i].img = data.img
-        }
+        return self.flowLayout?.cellType ?? 0
     }
     
     func cancellingDownload(image: Image) {
@@ -91,6 +80,7 @@ class ImagesViewController: UIViewController {
             tapeModeButton.isSelected = true
             gridModeButton.isSelected = false
         }
+        imageCollectionView.reloadData()
     }
     
     func changeViewMode() {
@@ -107,7 +97,6 @@ extension ImagesViewController: ImagesViewControllerProtocol {
         let scrollViewContentSize = CGSize(width: view.frame.width, height: headerView.frame.height + headerViewBottom.accessibilityFrame.height + secondHeaderView.frame.height + secondHeaderBottom.accessibilityFrame.height + imageCollectionView.collectionViewLayout.collectionViewContentSize.height)
         mainScrollView.contentSize = scrollViewContentSize
         presenter?.imagesDownloaded()
-        self.isDonwloading = false
     }
     
     func loadAvatar(image: UIImage) {
@@ -128,7 +117,7 @@ extension ImagesViewController: ImagesViewControllerProtocol {
         }
     }
     
-    func cellIsLoading(url: String, progress: @escaping (_ progress: Float) -> (), completion: @escaping (_ image: UIImage) -> ()) {
+    func cellIsLoading(url: String, progress: @escaping (_ progress: Float) -> (), completion: @escaping (_ image: UIImage, _ url: String) -> ()) {
         presenter?.loadImage(url: url, progress: progress, completion: completion)
     }
 }
@@ -160,9 +149,7 @@ extension ImagesViewController: UIScrollViewDelegate {
             let currentOffset = scrollView.contentOffset.y + scrollView.frame.size.height
             let maximumOffset = scrollView.contentSize.height
             let deltaOffset = maximumOffset - currentOffset
-            
-            if deltaOffset <= endScrollRecommendedOffset && isDonwloading == false {
-                isDonwloading = true
+            if deltaOffset <= endScrollRecommendedOffset {
                 presenter?.getPhotosUrl()
             }
         }
@@ -177,12 +164,19 @@ extension ImagesViewController: UICollectionViewDataSource {
 
 extension ImagesViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cellIdentifier = "imgCell"
-        let cell = imageCollectionView.dequeueReusableCell(withReuseIdentifier: cellIdentifier, for: indexPath) as? ImageCollectionViewCell
+
+            let cellIdentifier = "imgCell"
+            let cell = imageCollectionView.dequeueReusableCell(withReuseIdentifier: cellIdentifier, for: indexPath) as? ImageCollectionViewCell
+            let image = images[indexPath.row]
+            cell?.vc = self
+            //cell?.configure(imageData: image)
+            return cell!
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
         let image = images[indexPath.row]
-        cell?.vc = self
-        cell?.configure(imageData: image)
-        return cell!
+        let cell = cell as! ImageCollectionViewCell
+        cell.configure(imageData: image)
     }
 }
 
@@ -192,12 +186,11 @@ private extension ImagesViewController {
             flowLayout = layout
             flowLayout?.vc = self
         }
-        self.view.layoutIfNeeded()
         imageCollectionView.backgroundColor = UIColor.white
         mainScrollView.frame = self.view.frame
         let scrollViewContentSize = CGSize(width: view.frame.width, height: headerView.frame.height + headerViewBottom.accessibilityFrame.height + secondHeaderView.frame.height + secondHeaderBottom.accessibilityFrame.height + imageCollectionView.contentSize.height)
         mainScrollView.contentSize = scrollViewContentSize
-        view.layoutIfNeeded()
+        //view.layoutIfNeeded()
         mainScrollView.contentInsetAdjustmentBehavior = .never
         self.view.addGestureRecognizer(mainScrollView.panGestureRecognizer)
         imageCollectionView.delegate = self

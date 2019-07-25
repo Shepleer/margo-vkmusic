@@ -17,57 +17,53 @@ class ImageCollectionViewCell: UICollectionViewCell {
     var vc: ImagesViewController?
     var progress: LoadingProgress?
     var completion: LoadingCompletion?
-    var data: Image?
+    var data: Image? = nil
     let placeholder = UIImage(named: "placeholder")
     var isLoaded = false
     
     override func awakeFromNib() {
+        progressIndicatorView.progressColor = UIColor.black
+        progressIndicatorView.backgroundColor = UIColor(white: 0, alpha: 0)
+        imageView.image = placeholder
     }
 
     func configure(imageData: Image) {
-        guard data?.url != imageData.url else {
+        guard imageData.url != data?.url else {
             return
         }
+        
         self.data = imageData
         imageView.image = placeholder
-        progressIndicatorView.progressColor = UIColor.black
-        progressIndicatorView.backgroundColor = UIColor(white: 0, alpha: 0)
-        //if data?.img != nil {
-        //    progressIndicatorView.isHidden = true
-        //    imageView.image = data?.img
         
-        progressIndicatorView.isHidden = false
-        loadImage(url: self.data!.url!, progress: { (progress) in
-            DispatchQueue.main.async {
+        progressIndicatorView.isHidden = true
+        loadImage(url: imageData.url!, progress: { (progress) in
                 self.updateProgressView(progress: progress)
-            }
-        }) { (img) in
+        }) { (img, url) in
             DispatchQueue.main.async {
-                self.isLoaded = true
-                self.progressIndicatorView.isHidden = true
-                self.imageView.image = img
+                if url == self.data?.url {
+                    self.isLoaded = true
+                    self.progressIndicatorView.isHidden = true
+                    self.imageView.image = img
+                }
             }
         }
     }
     
-    func loadImage(url: String, progress: @escaping (_ progress: Float) -> (), completion: @escaping (_ image: UIImage) -> ()) {
-        DispatchQueue.global().sync {
-            isLoaded = false
-            self.vc?.cellIsLoading(url: url, progress: progress, completion: completion)
-        }
+    func loadImage(url: String, progress: @escaping (_ progress: Float) -> (), completion: @escaping (_ image: UIImage, _ url: String) -> ()) {
+        isLoaded = false
+        self.vc?.cellIsLoading(url: url, progress: progress, completion: completion)
     }
     
     func updateProgressView(progress: Float) {
-        DispatchQueue.main.async {
             if progress == 1.0 { self.isLoaded = true }
             if self.isLoaded == false {
                 self.isLoaded = false
                 self.progressIndicatorView.setProgressWithAnimation(duration: 1, value: progress)
             }
-        }
     }
     
     override func prepareForReuse() {
         progressIndicatorView.isHidden = true
+        //imageView.image = placeholder
     }
 }

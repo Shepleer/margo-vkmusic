@@ -10,7 +10,6 @@ import UIKit
 
 
 class Builder {
-    
     static let shared = Builder()
     private init(){}
     
@@ -65,6 +64,4 @@ class Builder {
         presenter.downloadService = downloadService
         return vc
     }
-    
-    
 }

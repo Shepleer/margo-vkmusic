@@ -10,7 +10,7 @@ import UIKit
 
 class DownloadService: NSObject {
     
-    typealias Completion = ((_ download: UIImage) -> ())
+    typealias Completion = ((_ download: UIImage, _ url: String) -> ())
     typealias Update = ((_ progress: Float) -> ())
     typealias Task = URLSessionDownloadTask
     typealias third = (completion: Completion, progress: Update, task: Task)
@@ -19,18 +19,18 @@ class DownloadService: NSObject {
     var session: URLSession? = nil
     
     let queue = DispatchQueue(label: "download_queue")
-    func downloadImage(image: Image, progress: @escaping (_ progress: Float) -> (), completion: @escaping (_ image: UIImage) -> () ) {
-        queue.async {
+    func downloadImage(image: Image, progress: @escaping (_ progress: Float) -> (), completion: @escaping (_ image: UIImage, _ url: String) -> () ) {
+        queue.async { [weak self] in
             let url = URL(string: image.url!)!
             let req = URLRequest(url: url)
             if let res = URLCache.shared.cachedResponse(for: req) {
                 let data = res.data
                 let img = UIImage(data: data)
-                completion(img!)
+                completion(img!, url.absoluteString)
             } else {
                 let strUrl = image.url!
-                let task = self.session?.downloadTask(with: url)
-                self.activeDownloads[strUrl] = (completion, progress, task) as! (DownloadService.Completion, DownloadService.Update, DownloadService.Task)
+                let task = self!.session?.downloadTask(with: url)
+                self!.activeDownloads[strUrl] = (completion, progress, task) as! (DownloadService.Completion, DownloadService.Update, DownloadService.Task)
                 task!.resume()
             }
         }
@@ -60,7 +60,9 @@ extension DownloadService: URLSessionDownloadDelegate {
                     if URLCache.shared.cachedResponse(for: req!) == nil {
                         URLCache.shared.storeCachedResponse(CachedURLResponse(response: downloadTask.response!, data: data), for: req!)
                     }
-                    comp(img!)
+                    DispatchQueue.main.async {
+                        comp(img!, url!)
+                    }
                     self.activeDownloads[url!] = nil
                 }
             }
@@ -74,7 +76,9 @@ extension DownloadService: URLSessionDownloadDelegate {
         let progress = Float(totalBytesWritten)/Float(totalBytesExpectedToWrite)
         let url = downloadTask.originalRequest?.url
             if let comp = self.activeDownloads[(url?.absoluteString)!]?.progress {
-                comp(progress)
+                DispatchQueue.main.async {
+                    comp(progress)
+                }
             }
         }
     }
