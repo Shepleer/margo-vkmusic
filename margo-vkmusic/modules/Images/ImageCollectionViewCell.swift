@@ -10,10 +10,14 @@ import UIKit
 
 class ImageCollectionViewCell: UICollectionViewCell {
     
+    
+    
     @IBOutlet weak var progressIndicatorView: ProgressIndicatorView!
     @IBOutlet weak var imageView: UIImageView!
+    
     public typealias LoadingProgress = ((_ progress: Float) -> ())
     public typealias LoadingCompletion = ((_ image: UIImage) -> ())
+    
     var vc: ImagesViewController?
     var progress: LoadingProgress?
     var completion: LoadingCompletion?
@@ -24,26 +28,26 @@ class ImageCollectionViewCell: UICollectionViewCell {
     override func awakeFromNib() {
         progressIndicatorView.progressColor = UIColor.black
         progressIndicatorView.backgroundColor = UIColor(white: 0, alpha: 0)
-        imageView.image = placeholder
     }
-
+    
     func configure(imageData: Image) {
         guard imageData.url != data?.url else {
             return
         }
-        
         self.data = imageData
         imageView.image = placeholder
         
-        progressIndicatorView.isHidden = true
+        progressIndicatorView.isHidden = false
         loadImage(url: imageData.url!, progress: { (progress) in
+            DispatchQueue.main.async {
                 self.updateProgressView(progress: progress)
+            }
         }) { (img, url) in
             DispatchQueue.main.async {
                 if url == self.data?.url {
                     self.isLoaded = true
-                    self.progressIndicatorView.isHidden = true
                     self.imageView.image = img
+                    self.progressIndicatorView.isHidden = true
                 }
             }
         }
@@ -55,15 +59,15 @@ class ImageCollectionViewCell: UICollectionViewCell {
     }
     
     func updateProgressView(progress: Float) {
-            if progress == 1.0 { self.isLoaded = true }
-            if self.isLoaded == false {
-                self.isLoaded = false
-                self.progressIndicatorView.setProgressWithAnimation(duration: 1, value: progress)
-            }
+        if progress == 1.0 { self.isLoaded = true }
+        if self.isLoaded == false {
+            self.isLoaded = false
+            self.progressIndicatorView.setProgressWithAnimation(duration: 1, value: progress)
+        }
     }
     
     override func prepareForReuse() {
         progressIndicatorView.isHidden = true
-        //imageView.image = placeholder
+        imageView.image = placeholder
     }
 }

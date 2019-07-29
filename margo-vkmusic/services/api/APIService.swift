@@ -45,23 +45,24 @@ class APIService: APIServiceProtocol {
     let queue = DispatchQueue.global(qos: .background)
     func getData<T: Mappable>(urlStr: String, method: requestMethod, body: Dictionary<String, Any>? = nil,
                               headers: Dictionary<String, String>? = nil, completion: @escaping (_ outArray: T?, _ error: Error?) -> ()) {
-        queue.async {
+        queue.async { [weak self] in
             var req: URLRequest?
             do {
-                req = try (self.builder?.build(url: urlStr, method: method, body, headers))!
+                req = try (self!.builder?.build(url: urlStr, method: method, body, headers))!
             } catch {
                 completion(nil, error)
                 return
             }
-            self.runner?.run(request: req!, completion: { (data, error) in
+            self!.runner?.run(request: req!, completion: { (data, error) in
                 if let error = error {
                     completion(nil, error)
                     return
                 }
                 do {
-                    let response: T = try (self.parser?.parse(data: data!))!
-                    DispatchQueue.main.async {
-                        completion(response, nil)
+                    if let response: T = try (self!.parser?.parse(data: data!)) {
+                        DispatchQueue.main.async {
+                            completion(response, nil)
+                        }
                     }
                 } catch {
                     DispatchQueue.main.async {
@@ -74,21 +75,21 @@ class APIService: APIServiceProtocol {
     
     func getData<T: Mappable>(urlStr: String, method: requestMethod, body: Dictionary<String, Any>? = nil,
                               headers: Dictionary<String, String>? = nil, completion: @escaping (_ outArray: [T]?, _ error: Error?) -> ()) {
-        queue.async {
+        queue.async { [weak self] in
             var req: URLRequest?
             do {
-                req = try (self.builder?.build(url: urlStr, method: method, body, headers))!
+                req = try (self!.builder?.build(url: urlStr, method: method, body, headers))!
             } catch {
                 completion(nil, error)
                 return
             }
-            self.runner?.run(request: req!, completion: { (data, error) in
+            self!.runner?.run(request: req!, completion: { (data, error) in
                 if let error = error {
                     completion(nil, error)
                     return
                 }
                 do {
-                    let response: [T] = try (self.parser?.parse(data: data!))!
+                    let response: [T] = try (self!.parser?.parse(data: data!))!
                     DispatchQueue.main.async {
                         completion(response, nil)
                     }

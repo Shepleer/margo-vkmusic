@@ -20,6 +20,7 @@ class ImagePresenter: NSObject {
     weak var vc: ImagesViewControllerProtocol?
     var service: APIServiceProtocol?
     var downloadService: DownloadService?
+    var router: ImagesRouterProtocol?
     var images = [Image]()
     var isLoading = false
     
@@ -30,7 +31,7 @@ class ImagePresenter: NSObject {
         static let friends_get = "https://api.vk.com/method/friends.get?user_id=32707600&access_token=\(token)&v=5.101"
         static let users_getFollowers = "https://api.vk.com/method/users.getFollowers?user_id=32707600&access_token=\(token)&v=5.101"
         static let photos_getAll = "https://api.vk.com/method/photos.getAll?owner_id=32707600&access_token=\(token)&v=5.101"
-        static let getAvatar = "https://sun2.beltelecom-by-minsk.userapi.com/c854216/v854216577/5f240/WIjKqVUoAuU.jpg"
+        static let avatarUrl = "https://pp.userapi.com/c850632/v850632368/12f83a/F_KkO78daRs.jpg"
     }
 }
 
@@ -45,45 +46,12 @@ extension ImagePresenter: ImagePresenterProtocol {
         downloadService?.cancelDownload(image: image)
     }
     
-    func getCountOfFriendsAndFolowers() {
-            self.service?.getData(urlStr: Requests.friends_get, method: .get, body: nil, headers: nil, completion: { (account: Account?, err) in
-                self.vc?.setFriends(friends: account!.followersCount!)
-            })
-            self.service?.getData(urlStr: Requests.users_getFollowers, method: .get, body: nil, headers: nil, completion: { (account: Account?, err) in
-                self.vc?.setFollowers(followers: account!.followersCount!)
-            })
-    }
-    
     func imagesDownloaded() {
-        print("123412412412432123123213")
         isLoading = false
-    }
-    
-    func getAvatar() {
-        downloadService?.downloadImage(image: Image(img: nil, url: "https://pp.userapi.com/c850632/v850632368/12f83a/F_KkO78daRs.jpg"), progress: { (progress) in
-        }, completion: { (img, url) in
-            self.vc?.loadAvatar(image: img)
-        })
     }
     
     func loadImage(url: String, progress: @escaping (_ progress: Float) -> (), completion: @escaping (_ image: UIImage, _ url: String) -> ()) {
         downloadService?.downloadImage(image: Image(img: nil, url: url), progress: progress, completion: completion)
-    }
-    
-    func fetchDataSource(response: Photos) {
-        if let items = response.items {
-            for item in items {
-                if let sizes = item.sizes {
-                    for size in sizes {
-                        if size.type == "z" {
-                            images.append(Image(img: nil, url: size.url))
-                            break
-                        }
-                    }
-                }
-            }
-        vc?.configureWithPhotos(images: images)
-        }
     }
     
     func getPhotosUrl() {
@@ -111,6 +79,41 @@ extension ImagePresenter: ImagePresenterProtocol {
                     })
                 }
             })
+        }
+    }
+}
+
+private extension ImagePresenter {
+    func getCountOfFriendsAndFolowers() {
+        self.service?.getData(urlStr: Requests.friends_get, method: .get, body: nil, headers: nil, completion: { (account: Account?, err) in
+            self.vc?.setFriends(friends: account!.followersCount!)
+        })
+        
+        self.service?.getData(urlStr: Requests.users_getFollowers, method: .get, body: nil, headers: nil, completion: { (account: Account?, err) in
+            self.vc?.setFollowers(followers: account!.followersCount!)
+        })
+    }
+    
+    func getAvatar() {
+        downloadService?.downloadImage(image: Image(img: nil, url: Requests.avatarUrl), progress: { (progress) in
+        }, completion: { (img, url) in
+            self.vc?.loadAvatar(image: img)
+        })
+    }
+    
+    func fetchDataSource(response: Photos) {
+        if let items = response.items {
+            for item in items {
+                if let sizes = item.sizes {
+                    for size in sizes {
+                        //if size.type == "z" {
+                        images.append(Image(img: nil, url: size.url))
+                        break
+                        //}
+                    }
+                }
+            }
+            vc?.configureWithPhotos(images: images)
         }
     }
 }

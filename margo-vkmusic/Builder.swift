@@ -11,9 +11,9 @@ import UIKit
 
 class Builder {
     static let shared = Builder()
-    private init(){}
+    private init() {}
     
-    func BuildLogInScreen() -> UIViewController {
+    func buildLogInScreen() -> UIViewController {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         let vc = storyboard.instantiateViewController(withIdentifier: "LogInVC") as! LogInViewController
         let nav = UINavigationController(rootViewController: vc)
@@ -26,7 +26,7 @@ class Builder {
         return nav
     }
     
-    func BuildConformWebView() -> UIViewController {
+    func buildConformWebView() -> UIViewController {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         let vc = storyboard.instantiateViewController(withIdentifier: "WebVC") as! ConformViewController
         let presenter = ConformPresenter()
@@ -37,7 +37,7 @@ class Builder {
         return vc
     }
     
-    func BuildAPIService() -> APIService {
+    func buildAPIService() -> APIService {
         let manager = APIService()
         let builder = APIBuilder()
         let parser = APIParser()
@@ -48,20 +48,28 @@ class Builder {
         return manager
     }
     
-    func createMusicPlayerVC() -> UIViewController {
-        let storyboard = UIStoryboard(name: "Main", bundle: nil)
-        let vc = storyboard.instantiateViewController(withIdentifier: "ImagesVC") as! ImagesViewController
-        let service = BuildAPIService()
-        let presenter = ImagePresenter()
+    func buildDownloadService() -> DownloadService {
         let downloadService = DownloadService()
         let configuration = URLSessionConfiguration.default
         configuration.urlCache = URLCache.shared
         configuration.requestCachePolicy = .useProtocolCachePolicy
         downloadService.session = URLSession(configuration: .default, delegate: downloadService, delegateQueue: nil)
+        return downloadService
+    }
+    
+    func createMusicPlayerVC() -> UIViewController {
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        let vc = storyboard.instantiateViewController(withIdentifier: "ImagesVC") as! ImagesViewController
+        let nav = UINavigationController(rootViewController: vc)
+        let service = buildAPIService()
+        let presenter = ImagePresenter()
+        let router = ImagesRouter()
+        let downloadService = buildDownloadService()
         vc.presenter = presenter
         presenter.vc = vc
+        presenter.router = router
         presenter.service = service
         presenter.downloadService = downloadService
-        return vc
+        return nav
     }
 }

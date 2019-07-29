@@ -18,7 +18,7 @@ class LogInRouter {
 
 extension LogInRouter: LogInRouterProtocol {
     func presentWebView() {
-        let module = Builder.shared.BuildConformWebView()
+        let module = Builder.shared.buildConformWebView()
         vc?.navigationController?.pushViewController(module, animated: true)
     }
 }

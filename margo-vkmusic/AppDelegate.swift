@@ -21,9 +21,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let presentTime = NSTimeIntervalSince1970
         if UserDefaults.standard.string(forKey: "accessToken") != nil && tokenEndDate > presentTime{
             rootVC = Builder.shared.createMusicPlayerVC()
-            //rootVC = Builder.shared.BuildLogInScreen()
+            //rootVC = Builder.shared.buildLogInScreen()
         } else {
-            rootVC = Builder.shared.BuildLogInScreen()
+            rootVC = Builder.shared.buildLogInScreen()
         }
         window?.rootViewController = rootVC
         window?.makeKeyAndVisible()

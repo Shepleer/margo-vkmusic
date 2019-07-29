@@ -19,8 +19,9 @@ protocol ImagesViewControllerProtocol: class {
 class ImagesViewController: UIViewController {
     
     var presenter: ImagePresenterProtocol?
+    var flowLayout: ImagesCollectionViewFlowLayout? = nil
+    var images = [Image]()
     
-    @IBOutlet weak var headerHeight: NSLayoutConstraint!
     @IBOutlet weak var headerViewBottom: NSLayoutConstraint!
     @IBOutlet weak var secondHeaderBottom: NSLayoutConstraint!
     @IBOutlet weak var followersCountLabel: UILabel!
@@ -29,7 +30,6 @@ class ImagesViewController: UIViewController {
     @IBOutlet weak var secondHeaderView: UIView!
     @IBOutlet weak var topOffset: NSLayoutConstraint!
     @IBOutlet weak var headerView: UIView!
-
     @IBOutlet weak var gridModeButton: UIButton!
     @IBOutlet weak var tapeModeButton: UIButton!
     
@@ -43,17 +43,10 @@ class ImagesViewController: UIViewController {
             self.mainScrollView.delegate = self
         }
     }
-    var flowLayout: ImagesCollectionViewFlowLayout? = nil
-    
-    var images = [Image]()
-    
-    
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
         presenter?.viewDidLoad()
-        gridModeButton.setTitleColor(UIColor.black, for: .selected)
-        tapeModeButton.setTitleColor(UIColor.black, for: .selected)
         configureUI()
     }
     
@@ -66,21 +59,11 @@ class ImagesViewController: UIViewController {
     }
     
     @IBAction func gridModeButtonTapped(_ sender: UIButton) {
-        if flowLayout?.cellType != 0 {
-            flowLayout?.setGridView()
-            tapeModeButton.isSelected = false
-            gridModeButton.isSelected = true
-        }
-        imageCollectionView.reloadData()
+        setGridMode()
     }
     
     @IBAction func tapeModeButtonTapped(_ sender: UIButton) {
-        if flowLayout?.cellType != 1 {
-            flowLayout?.setTapeView()
-            tapeModeButton.isSelected = true
-            gridModeButton.isSelected = false
-        }
-        imageCollectionView.reloadData()
+        setTapeMode()
     }
     
     func changeViewMode() {
@@ -93,7 +76,7 @@ class ImagesViewController: UIViewController {
 extension ImagesViewController: ImagesViewControllerProtocol {    
     func configureWithPhotos(images: [Image]) {
         self.images = images
-        imageCollectionView.reloadData()
+        imageCollectionView.reloadSections(IndexSet(integersIn: 0...0))
         let scrollViewContentSize = CGSize(width: view.frame.width, height: headerView.frame.height + headerViewBottom.accessibilityFrame.height + secondHeaderView.frame.height + secondHeaderBottom.accessibilityFrame.height + imageCollectionView.collectionViewLayout.collectionViewContentSize.height)
         mainScrollView.contentSize = scrollViewContentSize
         presenter?.imagesDownloaded()
@@ -164,13 +147,12 @@ extension ImagesViewController: UICollectionViewDataSource {
 
 extension ImagesViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-
-            let cellIdentifier = "imgCell"
-            let cell = imageCollectionView.dequeueReusableCell(withReuseIdentifier: cellIdentifier, for: indexPath) as? ImageCollectionViewCell
-            let image = images[indexPath.row]
-            cell?.vc = self
-            //cell?.configure(imageData: image)
-            return cell!
+        let cellIdentifier = "imgCell"
+        let cell = imageCollectionView.dequeueReusableCell(withReuseIdentifier: cellIdentifier, for: indexPath) as? ImageCollectionViewCell
+        //let image = images[indexPath.row]
+        cell?.vc = self
+        //cell?.configure(imageData: image)
+        return cell!
     }
     
     func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
@@ -178,10 +160,21 @@ extension ImagesViewController: UICollectionViewDelegate {
         let cell = cell as! ImageCollectionViewCell
         cell.configure(imageData: image)
     }
+    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        setTapeMode()
+        if let center = imageCollectionView.layoutAttributesForItem(at: indexPath)?.center {
+            mainScrollView.setContentOffset(CGPoint(x: 0, y: center.y - headerView.frame.height - secondHeaderView.frame.height), animated: false)
+        }
+    }
 }
 
 private extension ImagesViewController {
     func configureUI() {
+        self.navigationController?.isNavigationBarHidden = true
+        gridModeButton.setTitleColor(UIColor.black, for: .selected)
+        tapeModeButton.setTitleColor(UIColor.black, for: .selected)
+        gridModeButton.isSelected = true
         if let layout = imageCollectionView.collectionViewLayout as? ImagesCollectionViewFlowLayout {
             flowLayout = layout
             flowLayout?.vc = self
@@ -190,7 +183,6 @@ private extension ImagesViewController {
         mainScrollView.frame = self.view.frame
         let scrollViewContentSize = CGSize(width: view.frame.width, height: headerView.frame.height + headerViewBottom.accessibilityFrame.height + secondHeaderView.frame.height + secondHeaderBottom.accessibilityFrame.height + imageCollectionView.contentSize.height)
         mainScrollView.contentSize = scrollViewContentSize
-        //view.layoutIfNeeded()
         mainScrollView.contentInsetAdjustmentBehavior = .never
         self.view.addGestureRecognizer(mainScrollView.panGestureRecognizer)
         imageCollectionView.delegate = self
@@ -200,5 +192,21 @@ private extension ImagesViewController {
         avatarImageView.layer.shadowRadius = 10
         imageCollectionView.backgroundColor = UIColor(white: 1, alpha: 0)
         self.view.setGradientBackground(firstColor: UIColor.darkGray, secondColor: UIColor.lightGray)
+    }
+    
+    func setGridMode() {
+        if flowLayout?.cellType != 0 {
+            flowLayout?.setGridView()
+            tapeModeButton.isSelected = false
+            gridModeButton.isSelected = true
+        }
+    }
+    
+    func setTapeMode() {
+        if flowLayout?.cellType != 1 {
+            flowLayout?.setTapeView()
+            tapeModeButton.isSelected = true
+            gridModeButton.isSelected = false
+        }
     }
 }

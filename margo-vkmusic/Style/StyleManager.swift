@@ -6,6 +6,7 @@
 //  Copyright © 2019 Ivan Shpileuski. All rights reserved.
 //
 
-import Foundation
+//MARK: FUTURE
 
+import Foundation
 

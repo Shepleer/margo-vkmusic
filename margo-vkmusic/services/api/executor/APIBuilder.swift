@@ -31,7 +31,7 @@ class APIBuilder: APIBuilderProtocol {
                 }
             }
             if let headers = headers {
-                headers.map { (key: String, value: String) -> () in
+                _ = headers.map { (key: String, value: String) -> () in
                     req.addValue(value, forHTTPHeaderField: key)
                 }
             }
