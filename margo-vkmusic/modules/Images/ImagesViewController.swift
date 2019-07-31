@@ -14,6 +14,7 @@ protocol ImagesViewControllerProtocol: class {
     func setFriends(friends: Int)
     func setFollowers(followers: Int)
     func getViewModeState() -> Int
+    func setProfileInformation(profile: ProfileInfo)
 }
 
 class ImagesViewController: UIViewController {
@@ -21,6 +22,9 @@ class ImagesViewController: UIViewController {
     var presenter: ImagePresenterProtocol?
     var flowLayout: ImagesCollectionViewFlowLayout? = nil
     var images = [Image]()
+    var profile: ProfileInfo? = nil
+    var avatarImage: UIImage? = nil
+    
     
     @IBOutlet weak var headerViewBottom: NSLayoutConstraint!
     @IBOutlet weak var secondHeaderBottom: NSLayoutConstraint!
@@ -85,6 +89,7 @@ extension ImagesViewController: ImagesViewControllerProtocol {
     func loadAvatar(image: UIImage) {
         DispatchQueue.main.async {
             self.avatarImageView.image = image
+            self.avatarImage = image
         }
     }
     
@@ -102,6 +107,31 @@ extension ImagesViewController: ImagesViewControllerProtocol {
     
     func cellIsLoading(url: String, progress: @escaping (_ progress: Float) -> (), completion: @escaping (_ image: UIImage, _ url: String) -> ()) {
         presenter?.loadImage(url: url, progress: progress, completion: completion)
+    }
+    
+    func setProfileInformation(profile: ProfileInfo) {
+        self.profile = profile
+    }
+    
+    func loadProfileInformation(setAvatar: (_ avatar: UIImage) -> (), setName: (_ label: String) -> ()) {
+        if let img = avatarImageView.image {
+            setAvatar(img)
+        }
+        if let nickname = profile?.screenName {
+            setName(nickname)
+            return
+        }
+        if let firstName = profile?.firstName {
+            setName(firstName)
+        }
+    }
+    
+    func checkLikesCount(photo: Image, completion: @escaping (_ likes: Int, _ isLikeSet: Bool) -> ()) {
+        
+    }
+    
+    func setLike(photo: Image) {
+        presenter?.setLike(photo: photo)
     }
 }
 
@@ -143,22 +173,37 @@ extension ImagesViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return images.count
     }
+    
+    func numberOfSections(in collectionView: UICollectionView) -> Int {
+        return 1
+    }
 }
 
 extension ImagesViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cellIdentifier = "imgCell"
-        let cell = imageCollectionView.dequeueReusableCell(withReuseIdentifier: cellIdentifier, for: indexPath) as? ImageCollectionViewCell
-        //let image = images[indexPath.row]
-        cell?.vc = self
-        //cell?.configure(imageData: image)
-        return cell!
+        let tapeCellIdentifier = "bigCell"
+        if flowLayout?.cellType == 0 {
+            let cell = imageCollectionView.dequeueReusableCell(withReuseIdentifier: cellIdentifier, for: indexPath) as? ImageCollectionViewCell
+            cell?.vc = self
+            return cell!
+        } else if flowLayout?.cellType == 1 {
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: tapeCellIdentifier, for: indexPath) as? TapeCollectionViewCell
+            cell?.vc = self
+            return cell!
+        }
+        return UICollectionViewCell(frame: .null)
     }
     
     func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
         let image = images[indexPath.row]
-        let cell = cell as! ImageCollectionViewCell
-        cell.configure(imageData: image)
+        if flowLayout?.cellType == 0 {
+            let cell = cell as! ImageCollectionViewCell
+            cell.configure(imageData: image)
+        } else if flowLayout?.cellType == 1 {
+            let cell = cell as! TapeCollectionViewCell
+            cell.configure(imageData: image)
+        }
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
@@ -199,6 +244,7 @@ private extension ImagesViewController {
             flowLayout?.setGridView()
             tapeModeButton.isSelected = false
             gridModeButton.isSelected = true
+            imageCollectionView.reloadSections(IndexSet(integersIn: 0...0))
         }
     }
     
@@ -207,6 +253,7 @@ private extension ImagesViewController {
             flowLayout?.setTapeView()
             tapeModeButton.isSelected = true
             gridModeButton.isSelected = false
+            imageCollectionView.reloadSections(IndexSet(integersIn: 0...0))
         }
     }
 }

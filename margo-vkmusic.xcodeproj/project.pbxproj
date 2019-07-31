@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2C15547622F055FE00E1A6E1 /* TapeCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C15547422F055FE00E1A6E1 /* TapeCollectionViewCell.swift */; };
+		2C15547922F097F200E1A6E1 /* Like.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C15547822F097F200E1A6E1 /* Like.swift */; };
 		2C1B93D122CB7D9000209DEB /* LogInRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C1B93D022CB7D9000209DEB /* LogInRouter.swift */; };
 		2C1B93D322CB816900209DEB /* ConformViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C1B93D222CB816900209DEB /* ConformViewController.swift */; };
 		2C1B93D522CB819600209DEB /* ConformPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C1B93D422CB819600209DEB /* ConformPresenter.swift */; };
@@ -40,6 +42,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		2C15547422F055FE00E1A6E1 /* TapeCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TapeCollectionViewCell.swift; sourceTree = "<group>"; };
+		2C15547822F097F200E1A6E1 /* Like.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Like.swift; sourceTree = "<group>"; };
 		2C174B9622D5F3AA0042FAF0 /* margo-vkmusic.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "margo-vkmusic.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		2C1B93D022CB7D9000209DEB /* LogInRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogInRouter.swift; sourceTree = "<group>"; };
 		2C1B93D222CB816900209DEB /* ConformViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConformViewController.swift; sourceTree = "<group>"; };
@@ -103,6 +107,7 @@
 			children = (
 				2C1B93DA22CBA69900209DEB /* ImagesViewController.swift */,
 				2C39810922CE0FE00042B1AE /* ImageCollectionViewCell.swift */,
+				2C15547422F055FE00E1A6E1 /* TapeCollectionViewCell.swift */,
 				2C23309222D499CB004F2B2E /* ImagesCollectionViewFlowLayout.swift */,
 				2C384B6D22E0DF8900DEBBAB /* ProgressIndicatorView.swift */,
 				2C39810B22CE10340042B1AE /* ImagesPresenter.swift */,
@@ -167,6 +172,7 @@
 			children = (
 				2C4690E122CA2FB60026C508 /* Account.swift */,
 				2C39810D22CE103F0042B1AE /* Image.swift */,
+				2C15547822F097F200E1A6E1 /* Like.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -330,12 +336,14 @@
 				2C1EA69E22CA084F009C27E2 /* margo_telegram.xcdatamodeld in Sources */,
 				2C4690E222CA2FB60026C508 /* Account.swift in Sources */,
 				2C39810E22CE103F0042B1AE /* Image.swift in Sources */,
+				2C15547622F055FE00E1A6E1 /* TapeCollectionViewCell.swift in Sources */,
 				2C1B93DB22CBA69900209DEB /* ImagesViewController.swift in Sources */,
 				2CB3C36C22DE06B700D58C9D /* DownloadService.swift in Sources */,
 				2C4690F822CA4C2B0026C508 /* Builder.swift in Sources */,
 				2C1E7F7222EEEEDB0002A863 /* ImagesRouter.swift in Sources */,
 				2C1B93D822CBA5C300209DEB /* ConformRouter.swift in Sources */,
 				2C4690F222CA47F50026C508 /* APIService.swift in Sources */,
+				2C15547922F097F200E1A6E1 /* Like.swift in Sources */,
 				2C4690F522CA47F50026C508 /* APIBuilder.swift in Sources */,
 				2C4690E422CA331B0026C508 /* StyleManager.swift in Sources */,
 				2C23309322D499CB004F2B2E /* ImagesCollectionViewFlowLayout.swift in Sources */,

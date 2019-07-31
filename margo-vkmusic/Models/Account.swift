@@ -22,3 +22,23 @@ extension Account: Mappable {
         self.followersCount <- (map["count"])
     }
 }
+
+struct ProfileInfo {
+    var firstName: String?
+    var lastName: String?
+    var screenName: String?
+    var homeTown: String?
+}
+
+extension ProfileInfo: Mappable {
+    init?(map: Map) {
+        mapping(map: map)
+    }
+    
+    mutating func mapping(map: Map) {
+        self.firstName <- (map["first_name"])
+        self.lastName <- (map["last_name"])
+        self.screenName <- (map["screen_name"])
+        self.homeTown <- (map["home_town"])
+    }
+}

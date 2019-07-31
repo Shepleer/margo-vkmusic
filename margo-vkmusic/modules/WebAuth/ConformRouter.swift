@@ -14,7 +14,7 @@ protocol ConformRouterProtocol {
 
 class ConformRouter: ConformRouterProtocol {
     func moveToMainVC() {
-        let vc = Builder.shared.createMusicPlayerVC()
+        let vc = Builder.shared.createGalleryVC()
         let window = UIApplication.shared.keyWindow
         let rootViewController = window?.rootViewController
         vc.view.frame = (rootViewController?.view.frame)!

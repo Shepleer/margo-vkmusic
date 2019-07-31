@@ -20,8 +20,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let tokenEndDate = UserDefaults.standard.double(forKey: "lifetime")
         let presentTime = NSTimeIntervalSince1970
         if UserDefaults.standard.string(forKey: "accessToken") != nil && tokenEndDate > presentTime{
-            rootVC = Builder.shared.createMusicPlayerVC()
-            //rootVC = Builder.shared.buildLogInScreen()
+            rootVC = Builder.shared.buildLogInScreen()
         } else {
             rootVC = Builder.shared.buildLogInScreen()
         }

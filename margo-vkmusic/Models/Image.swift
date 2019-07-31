@@ -27,6 +27,7 @@ extension Photos: Mappable {
 
 struct Item {
     var id: Int?
+    var ownerId: Int?
     var sizes: [Size]?
 }
 
@@ -36,6 +37,7 @@ extension Item: Mappable {
     }
     
     mutating func mapping(map: Map) {
+        ownerId <- (map["owner_id"])
         id <- (map["id"])
         sizes <- (map["sizes"])
     }
@@ -60,5 +62,7 @@ extension Size: Mappable {
 struct Image {
     var img: UIImage?
     var url: String?
+    var id: Int?
+    var ownerId: Int?
 }
 

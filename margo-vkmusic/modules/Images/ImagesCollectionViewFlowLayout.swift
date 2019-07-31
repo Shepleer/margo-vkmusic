@@ -9,7 +9,7 @@
 import UIKit
 
 class ImagesCollectionViewFlowLayout: UICollectionViewFlowLayout {
-    var cellType: Int = 0
+    var cellType: Int = 1
     weak var vc: ImagesViewController?
 }
 
@@ -25,11 +25,12 @@ extension ImagesCollectionViewFlowLayout {
             self.minimumLineSpacing = 1
             self.minimumInteritemSpacing = 1
         } else if cellType == 1 {
-            self.itemSize = CGSize(width: (collectionView?.frame.width)!, height: 650)
+            self.itemSize = CGSize(width: (collectionView?.frame.width)!, height: 500)
             self.sectionInset = UIEdgeInsets(top: self.minimumInteritemSpacing, left: 0.0, bottom: 0.0, right: 0.0)
             self.sectionInsetReference = .fromSafeArea
             self.minimumInteritemSpacing = 1
             self.minimumLineSpacing = 1
+            
         }
     }
     

@@ -57,7 +57,7 @@ class Builder {
         return downloadService
     }
     
-    func createMusicPlayerVC() -> UIViewController {
+    func createGalleryVC() -> UIViewController {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         let vc = storyboard.instantiateViewController(withIdentifier: "ImagesVC") as! ImagesViewController
         let nav = UINavigationController(rootViewController: vc)

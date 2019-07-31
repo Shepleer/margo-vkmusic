@@ -1,17 +1,20 @@
 //
-//  ImageCollectionViewCell.swift
+//  CollectionViewCell.swift
 //  margo-vkmusic
 //
-//  Created by Ivan Shpileuski on 7/4/19.
+//  Created by Ivan Shpileuski on 7/30/19.
 //  Copyright © 2019 Ivan Shpileuski. All rights reserved.
 //
 
 import UIKit
 
-class ImageCollectionViewCell: UICollectionViewCell {
+class TapeCollectionViewCell: UICollectionViewCell {
     
-    @IBOutlet weak var progressIndicatorView: ProgressIndicatorView!
+    
+    @IBOutlet weak var avatarImageView: UIImageView!
+    @IBOutlet weak var nicknameLabel: UILabel!
     @IBOutlet weak var imageView: UIImageView!
+    @IBOutlet weak var likeButton: UIButton!
     
     public typealias LoadingProgress = ((_ progress: Float) -> ())
     public typealias LoadingCompletion = ((_ image: UIImage) -> ())
@@ -24,8 +27,7 @@ class ImageCollectionViewCell: UICollectionViewCell {
     var isLoaded = false
     
     override func awakeFromNib() {
-        progressIndicatorView.progressColor = UIColor.black
-        progressIndicatorView.backgroundColor = UIColor(white: 0, alpha: 0)
+        
     }
     
     func configure(imageData: Image) {
@@ -35,7 +37,23 @@ class ImageCollectionViewCell: UICollectionViewCell {
         self.data = imageData
         imageView.image = placeholder
         
-        progressIndicatorView.isHidden = false
+        updateLikesList(photo: imageData, setLikesCount: { (likes) in
+            //label.text = "\(likes) likes"
+        }) { (isLiked) in
+            if isLiked {
+                //button.color = red
+            } else {
+                
+            }
+        }
+        
+        vc?.loadProfileInformation(setAvatar: { (img) in
+            avatarImageView.image = img
+            avatarImageView.layer.cornerRadius = avatarImageView.frame.width / 2
+        }, setName: { (label) in
+            nicknameLabel.text = label
+        })
+        
         loadImage(url: imageData.url!, progress: { (progress) in
             DispatchQueue.main.async {
                 self.updateProgressView(progress: progress)
@@ -45,7 +63,6 @@ class ImageCollectionViewCell: UICollectionViewCell {
                 if url == self.data?.url {
                     self.isLoaded = true
                     self.imageView.image = img
-                    self.progressIndicatorView.isHidden = true
                 }
             }
         }
@@ -60,12 +77,18 @@ class ImageCollectionViewCell: UICollectionViewCell {
         if progress == 1.0 { self.isLoaded = true }
         if self.isLoaded == false {
             self.isLoaded = false
-            self.progressIndicatorView.setProgressWithAnimation(duration: 1, value: progress)
         }
     }
     
     override func prepareForReuse() {
-        progressIndicatorView.isHidden = true
         imageView.image = placeholder
+    }
+    
+    func updateLikesList(photo: Image, setLikesCount: @escaping (_ likes: Int) -> (), setLikeButtonStatew: @escaping (_ isLiked: Bool) -> ()) {
+        
+    }
+    
+    @IBAction func likeButtonTapped(_ sender: UIButton) {
+        vc?.setLike(photo: data!)
     }
 }
