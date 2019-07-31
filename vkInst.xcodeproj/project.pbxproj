@@ -44,7 +44,7 @@
 /* Begin PBXFileReference section */
 		2C15547422F055FE00E1A6E1 /* TapeCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TapeCollectionViewCell.swift; sourceTree = "<group>"; };
 		2C15547822F097F200E1A6E1 /* Like.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Like.swift; sourceTree = "<group>"; };
-		2C174B9622D5F3AA0042FAF0 /* margo-vkmusic.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "margo-vkmusic.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		2C174B9622D5F3AA0042FAF0 /* vkInst.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = vkInst.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2C1B93D022CB7D9000209DEB /* LogInRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogInRouter.swift; sourceTree = "<group>"; };
 		2C1B93D222CB816900209DEB /* ConformViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConformViewController.swift; sourceTree = "<group>"; };
 		2C1B93D422CB819600209DEB /* ConformPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConformPresenter.swift; sourceTree = "<group>"; };
@@ -121,7 +121,7 @@
 			children = (
 				2C1EA6AA22CA0A0E009C27E2 /* .gitignore */,
 				2C1EA69422CA084F009C27E2 /* margo-vkmusic */,
-				2C174B9622D5F3AA0042FAF0 /* margo-vkmusic.app */,
+				2C174B9622D5F3AA0042FAF0 /* vkInst.app */,
 				346F4F1785E8B1478415E7EC /* Pods */,
 				B0186FC4750EC409BF013A5A /* Frameworks */,
 			);
@@ -233,9 +233,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		2C1EA69122CA084F009C27E2 /* margo-vkmusic */ = {
+		2C1EA69122CA084F009C27E2 /* vkInst */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 2C1EA6A722CA0850009C27E2 /* Build configuration list for PBXNativeTarget "margo-vkmusic" */;
+			buildConfigurationList = 2C1EA6A722CA0850009C27E2 /* Build configuration list for PBXNativeTarget "vkInst" */;
 			buildPhases = (
 				51C6B4D595C72A47321FC713 /* [CP] Check Pods Manifest.lock */,
 				2C1EA68E22CA084F009C27E2 /* Sources */,
@@ -246,9 +246,9 @@
 			);
 			dependencies = (
 			);
-			name = "margo-vkmusic";
+			name = vkInst;
 			productName = "margo-telegram";
-			productReference = 2C174B9622D5F3AA0042FAF0 /* margo-vkmusic.app */;
+			productReference = 2C174B9622D5F3AA0042FAF0 /* vkInst.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -266,7 +266,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 2C1EA68D22CA084F009C27E2 /* Build configuration list for PBXProject "margo-vkmusic" */;
+			buildConfigurationList = 2C1EA68D22CA084F009C27E2 /* Build configuration list for PBXProject "vkInst" */;
 			compatibilityVersion = "Xcode 9.3";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -279,7 +279,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				2C1EA69122CA084F009C27E2 /* margo-vkmusic */,
+				2C1EA69122CA084F009C27E2 /* vkInst */,
 			);
 		};
 /* End PBXProject section */
@@ -507,7 +507,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "com.itechart.com.margo-vkmusic";
+				PRODUCT_BUNDLE_IDENTIFIER = com.itechart.com.vkInst;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -525,7 +525,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "com.itechart.com.margo-vkmusic";
+				PRODUCT_BUNDLE_IDENTIFIER = com.itechart.com.vkInst;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -535,7 +535,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		2C1EA68D22CA084F009C27E2 /* Build configuration list for PBXProject "margo-vkmusic" */ = {
+		2C1EA68D22CA084F009C27E2 /* Build configuration list for PBXProject "vkInst" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				2C1EA6A522CA0850009C27E2 /* Debug */,
@@ -544,7 +544,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		2C1EA6A722CA0850009C27E2 /* Build configuration list for PBXNativeTarget "margo-vkmusic" */ = {
+		2C1EA6A722CA0850009C27E2 /* Build configuration list for PBXNativeTarget "vkInst" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				2C1EA6A822CA0850009C27E2 /* Debug */,
