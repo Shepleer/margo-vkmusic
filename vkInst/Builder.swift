@@ -61,15 +61,21 @@ class Builder {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         let vc = storyboard.instantiateViewController(withIdentifier: "ImagesVC") as! ImagesViewController
         let nav = UINavigationController(rootViewController: vc)
-        let service = buildAPIService()
+        let requestService = buildAPIService()
         let presenter = ImagePresenter()
         let router = ImagesRouter()
         let downloadService = buildDownloadService()
-        vc.presenter = presenter
-        presenter.vc = vc
-        presenter.router = router
-        presenter.service = service
+        let userService = UserSerice()
+        let pageService = PageService()
+        userService.requestService = requestService
+        pageService.requestService = requestService
+        presenter.userService = userService
+        presenter.pageService = pageService
         presenter.downloadService = downloadService
+        presenter.service = requestService
+        presenter.vc = vc
+        vc.presenter = presenter
+        presenter.router = router
         return nav
     }
 }

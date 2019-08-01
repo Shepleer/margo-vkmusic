@@ -39,10 +39,10 @@ class APIParser: APIParserProtocol {
     func parse<T: Mappable>(data: Data) throws -> Array<T> {
         do {
             let json = try JSONSerialization.jsonObject(with: data, options: .allowFragments) as! [String: Any]
-            guard let response = json["response"] as? [String: Any] else {
+            guard let response = json["response"] as? [[String: Any]] else {
                 throw RequestError.invalidJSON
             }
-            return Mapper<T>().mapArray(JSONArray: [response])
+            return Mapper<T>().mapArray(JSONArray: response)
         } catch {
             throw RequestError.parseError
         }

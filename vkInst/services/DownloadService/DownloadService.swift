@@ -8,35 +8,37 @@
 
 import UIKit
 
+typealias LoadingProgress = ((_ progress: Float) -> ())
+typealias LoadingCompletion = ((_ image: UIImage) -> ())
+typealias PhotoLoadingCompletion = ((_ download: UIImage, _ url: String) -> ())
+typealias Update = ((_ progress: Float) -> ())
+typealias Task = URLSessionDownloadTask
+typealias TaskCompletion = (completion: PhotoLoadingCompletion, progress: Update, task: Task)
+typealias Downloads = [String: TaskCompletion]
+
 class DownloadService: NSObject {
-    
-    typealias Completion = ((_ download: UIImage, _ url: String) -> ())
-    typealias Update = ((_ progress: Float) -> ())
-    typealias Task = URLSessionDownloadTask
-    typealias third = (completion: Completion, progress: Update, task: Task)
-    typealias Downloads = [String: third]
-    var activeDownloads: Downloads = [:]
+    private var activeDownloads: Downloads = [:]
     var session: URLSession? = nil
     
     let queue = DispatchQueue(label: "download_queue")
-    func downloadImage(image: Image, progress: @escaping (_ progress: Float) -> (), completion: @escaping (_ image: UIImage, _ url: String) -> () ) {
+    func downloadImage(url: String, progress: @escaping LoadingProgress, completion: @escaping PhotoLoadingCompletion ) {
         queue.sync { [weak self] in
-            let url = URL(string: image.url!)!
+            let url = URL(string: url)!
             let req = URLRequest(url: url)
             if let res = URLCache.shared.cachedResponse(for: req) {
                 let data = res.data
                 if let img = UIImage(data: data) {
                     completion(img, url.absoluteString)
                 } else {
-                    let strUrl = image.url!
+                    let strUrl = url.absoluteString
                     let task = self!.session?.downloadTask(with: url)
-                    self!.activeDownloads[strUrl] = (completion, progress, task) as! (DownloadService.Completion, DownloadService.Update, DownloadService.Task)
+                    self!.activeDownloads[strUrl] = (completion, progress, task) as! (PhotoLoadingCompletion, Update, Task)
                     task!.resume()
                 }
             } else {
-                let strUrl = image.url!
+                let strUrl = url.absoluteString
                 let task = self!.session?.downloadTask(with: url)
-                self!.activeDownloads[strUrl] = (completion, progress, task) as! (DownloadService.Completion, DownloadService.Update, DownloadService.Task)
+                self!.activeDownloads[strUrl] = (completion, progress, task) as! (PhotoLoadingCompletion, Update, Task)
                 task!.resume()
             }
         }

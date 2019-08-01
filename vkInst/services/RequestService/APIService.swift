@@ -42,7 +42,7 @@ class APIService: APIServiceProtocol {
     var runner: APIRunnerProtocol?
     var parser: APIParserProtocol?
     
-    let queue = DispatchQueue.global(qos: .background)
+    private let queue = DispatchQueue.global(qos: .background)
     func getData<T: Mappable>(urlStr: String, method: requestMethod, body: Dictionary<String, Any>? = nil,
                               headers: Dictionary<String, String>? = nil, completion: @escaping (_ outArray: T?, _ error: Error?) -> ()) {
         queue.async { [weak self] in

@@ -1,6 +1,6 @@
 platform :ios, '9.0'
 
-target 'margo-vkmusic' do
+target 'vkInst' do
 
     # Pods for margo-vkmusic
     pod 'ObjectMapper'

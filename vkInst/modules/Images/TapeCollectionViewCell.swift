@@ -15,9 +15,7 @@ class TapeCollectionViewCell: UICollectionViewCell {
     @IBOutlet weak var nicknameLabel: UILabel!
     @IBOutlet weak var imageView: UIImageView!
     @IBOutlet weak var likeButton: UIButton!
-    
-    public typealias LoadingProgress = ((_ progress: Float) -> ())
-    public typealias LoadingCompletion = ((_ image: UIImage) -> ())
+    @IBOutlet weak var likesCountLabel: UILabel!
     
     var vc: ImagesViewController?
     var progress: LoadingProgress?
@@ -38,12 +36,14 @@ class TapeCollectionViewCell: UICollectionViewCell {
         imageView.image = placeholder
         
         updateLikesList(photo: imageData, setLikesCount: { (likes) in
-            //label.text = "\(likes) likes"
+            self.likesCountLabel.text = "\(likes) likes"
         }) { (isLiked) in
             if isLiked {
-                //button.color = red
+                self.likeButton.isSelected = true
+                self.data?.isLiked = true
             } else {
-                
+                self.likeButton.isSelected = false
+                self.data?.isLiked = false
             }
         }
         
@@ -55,22 +55,18 @@ class TapeCollectionViewCell: UICollectionViewCell {
         })
         
         loadImage(url: imageData.url!, progress: { (progress) in
-            DispatchQueue.main.async {
-                self.updateProgressView(progress: progress)
-            }
+            self.updateProgressView(progress: progress)
         }) { (img, url) in
-            DispatchQueue.main.async {
-                if url == self.data?.url {
-                    self.isLoaded = true
-                    self.imageView.image = img
-                }
+            if url == self.data?.url {
+                self.isLoaded = true
+                self.imageView.image = img
             }
         }
     }
     
-    func loadImage(url: String, progress: @escaping (_ progress: Float) -> (), completion: @escaping (_ image: UIImage, _ url: String) -> ()) {
+    func loadImage(url: String, progress: @escaping LoadingProgress, completion: @escaping PhotoLoadingCompletion) {
         isLoaded = false
-        self.vc?.cellIsLoading(url: url, progress: progress, completion: completion)
+        vc?.cellIsLoading(url: url, progress: progress, completion: completion)
     }
     
     func updateProgressView(progress: Float) {
@@ -84,11 +80,21 @@ class TapeCollectionViewCell: UICollectionViewCell {
         imageView.image = placeholder
     }
     
-    func updateLikesList(photo: Image, setLikesCount: @escaping (_ likes: Int) -> (), setLikeButtonStatew: @escaping (_ isLiked: Bool) -> ()) {
-        
+    func updateLikesList(photo: Image, setLikesCount: @escaping LikesCountCompletion, setLikeButtonState: @escaping LikeButtonStateCompletion) {
+        vc?.fetchLikesList(photo: photo, setLikesCount: setLikesCount, setLikeButtonState: setLikeButtonState)
     }
     
     @IBAction func likeButtonTapped(_ sender: UIButton) {
-        vc?.setLike(photo: data!)
+        if data?.isLiked == true {
+            likeButton.isSelected = false
+            vc?.removeLike(photo: data!, completion: { (likes) in
+                self.likesCountLabel.text = "\(likes) likes"
+            })
+        } else {
+            likeButton.isSelected = true
+            vc?.setLike(photo: data!, completion: { (likes) in
+                self.likesCountLabel.text = "\(likes) likes"
+            })
+        }
     }
 }

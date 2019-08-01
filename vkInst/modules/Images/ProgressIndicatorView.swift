@@ -8,10 +8,10 @@
 
 import UIKit
 
-class ProgressIndicatorView: UIView {
+@IBDesignable class ProgressIndicatorView: UIView {
     
-    fileprivate var progressLayer = CAShapeLayer()
-    fileprivate var trackLayer = CAShapeLayer()
+    private var progressLayer = CAShapeLayer()
+    private var trackLayer = CAShapeLayer()
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -52,8 +52,8 @@ class ProgressIndicatorView: UIView {
         }
     }
     
-    var basic: Float = 0
-    var isAnimating = false
+    private var basic: Float = 0
+    private var isAnimating = false
     func setProgressWithAnimation(duration: TimeInterval, value: Float) {
         if isAnimating == false {
             isAnimating = true

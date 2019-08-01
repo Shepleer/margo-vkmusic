@@ -13,7 +13,7 @@
         <!--Conform View Controller-->
         <scene sceneID="6a1-pr-mMQ">
             <objects>
-                <viewController storyboardIdentifier="WebVC" id="Aca-1k-fJl" customClass="ConformViewController" customModule="margo_vkmusic" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="WebVC" id="Aca-1k-fJl" customClass="ConformViewController" customModule="vkInst" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="bez-g3-jPU">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -29,7 +29,7 @@
         <!--Images View Controller-->
         <scene sceneID="MnK-T2-HdI">
             <objects>
-                <viewController storyboardIdentifier="ImagesVC" id="KDQ-Ss-10J" customClass="ImagesViewController" customModule="margo_vkmusic" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="ImagesVC" id="KDQ-Ss-10J" customClass="ImagesViewController" customModule="vkInst" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="nuv-c8-fii">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -42,16 +42,17 @@
                                 <subviews>
                                     <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleAspectFill" scrollEnabled="NO" pagingEnabled="YES" showsHorizontalScrollIndicator="NO" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="JV8-ag-wqt">
                                         <rect key="frame" x="0.0" y="238" width="414" height="658"/>
-                                        <collectionViewLayout key="collectionViewLayout" id="TvL-h3-EnD" customClass="ImagesCollectionViewFlowLayout" customModule="margo_vkmusic" customModuleProvider="target"/>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <collectionViewLayout key="collectionViewLayout" id="TvL-h3-EnD" customClass="ImagesCollectionViewFlowLayout" customModule="vkInst" customModuleProvider="target"/>
                                         <cells>
-                                            <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" reuseIdentifier="bigCell" id="0FY-K8-3SC" customClass="TapeCollectionViewCell" customModule="margo_vkmusic" customModuleProvider="target">
-                                                <rect key="frame" x="0.5" y="0.0" width="413" height="344"/>
+                                            <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" reuseIdentifier="bigCell" id="0FY-K8-3SC" customClass="TapeCollectionViewCell" customModule="vkInst" customModuleProvider="target">
+                                                <rect key="frame" x="0.5" y="0.0" width="413" height="377"/>
                                                 <autoresizingMask key="autoresizingMask"/>
                                                 <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO">
-                                                    <rect key="frame" x="0.0" y="0.0" width="413" height="344"/>
+                                                    <rect key="frame" x="0.0" y="0.0" width="413" height="377"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <subviews>
-                                                        <view contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Ia1-pY-pxK" customClass="TapeCollectionViewCell" customModule="margo_vkmusic" customModuleProvider="target">
+                                                        <view contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Ia1-pY-pxK" customClass="TapeCollectionViewCell" customModule="vkInst" customModuleProvider="target">
                                                             <rect key="frame" x="0.0" y="0.0" width="413" height="88"/>
                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                                             <subviews>
@@ -74,13 +75,17 @@
                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                                         </imageView>
                                                         <view contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="lFc-VE-AfY">
-                                                            <rect key="frame" x="0.0" y="293" width="413" height="51"/>
+                                                            <rect key="frame" x="0.0" y="293" width="413" height="84"/>
                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                                             <subviews>
                                                                 <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="dyX-9S-P5x">
                                                                     <rect key="frame" x="8" y="10" width="30" height="30"/>
                                                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                                                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                     <state key="normal" title="Like"/>
+                                                                    <state key="selected">
+                                                                        <color key="titleColor" red="0.90730092009999996" green="0.015557314819999999" blue="0.1131221426" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                                    </state>
                                                                     <connections>
                                                                         <action selector="likeButtonTapped:" destination="0FY-K8-3SC" eventType="touchUpInside" id="EOo-Pj-1lf"/>
                                                                     </connections>
@@ -90,21 +95,29 @@
                                                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                                                     <state key="normal" title="Button"/>
                                                                 </button>
+                                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Likes long label " textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="lAT-8q-qcu">
+                                                                    <rect key="frame" x="8" y="55" width="141" height="21"/>
+                                                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                                    <nil key="textColor"/>
+                                                                    <nil key="highlightedColor"/>
+                                                                </label>
                                                             </subviews>
                                                             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                         </view>
                                                     </subviews>
                                                 </view>
-                                                <size key="customSize" width="413" height="344"/>
+                                                <size key="customSize" width="413" height="377"/>
                                                 <connections>
                                                     <outlet property="avatarImageView" destination="zsO-dE-7jY" id="S2M-Ye-8RT"/>
                                                     <outlet property="imageView" destination="Hv7-3S-8an" id="uMs-e6-jBn"/>
                                                     <outlet property="likeButton" destination="dyX-9S-P5x" id="3W0-xB-24k"/>
+                                                    <outlet property="likesCountLabel" destination="lAT-8q-qcu" id="0Ss-Jh-jj7"/>
                                                     <outlet property="nicknameLabel" destination="Y3a-Bi-qNf" id="IpY-S2-rQA"/>
                                                 </connections>
                                             </collectionViewCell>
-                                            <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="imgCell" id="q7d-uU-lCg" customClass="ImageCollectionViewCell" customModule="margo_vkmusic" customModuleProvider="target">
-                                                <rect key="frame" x="131" y="354" width="152" height="149"/>
+                                            <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="imgCell" id="q7d-uU-lCg" customClass="ImageCollectionViewCell" customModule="vkInst" customModuleProvider="target">
+                                                <rect key="frame" x="131" y="387" width="152" height="149"/>
                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                                 <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO">
                                                     <rect key="frame" x="0.0" y="0.0" width="152" height="149"/>
@@ -118,9 +131,9 @@
                                                         <imageView clipsSubviews="YES" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="placeholder" translatesAutoresizingMaskIntoConstraints="NO" id="iXt-74-wwa">
                                                             <rect key="frame" x="0.0" y="0.0" width="152" height="149"/>
                                                         </imageView>
-                                                        <view contentMode="scaleToFill" horizontalHuggingPriority="1000" verticalHuggingPriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="qgm-Qs-bXr" customClass="ProgressIndicatorView" customModule="margo_vkmusic" customModuleProvider="target">
+                                                        <view contentMode="scaleToFill" horizontalHuggingPriority="1000" verticalHuggingPriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="qgm-Qs-bXr" customClass="ProgressIndicatorView" customModule="vkInst" customModuleProvider="target">
                                                             <rect key="frame" x="0.0" y="0.0" width="152" height="149"/>
-                                                            <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                             <gestureRecognizers/>
                                                         </view>
                                                     </subviews>
@@ -206,6 +219,9 @@
                                                 <state key="normal" title="Cells">
                                                     <color key="titleColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 </state>
+                                                <state key="selected">
+                                                    <color key="titleColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                </state>
                                                 <connections>
                                                     <action selector="gridModeButtonTapped:" destination="KDQ-Ss-10J" eventType="touchUpInside" id="7An-3I-nXI"/>
                                                 </connections>
@@ -271,39 +287,10 @@
             </objects>
             <point key="canvasLocation" x="1857.9710144927537" y="95.758928571428569"/>
         </scene>
-        <!--View Controller-->
-        <scene sceneID="b7z-zM-yJ6">
-            <objects>
-                <viewController id="9cG-Lm-AiD" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="7M5-6I-85A">
-                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
-                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <subviews>
-                            <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" fixedFrame="YES" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="xl3-1z-hFa">
-                                <rect key="frame" x="0.0" y="44" width="414" height="831"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="10" minimumInteritemSpacing="10" id="VXO-9c-gNq">
-                                    <size key="itemSize" width="411" height="665"/>
-                                    <size key="headerReferenceSize" width="0.0" height="0.0"/>
-                                    <size key="footerReferenceSize" width="0.0" height="0.0"/>
-                                    <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
-                                </collectionViewFlowLayout>
-                                <cells/>
-                            </collectionView>
-                        </subviews>
-                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                        <viewLayoutGuide key="safeArea" id="X3L-LE-Vb1"/>
-                    </view>
-                </viewController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="leF-OO-eRO" userLabel="First Responder" sceneMemberID="firstResponder"/>
-            </objects>
-            <point key="canvasLocation" x="2594.202898550725" y="95.758928571428569"/>
-        </scene>
         <!--Log In View Controller-->
         <scene sceneID="DOS-MH-WAa">
             <objects>
-                <viewController storyboardIdentifier="LogInVC" id="mGO-2e-ym0" customClass="LogInViewController" customModule="margo_vkmusic" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="LogInVC" id="mGO-2e-ym0" customClass="LogInViewController" customModule="vkInst" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="nbU-lM-E5k">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>

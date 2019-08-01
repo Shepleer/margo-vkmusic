@@ -11,10 +11,9 @@ import UIKit
 protocol ImagesViewControllerProtocol: class {
     func configureWithPhotos(images: [Image])
     func loadAvatar(image: UIImage)
-    func setFriends(friends: Int)
-    func setFollowers(followers: Int)
-    func getViewModeState() -> Int
-    func setProfileInformation(profile: ProfileInfo)
+    func setProfileData(user: User)
+    func setLike(photo: Image, completion: @escaping (_ likes: Int) -> ())
+    func removeLike(photo: Image, completion: @escaping (_ likes: Int) -> ())
 }
 
 class ImagesViewController: UIViewController {
@@ -22,7 +21,7 @@ class ImagesViewController: UIViewController {
     var presenter: ImagePresenterProtocol?
     var flowLayout: ImagesCollectionViewFlowLayout? = nil
     var images = [Image]()
-    var profile: ProfileInfo? = nil
+    var profile: User? = nil
     var avatarImage: UIImage? = nil
     
     
@@ -39,12 +38,12 @@ class ImagesViewController: UIViewController {
     
     @IBOutlet weak var imageCollectionView: UICollectionView! {
         didSet {
-            self.imageCollectionView.delegate = self
+            imageCollectionView.delegate = self
         }
     }
     @IBOutlet weak var mainScrollView: UIScrollView! {
         didSet {
-            self.mainScrollView.delegate = self
+            mainScrollView.delegate = self
         }
     }
 
@@ -52,10 +51,11 @@ class ImagesViewController: UIViewController {
         super.viewDidLoad()
         presenter?.viewDidLoad()
         configureUI()
+        presenter?.nextFetch()
     }
     
-    func getViewModeState() -> Int {
-        return self.flowLayout?.cellType ?? 0
+    func getViewModeState() -> CellType {
+        return flowLayout?.cellType ?? CellType.Grid
     }
     
     func cancellingDownload(image: Image) {
@@ -79,38 +79,30 @@ class ImagesViewController: UIViewController {
 
 extension ImagesViewController: ImagesViewControllerProtocol {    
     func configureWithPhotos(images: [Image]) {
-        self.images = images
-        imageCollectionView.reloadSections(IndexSet(integersIn: 0...0))
+        self.images.append(contentsOf: images)
+        imageCollectionView.reloadSections(IndexSet(integer: 0))
         let scrollViewContentSize = CGSize(width: view.frame.width, height: headerView.frame.height + headerViewBottom.accessibilityFrame.height + secondHeaderView.frame.height + secondHeaderBottom.accessibilityFrame.height + imageCollectionView.collectionViewLayout.collectionViewContentSize.height)
         mainScrollView.contentSize = scrollViewContentSize
         presenter?.imagesDownloaded()
     }
     
     func loadAvatar(image: UIImage) {
-        DispatchQueue.main.async {
-            self.avatarImageView.image = image
-            self.avatarImage = image
-        }
+        avatarImageView.image = image
+        avatarImage = image
     }
     
-    func setFriends(friends: Int) {
-        DispatchQueue.main.async {
-            self.friendsCountLabel.text = "Friends: \(String(friends))"
+    func setProfileData(user: User) {
+        profile = user
+        if let friends = user.counters?.friends {
+            friendsCountLabel.text = "Friends: \(friends)"
         }
-    }
-    
-    func setFollowers(followers: Int) {
-        DispatchQueue.main.async {
-            self.followersCountLabel.text = "Followers: \(String(followers))"
+        if let followers = user.counters?.followers {
+            followersCountLabel.text = "Followers: \(followers)"
         }
     }
     
     func cellIsLoading(url: String, progress: @escaping (_ progress: Float) -> (), completion: @escaping (_ image: UIImage, _ url: String) -> ()) {
         presenter?.loadImage(url: url, progress: progress, completion: completion)
-    }
-    
-    func setProfileInformation(profile: ProfileInfo) {
-        self.profile = profile
     }
     
     func loadProfileInformation(setAvatar: (_ avatar: UIImage) -> (), setName: (_ label: String) -> ()) {
@@ -126,23 +118,28 @@ extension ImagesViewController: ImagesViewControllerProtocol {
         }
     }
     
-    func checkLikesCount(photo: Image, completion: @escaping (_ likes: Int, _ isLikeSet: Bool) -> ()) {
-        
+    func setLike(photo: Image, completion: @escaping LikesCountCompletion) {
+        presenter?.setLike(photo: photo, completion: completion)
     }
     
-    func setLike(photo: Image) {
-        presenter?.setLike(photo: photo)
+    func removeLike(photo: Image, completion: @escaping LikesCountCompletion) {
+        presenter?.removeLike(photo: photo, completion: completion)
+    }
+    
+    func fetchLikesList(photo: Image, setLikesCount: @escaping LikesCountCompletion, setLikeButtonState: @escaping LikeButtonStateCompletion) {
+        presenter?.fetchLikeList(photo: photo, setLikesCount: setLikesCount, setLikeButtonState: setLikeButtonState)
     }
 }
 
 extension ImagesViewController: UIScrollViewDelegate {
-    func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        var endScrollRecommendedOffset: CGFloat {
-            if let layout = imageCollectionView.collectionViewLayout as? UICollectionViewFlowLayout {
-                return layout.itemSize.height * 3
-            }
-            return 0
+    var endScrollRecommendedOffset: CGFloat {
+        if let layout = imageCollectionView.collectionViewLayout as? UICollectionViewFlowLayout {
+            return layout.itemSize.height * 3
         }
+        return 0
+    }
+    
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
         if scrollView == mainScrollView {
             let contentOffset = scrollView.contentOffset
             if scrollView.contentOffset.y < headerView.frame.height {
@@ -158,12 +155,11 @@ extension ImagesViewController: UIScrollViewDelegate {
                 imageCollectionView.contentOffset = CGPoint(x: 0, y: scrollView.contentOffset.y - headerView.frame.height)
                 view.layoutIfNeeded()
             }
-            
             let currentOffset = scrollView.contentOffset.y + scrollView.frame.size.height
             let maximumOffset = scrollView.contentSize.height
             let deltaOffset = maximumOffset - currentOffset
             if deltaOffset <= endScrollRecommendedOffset {
-                presenter?.getPhotosUrl()
+                presenter?.nextFetch()
             }
         }
     }
@@ -183,11 +179,11 @@ extension ImagesViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cellIdentifier = "imgCell"
         let tapeCellIdentifier = "bigCell"
-        if flowLayout?.cellType == 0 {
+        if flowLayout?.cellType == .Grid {
             let cell = imageCollectionView.dequeueReusableCell(withReuseIdentifier: cellIdentifier, for: indexPath) as? ImageCollectionViewCell
             cell?.vc = self
             return cell!
-        } else if flowLayout?.cellType == 1 {
+        } else if flowLayout?.cellType == .Tape {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: tapeCellIdentifier, for: indexPath) as? TapeCollectionViewCell
             cell?.vc = self
             return cell!
@@ -197,10 +193,10 @@ extension ImagesViewController: UICollectionViewDelegate {
     
     func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
         let image = images[indexPath.row]
-        if flowLayout?.cellType == 0 {
+        if flowLayout?.cellType == .Grid {
             let cell = cell as! ImageCollectionViewCell
             cell.configure(imageData: image)
-        } else if flowLayout?.cellType == 1 {
+        } else if flowLayout?.cellType == .Tape {
             let cell = cell as! TapeCollectionViewCell
             cell.configure(imageData: image)
         }
@@ -216,44 +212,42 @@ extension ImagesViewController: UICollectionViewDelegate {
 
 private extension ImagesViewController {
     func configureUI() {
-        self.navigationController?.isNavigationBarHidden = true
-        gridModeButton.setTitleColor(UIColor.black, for: .selected)
-        tapeModeButton.setTitleColor(UIColor.black, for: .selected)
+        navigationController?.isNavigationBarHidden = true
         gridModeButton.isSelected = true
         if let layout = imageCollectionView.collectionViewLayout as? ImagesCollectionViewFlowLayout {
             flowLayout = layout
             flowLayout?.vc = self
         }
-        imageCollectionView.backgroundColor = UIColor.white
-        mainScrollView.frame = self.view.frame
+        mainScrollView.frame = view.frame
         let scrollViewContentSize = CGSize(width: view.frame.width, height: headerView.frame.height + headerViewBottom.accessibilityFrame.height + secondHeaderView.frame.height + secondHeaderBottom.accessibilityFrame.height + imageCollectionView.contentSize.height)
         mainScrollView.contentSize = scrollViewContentSize
         mainScrollView.contentInsetAdjustmentBehavior = .never
-        self.view.addGestureRecognizer(mainScrollView.panGestureRecognizer)
+        view.addGestureRecognizer(mainScrollView.panGestureRecognizer)
         imageCollectionView.delegate = self
         avatarImageView.layer.cornerRadius = avatarImageView.frame.width / 2
         avatarImageView.layer.borderColor = UIColor.darkGray.cgColor
         avatarImageView.layer.borderWidth = 4
         avatarImageView.layer.shadowRadius = 10
-        imageCollectionView.backgroundColor = UIColor(white: 1, alpha: 0)
-        self.view.setGradientBackground(firstColor: UIColor.darkGray, secondColor: UIColor.lightGray)
+        view.setGradientBackground(firstColor: UIColor.darkGray, secondColor: UIColor.lightGray)
     }
     
     func setGridMode() {
-        if flowLayout?.cellType != 0 {
-            flowLayout?.setGridView()
+        if flowLayout?.cellType != .Grid {
+            flowLayout?.cellType = .Grid
+            changeViewMode()
             tapeModeButton.isSelected = false
             gridModeButton.isSelected = true
-            imageCollectionView.reloadSections(IndexSet(integersIn: 0...0))
+            imageCollectionView.reloadSections(IndexSet(integer: 0))
         }
     }
     
     func setTapeMode() {
-        if flowLayout?.cellType != 1 {
-            flowLayout?.setTapeView()
+        if flowLayout?.cellType != .Tape {
+            flowLayout?.cellType = .Tape
+            changeViewMode()
             tapeModeButton.isSelected = true
             gridModeButton.isSelected = false
-            imageCollectionView.reloadSections(IndexSet(integersIn: 0...0))
+            imageCollectionView.reloadSections(IndexSet(integer: 0))
         }
     }
 }
