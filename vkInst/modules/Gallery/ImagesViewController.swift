@@ -14,6 +14,8 @@ protocol ImagesViewControllerProtocol: class {
     func setProfileData(user: User)
     func setLike(photo: Image, completion: @escaping (_ likes: Int) -> ())
     func removeLike(photo: Image, completion: @escaping (_ likes: Int) -> ())
+    func fetchPhotoData(photoData: Image, completion: @escaping CommentsCompletion)
+    func moveToDetailPhotoScreen(photo: Image)
 }
 
 class ImagesViewController: UIViewController {
@@ -23,8 +25,11 @@ class ImagesViewController: UIViewController {
     var images = [Image]()
     var profile: User? = nil
     var avatarImage: UIImage? = nil
+    var router: ImagesRouter?
+    private let photosCollectionViewFooterIdentifier = "photosFooter"
     
-    
+    @IBOutlet weak var activityViewTopOffset: NSLayoutConstraint!
+    @IBOutlet weak var activityView: UIView!
     @IBOutlet weak var headerViewBottom: NSLayoutConstraint!
     @IBOutlet weak var secondHeaderBottom: NSLayoutConstraint!
     @IBOutlet weak var followersCountLabel: UILabel!
@@ -52,6 +57,12 @@ class ImagesViewController: UIViewController {
         presenter?.viewDidLoad()
         configureUI()
         presenter?.nextFetch()
+        imageCollectionView.register(UINib(nibName: "PhotosCollectionFooterView", bundle: nil), forSupplementaryViewOfKind: UICollectionView.elementKindSectionFooter, withReuseIdentifier: photosCollectionViewFooterIdentifier)
+        //imageCollectionView.register(PhotosCollectionFooterView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionFooter, withReuseIdentifier: photosCollectionViewFooterIdentifier)
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        self.navigationController?.isNavigationBarHidden = true
     }
     
     func getViewModeState() -> CellType {
@@ -77,7 +88,7 @@ class ImagesViewController: UIViewController {
     }
 }
 
-extension ImagesViewController: ImagesViewControllerProtocol {    
+extension ImagesViewController: ImagesViewControllerProtocol {
     func configureWithPhotos(images: [Image]) {
         self.images.append(contentsOf: images)
         imageCollectionView.reloadSections(IndexSet(integer: 0))
@@ -99,6 +110,10 @@ extension ImagesViewController: ImagesViewControllerProtocol {
         if let followers = user.counters?.followers {
             followersCountLabel.text = "Followers: \(followers)"
         }
+    }
+    
+    func fetchPhotoData(photoData: Image, completion: @escaping CommentsCompletion) {
+        presenter?.fetchComments(photoData: photoData, completion: completion)
     }
     
     func cellIsLoading(url: String, progress: @escaping (_ progress: Float) -> (), completion: @escaping (_ image: UIImage, _ url: String) -> ()) {
@@ -126,8 +141,17 @@ extension ImagesViewController: ImagesViewControllerProtocol {
         presenter?.removeLike(photo: photo, completion: completion)
     }
     
-    func fetchLikesList(photo: Image, setLikesCount: @escaping LikesCountCompletion, setLikeButtonState: @escaping LikeButtonStateCompletion) {
-        presenter?.fetchLikeList(photo: photo, setLikesCount: setLikesCount, setLikeButtonState: setLikeButtonState)
+    func moveToDetailPhotoScreen(photo: Image) {
+        profile?.avatarImage = avatarImage
+        router?.moveToDetailScreen(photo: photo, profile: profile!)
+    }
+    
+    func disableScrollView() {
+        mainScrollView.isScrollEnabled = false
+    }
+    
+    func enableScrollView() {
+        mainScrollView.isScrollEnabled = true
     }
 }
 
@@ -173,6 +197,17 @@ extension ImagesViewController: UICollectionViewDataSource {
     func numberOfSections(in collectionView: UICollectionView) -> Int {
         return 1
     }
+    
+    
+    func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
+        let footerView = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: photosCollectionViewFooterIdentifier, for: indexPath) as! PhotosCollectionFooterView
+        footerView.backgroundColor = UIColor.clear
+        return footerView
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForFooterInSection section: Int) -> CGSize {
+        return CGSize(width: collectionView.frame.width, height: 50)
+    }
 }
 
 extension ImagesViewController: UICollectionViewDelegate {
@@ -199,6 +234,14 @@ extension ImagesViewController: UICollectionViewDelegate {
         } else if flowLayout?.cellType == .Tape {
             let cell = cell as! TapeCollectionViewCell
             cell.configure(imageData: image)
+        }
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, willDisplaySupplementaryView view: UICollectionReusableView, forElementKind elementKind: String, at indexPath: IndexPath) {
+        if presenter?.checkIsAllLoaded() == true {
+            if let footer = view as? PhotosCollectionFooterView {
+                footer.allDownloaded()
+            }
         }
     }
     

@@ -21,6 +21,7 @@ class APIParser: APIParserProtocol {
             guard let dictionary = json as? [String: Any] else {
                 throw RequestError.invalidJSON
             }
+            print(json)
             if let schema = dictionary["response"] as? Dictionary<String, Any> {
                 if let model = Mapper<T>().map(JSON: schema) {
                     return model
@@ -28,6 +29,7 @@ class APIParser: APIParserProtocol {
                     throw RequestError.parseError
                 }
             } else {
+                print(json)
                 print("Too many requests")
             }
         } catch {

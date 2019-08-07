@@ -33,7 +33,6 @@ class ImageCollectionViewCell: UICollectionViewCell {
         
         progressIndicatorView.isHidden = false
         loadImage(url: imageData.url!, progress: { (progress) in
-            self.updateProgressView(progress: progress)
         }) { (img, url) in
             if url == self.data?.url {
                 self.isLoaded = true
@@ -48,16 +47,8 @@ class ImageCollectionViewCell: UICollectionViewCell {
         vc?.cellIsLoading(url: url, progress: progress, completion: completion)
     }
     
-    func updateProgressView(progress: Float) {
-        if progress == 1.0 { self.isLoaded = true }
-        if isLoaded == false {
-            isLoaded = false
-            progressIndicatorView.setProgressWithAnimation(duration: 1, value: progress)
-        }
-    }
-    
     override func prepareForReuse() {
         progressIndicatorView.isHidden = true
-        imageView.image = placeholder
+        //imageView.image = placeholder
     }
 }

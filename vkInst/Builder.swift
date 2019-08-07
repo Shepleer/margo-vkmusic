@@ -37,6 +37,50 @@ class Builder {
         return vc
     }
     
+    func createGalleryVC() -> UIViewController {
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        let vc = storyboard.instantiateViewController(withIdentifier: "ImagesVC") as! ImagesViewController
+        let nav = UINavigationController(rootViewController: vc)
+        let requestService = buildAPIService()
+        let presenter = ImagePresenter()
+        let router = ImagesRouter()
+        let downloadService = buildDownloadService()
+        let userService = UserService()
+        let pageService = PageService()
+        router.vc = vc
+        userService.requestService = requestService
+        pageService.requestService = requestService
+        presenter.userService = userService
+        presenter.pageService = pageService
+        presenter.downloadService = downloadService
+        presenter.service = requestService
+        presenter.vc = vc
+        vc.presenter = presenter
+        vc.router = router
+        presenter.router = router
+        return nav
+    }
+    
+    func buildDetailPhotoScreen(data: Image, profile: User) -> UIViewController {
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        let vc = storyboard.instantiateViewController(withIdentifier: "detailVC") as? DetailPhotoViewController
+        let presenter = DetailPhotoPresenter()
+        let router = DetailPhotoRouter()
+        let requestService = buildAPIService()
+        let pagingService = CommentsPageService()
+        let userService = UserService()
+        vc?.presenter = presenter
+        vc?.imageData = data
+        vc?.profile = profile
+        presenter.vc = vc
+        presenter.userService = userService
+        presenter.pagingService = pagingService
+        presenter.router = router
+        pagingService.requestService = requestService
+        userService.requestService = requestService
+        return vc!
+    }
+    
     func buildAPIService() -> APIService {
         let manager = APIService()
         let builder = APIBuilder()
@@ -55,27 +99,5 @@ class Builder {
         configuration.requestCachePolicy = .useProtocolCachePolicy
         downloadService.session = URLSession(configuration: .default, delegate: downloadService, delegateQueue: nil)
         return downloadService
-    }
-    
-    func createGalleryVC() -> UIViewController {
-        let storyboard = UIStoryboard(name: "Main", bundle: nil)
-        let vc = storyboard.instantiateViewController(withIdentifier: "ImagesVC") as! ImagesViewController
-        let nav = UINavigationController(rootViewController: vc)
-        let requestService = buildAPIService()
-        let presenter = ImagePresenter()
-        let router = ImagesRouter()
-        let downloadService = buildDownloadService()
-        let userService = UserSerice()
-        let pageService = PageService()
-        userService.requestService = requestService
-        pageService.requestService = requestService
-        presenter.userService = userService
-        presenter.pageService = pageService
-        presenter.downloadService = downloadService
-        presenter.service = requestService
-        presenter.vc = vc
-        vc.presenter = presenter
-        presenter.router = router
-        return nav
     }
 }

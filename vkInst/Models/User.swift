@@ -6,7 +6,7 @@
 //  Copyright © 2019 Ivan Shpileuski. All rights reserved.
 //
 
-import Foundation
+import UIKit
 import ObjectMapper
 
 struct User {
@@ -16,6 +16,7 @@ struct User {
     var avatarPhotoUrl: String?
     var screenName: String?
     var counters: Counters?
+    var avatarImage: UIImage?
 }
 
 extension User: Mappable {

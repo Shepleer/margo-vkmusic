@@ -29,12 +29,13 @@ extension ImagesCollectionViewFlowLayout {
             self.sectionInsetReference = .fromSafeArea
             self.minimumLineSpacing = 1
             self.minimumInteritemSpacing = 1
+            self.footerReferenceSize = CGSize(width: (collectionView?.frame.width)!, height: 50.0)
         } else if cellType == .Tape {
-            self.itemSize = CGSize(width: (collectionView?.frame.width)!, height: 500)
-            self.sectionInset = UIEdgeInsets(top: self.minimumInteritemSpacing, left: 0.0, bottom: 0.0, right: 0.0)
+            self.itemSize = CGSize(width: (collectionView?.frame.width)!, height: 514)
+            self.sectionInset = UIEdgeInsets(top: 0.0, left: 0.0, bottom: 0.0, right: 0.0)
             self.sectionInsetReference = .fromSafeArea
-            self.minimumInteritemSpacing = 1
-            self.minimumLineSpacing = 1
+            self.minimumInteritemSpacing = 0
+            self.minimumLineSpacing = 0
         }
     }
 }

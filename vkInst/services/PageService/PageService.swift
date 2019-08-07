@@ -11,6 +11,7 @@ import Foundation
 protocol PageServiceProtocol {
     func nextFetch(completion: @escaping (_ photos: [Image]) -> ()) -> ()
     func fetchComplete()
+    func checkIsAllLoaded() -> Bool
 }
 
 class PageService {
@@ -30,7 +31,7 @@ extension PageService: PageServiceProtocol {
             return
         }
         isLoading = true
-        let url = "https://api.vk.com/method/photos.getAll?owner_id=454963921&offset=\(offset)&photo_sizes=1&count=60&access_token=\(RequestConfigurations.token)&v=5.101"
+        let url = "https://api.vk.com/method/photos.getAll?owner_id=454963921&offset=\(offset)&extended=1&photo_sizes=1&count=60&access_token=\(RequestConfigurations.token)&v=5.101"
         requestService?.getData(urlStr: url, method: .get, body: nil, headers: nil, completion: { (response: PhotosResponse?, err) in
             if let response = response {
                 self.offset += 60
@@ -41,6 +42,10 @@ extension PageService: PageServiceProtocol {
                 completion(images)
             }
         })
+    }
+    
+    func checkIsAllLoaded() -> Bool {
+        return isAllLoaded
     }
     
     func fetchComplete() {
