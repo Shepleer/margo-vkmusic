@@ -15,13 +15,14 @@ protocol DetailPhotoViewControllerProtocol {
 class DetailPhotoViewController: UIViewController {
 
     var presenter: DetailPhotoPresenter?
-    var imageData: Image?
+    var postData: Post?
     var profile: User?
     var comments = [Comment]()
     private var isZooming = false
     private var originalImageCenter: CGPoint?
     @IBOutlet weak var topOffset: NSLayoutConstraint!
     @IBOutlet weak var commentFieldBottomConstraint: NSLayoutConstraint!
+    @IBOutlet weak var viewsCountLabel: UILabel!
     @IBOutlet weak var nicknameLabel: UILabel!
     @IBOutlet weak var avatarImageView: UIImageView!
     @IBOutlet weak var photoImageView: UIImageView! {
@@ -47,7 +48,7 @@ class DetailPhotoViewController: UIViewController {
             self.invisibleScrollView.delegate = self
         }
     }
-    
+    @IBOutlet weak var pageControl: UIPageControl!
     let placehol = UIImage(named: "placeholder")
     
     override func viewDidLoad() {
@@ -62,29 +63,33 @@ class DetailPhotoViewController: UIViewController {
     
     @IBAction func sendCommentButtonTapped(_ sender: UIButton) {
         if let comment = commentTextField.text {
-            
-            presenter?.sendComment(id: imageData!.id!, ownerId: imageData!.ownerId!, commentText: comment)
+            guard let postId = postData?.id else { return }
+            guard let ownerId = postData?.ownerId else { return }
+            presenter?.sendComment(postId: postId, ownerId: ownerId, commentText: comment)
         }
         commentTextField.text = nil
         view.endEditing(true)
     }
     
     @IBAction func likeButtonTapped(_ sender: UIButton) {
+        guard let postId = postData?.id else { return }
+        guard let ownerId = postData?.ownerId else { return }
         if likeButton.isSelected {
-            presenter?.removeLike(photo: imageData!, completion: { (likesCount) in
-                self.imageData?.isLiked = false
-                self.imageData?.likesCount = likesCount
+            presenter?.removeLike(postId: postId, ownerId: ownerId, completion: { (likesCount) in
+                self.postData?.isUserLikes = false
+                self.postData?.likesCount = likesCount
                 self.likeButton.isSelected = false
                 self.likesCountLabel.text = "\(likesCount) likes"
             })
         } else {
-            presenter?.setLike(photo: imageData!, completion: { (likesCount) in
-                self.imageData?.isLiked = true
-                self.imageData?.likesCount = likesCount
+            presenter?.setLike(postId: postId, ownerId: ownerId, completion: { (likesCount) in
+                self.postData?.isUserLikes = true
+                self.postData?.likesCount = likesCount
                 self.likeButton.isSelected = true
                 self.likesCountLabel.text = "\(likesCount) likes"
             })
         }
+ 
     }
     
     
@@ -144,9 +149,9 @@ extension DetailPhotoViewController: UIScrollViewDelegate {
             let maximumOffset = scrollView.contentSize.height
             let deltaOffset = maximumOffset - currentOffset
             if deltaOffset <= endScrollRecommendedOffset {
-                guard let id = imageData?.id else { return }
-                guard let ownerId = imageData?.ownerId else { return }
-                presenter?.fetchComments(id: id, ownerId: ownerId)
+                guard let id = postData?.id else { return }
+                guard let ownerId = postData?.ownerId else { return }
+                presenter?.fetchComments(postId: id, ownerId: ownerId)
             }
         }
     }
@@ -160,14 +165,15 @@ extension DetailPhotoViewController: UIGestureRecognizerDelegate {
 
 private extension DetailPhotoViewController {
     func loadPhotoAndProfileData() {
-        photoImageView.image = imageData?.img
-        likesCountLabel.text = "\(imageData!.likesCount!) likes"
+        photoImageView.image = postData?.photos?.first?.img
+        guard let likesCount = postData?.likesCount else { return }
+        likesCountLabel.text = "\(likesCount) likes"
         nicknameLabel.text = profile?.screenName
         avatarImageView.image = profile?.avatarImage
         
-        if let comments = imageData?.comments {
-            self.comments = comments
-        }
+        //if let comments = postData?.comments {
+        //    self.comments = comments
+        //}
         view.layoutIfNeeded()
     }
     
@@ -177,11 +183,19 @@ private extension DetailPhotoViewController {
         view.addGestureRecognizer(invisibleScrollView.panGestureRecognizer)
         self.navigationController?.isNavigationBarHidden = false
         avatarImageView.layer.cornerRadius = avatarImageView.frame.width / 2
-        if imageData!.isLiked! {
+        
+        
+        if postData?.isUserLikes == true {
             likeButton.isSelected = true
         } else {
             likeButton.isSelected = false
         }
+        
+        guard let photosCount = postData?.photos?.count else { return }
+        pageControl.numberOfPages = photosCount
+        pageControl.currentPage = 0
+        pageControl.hidesForSinglePage = true
+        
         
         let pinchGesture = UIPinchGestureRecognizer(target: self, action: #selector(scale(sender:)))
         pinchGesture.delaysTouchesEnded = false
@@ -200,13 +214,42 @@ private extension DetailPhotoViewController {
         panGesture.cancelsTouchesInView = false
         panGesture.delegate = self
         photoImageView.addGestureRecognizer(panGesture)
+        let rightSwipeGesture = UISwipeGestureRecognizer(target: self, action: #selector(swiped(sender:)))
+        rightSwipeGesture.direction = .right
+        rightSwipeGesture.delaysTouchesBegan = false
+        rightSwipeGesture.delaysTouchesEnded = false
+        rightSwipeGesture.cancelsTouchesInView = false
+        photoImageView.addGestureRecognizer(rightSwipeGesture)
+        let leftSwipeGesture = UISwipeGestureRecognizer(target: self, action: #selector(swiped(sender:)))
+        leftSwipeGesture.direction = .left
+        leftSwipeGesture.delaysTouchesBegan = false
+        leftSwipeGesture.delaysTouchesEnded = false
+        leftSwipeGesture.cancelsTouchesInView = false
+        photoImageView.addGestureRecognizer(leftSwipeGesture)
     }
     
+    @objc func swiped(sender: UISwipeGestureRecognizer) {
+        if sender.state == .ended {
+            if sender.direction == .right {
+                if pageControl.currentPage != 0 {
+                    pageControl.currentPage -= 1
+                }
+            } else if sender.direction == .left {
+                if pageControl.numberOfPages > pageControl.currentPage {
+                    pageControl.currentPage += 1
+                }
+            }
+        }
+    }
+    
+    
     @objc func doubleTapped(sender: UITapGestureRecognizer) {
-        if !imageData!.isLiked! && sender.state == .ended {
-            presenter?.setLike(photo: imageData!, completion: { (likesCount) in
-                self.imageData?.isLiked = true
-                self.imageData?.likesCount = likesCount
+        if postData?.isUserLikes == false && sender.state == .ended {
+            guard let postId = postData?.id else { return }
+            guard let ownerId = postData?.ownerId else { return }
+            presenter?.setLike(postId: postId, ownerId: ownerId, completion: { (likesCount) in
+                self.postData?.isUserLikes = true
+                self.postData?.likesCount = likesCount
                 self.likesCountLabel.text = "\(likesCount) likes"
                 self.likeButton.isSelected = true
             })

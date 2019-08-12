@@ -13,9 +13,10 @@ typealias LikeButtonStateCompletion = (_ isLiked: Bool) -> ()
 typealias LikesCountCompletion = (_ likes: Int) -> ()
 protocol UserServiceProtocol {
     func getUserProfileInfo(completion: @escaping (_ user: User) -> ())
-    func setLike(photo: Image, completion: @escaping (_ likes: Int) -> ())
-    func removeLike(photo: Image, completion: @escaping (_ likes: Int) -> ())
-    func fetchPhotoComments(photoData: Image, completion: @escaping CommentsCompletion)
+    func setLike(postId: Int, ownerId: Int, completion: @escaping LikesCountCompletion)
+    func removeLike(postId: Int, ownerId: Int, completion: @escaping LikesCountCompletion)
+    func createComment(postId: Int, ownerId: Int, message: String)
+    func fetchPostComments(postId: Int, ownerId: Int, completion: @escaping CommentsCompletion)
 }
 
 class UserService {
@@ -43,31 +44,35 @@ extension UserService: UserServiceProtocol {
         }
     }
     
-    func fetchPhotoComments(photoData: Image, completion: @escaping CommentsCompletion) {
-        let photosGetAllComments = "https://api.vk.com/method/photos.getComments?owner_id=\(photoData.ownerId!)&photo_id=\(photoData.id!)&need_likes=1&sort=asc&extended=1&access_token=\(RequestConfigurations.token)&v=5.101"
-        requestService?.getData(urlStr: photosGetAllComments, method: .get, completion: { (response: CommentsResponse?, err) in
-            completion(response)
+    func fetchPostComments(postId: Int, ownerId: Int, completion: @escaping CommentsCompletion) {
+        let url = "https://api.vk.com/method/wall.getComments?owner_id=\(ownerId)&post_id=\(postId)&need_likes=1&offset=0&count=20&sort=asc&preview_lenght=0&extended=1&access_token=\(RequestConfigurations.token)&v=5.101"
+        requestService?.getData(urlStr: url, method: .get, completion: { (response: CommentsResponse?, err) in
+            if let response = response {
+                completion(response)
+            }
         })
     }
     
-    func setLike(photo: Image, completion: @escaping (_ likes: Int) -> ()) {
-        let likesAdd_photos = "https://api.vk.com/method/likes.add?type=photo&owner_id=\(photo.ownerId!)&item_id=\(photo.id!)&access_token=\(RequestConfigurations.token)&v=5.101"
-        requestService?.getData(urlStr: likesAdd_photos, method: .get, body: nil, headers: nil, completion: { (likes: LikesSet?, err) in
-            completion((likes?.likes)!)
-        })
+    func createComment(postId: Int, ownerId: Int, message: String) {
+        let url = "https://api.vk.com/method/wall.createComment?owner_id=\(ownerId)&post_id=\(postId)&message=\(message)&access_token=\(RequestConfigurations.token)&v=5.101"
+        requestService?.getData(urlStr: url, method: .get, completion: { (commId: SendCommentResponse?, err) in })
     }
     
-    func removeLike(photo: Image, completion: @escaping (_ likes: Int) -> ()) {
-        let likesDelete_photos = "https://api.vk.com/method/likes.delete?type=photo&owner_id=\(photo.ownerId!)&item_id=\(photo.id!)&access_token=\(RequestConfigurations.token)&v=5.101"
+    func removeLike(postId: Int, ownerId: Int, completion: @escaping LikesCountCompletion) {
+        let likesDelete_photos = "https://api.vk.com/method/likes.delete?type=post&owner_id=\(ownerId)&item_id=\(postId)&access_token=\(RequestConfigurations.token)&v=5.101"
         requestService?.getData(urlStr: likesDelete_photos, method: .get, body: nil, headers: nil, completion: { (likes: LikesSet?, err) in
-            completion((likes?.likes)!)
+            if let likes = likes?.likes {
+                completion(likes)
+            }
         })
     }
     
-    func createComment(id: Int, ownerId: Int, message: String) {
-        let url = "https://api.vk.com/method/photos.createComment?owner_id=\(ownerId)&photo_id=\(id)&message=\(message)&access_token=\(RequestConfigurations.token)&v=5.101"
-        print(url)
-        requestService?.getData(urlStr: url, method: .get, completion: { (likes: LikesSet?, err) in
+    func setLike(postId: Int, ownerId: Int, completion: @escaping LikesCountCompletion) {
+        let likesAdd_post = "https://api.vk.com/method/likes.add?type=post&owner_id=\(ownerId)&item_id=\(postId)&access_token=\(RequestConfigurations.token)&v=5.101"
+        requestService?.getData(urlStr: likesAdd_post, method: .get, body: nil, headers: nil, completion: { (likes: LikesSet?, err) in
+            if let likes = likes?.likes {
+                completion(likes)
+            }
         })
     }
 }

@@ -21,7 +21,6 @@ struct User {
 
 extension User: Mappable {
     init?(map: Map) {
-        mapping(map: map)
     }
     
     mutating func mapping(map: Map) {

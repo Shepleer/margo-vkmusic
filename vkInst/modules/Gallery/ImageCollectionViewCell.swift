@@ -16,7 +16,7 @@ class ImageCollectionViewCell: UICollectionViewCell {
     var vc: ImagesViewController?
     var progress: LoadingProgress?
     var completion: LoadingCompletion?
-    var data: Image? = nil
+    var data: Post? = nil
     let placeholder = UIImage(named: "placeholder")
     var isLoaded = false
     
@@ -24,17 +24,16 @@ class ImageCollectionViewCell: UICollectionViewCell {
         progressIndicatorView.progressColor = UIColor.black
     }
     
-    func configure(imageData: Image) {
-        guard imageData.url != data?.url else {
-            return
-        }
-        data = imageData
+    func configure(postData: Post) {
+        guard postData.photos?.first?.url != data?.photos?.first?.url else { return }
+        data = postData
         imageView.image = placeholder
         
         progressIndicatorView.isHidden = false
-        loadImage(url: imageData.url!, progress: { (progress) in
+        guard let url = postData.photos?[0].url else { return }
+        loadImage(url: url, progress: { (progress) in
         }) { (img, url) in
-            if url == self.data?.url {
+            if url == self.data?.photos?.first?.url {
                 self.isLoaded = true
                 self.imageView.image = img
                 self.progressIndicatorView.isHidden = true

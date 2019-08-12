@@ -10,10 +10,11 @@ import Foundation
 
 protocol DetailPhotoPresenterProtocol {
     func viewDidLoad()
-    func fetchComments(id: Int, ownerId: Int)
+    func fetchComments(postId: Int, ownerId: Int)
     func commentsDownloaded()
-    func sendComment(id: Int, ownerId: Int, commentText: String)
-    func setLike(photo: Image, completion: @escaping LikesCountCompletion)
+    func sendComment(postId: Int, ownerId: Int, commentText: String)
+    func setLike(postId: Int, ownerId: Int, completion: @escaping LikesCountCompletion)
+    func removeLike(postId: Int, ownerId: Int, completion: @escaping LikesCountCompletion)
 }
 
 class DetailPhotoPresenter {
@@ -29,24 +30,24 @@ extension DetailPhotoPresenter: DetailPhotoPresenterProtocol {
         
     }
     
-    func removeLike(photo: Image, completion: @escaping LikesCountCompletion) {
-        userService?.removeLike(photo: photo, completion: completion)
+    func removeLike(postId: Int, ownerId: Int, completion: @escaping LikesCountCompletion) {
+        userService?.removeLike(postId: postId, ownerId: ownerId, completion: completion)
     }
     
-    func setLike(photo: Image, completion: @escaping LikesCountCompletion) {
-        userService?.setLike(photo: photo, completion: completion)
+    func setLike(postId: Int, ownerId: Int, completion: @escaping LikesCountCompletion) {
+        userService?.setLike(postId: postId, ownerId: ownerId, completion: completion)
     }
     
     func commentsDownloaded() {
         pagingService?.fetchComplete()
     }
     
-    func sendComment(id: Int, ownerId: Int, commentText: String) {
-        userService?.createComment(id: id, ownerId: ownerId, message: commentText)
+    func sendComment(postId: Int, ownerId: Int, commentText: String) {
+        userService?.createComment(postId: postId, ownerId: ownerId, message: commentText)
     }
     
-    func fetchComments(id: Int, ownerId: Int) {
-        pagingService?.nextFetch(id: id, ownerId: ownerId, completion: { (comments) in
+    func fetchComments(postId: Int, ownerId: Int) {
+        pagingService?.nextFetch(postId: postId, ownerId: ownerId, completion: { (comments) in
             self.vc?.configureDataSource(comments: comments)
         })
     }

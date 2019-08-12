@@ -9,7 +9,7 @@
 import UIKit
 
 protocol ImagesRouterProtocol {
-    func moveToDetailScreen(photo: Image, profile: User)
+    func moveToDetailScreen(post: Post, profile: User)
 }
 
 class ImagesRouter {
@@ -17,11 +17,8 @@ class ImagesRouter {
 }
 
 extension ImagesRouter: ImagesRouterProtocol {
-    func moveToDetailScreen(photo: Image, profile: User) {
-        //let storyboard = UIStoryboard(name: "Main", bundle: nil)
-        //let viewController = storyboard.instantiateViewController(withIdentifier: "detailVC")
-        let viewController = Builder.shared.buildDetailPhotoScreen(data: photo, profile: profile)
+    func moveToDetailScreen(post: Post, profile: User) {
+        let viewController = Builder.shared.buildDetailPhotoScreen(data: post, profile: profile)
         vc?.navigationController?.pushViewController(viewController, animated: true)
-        
     }
 }

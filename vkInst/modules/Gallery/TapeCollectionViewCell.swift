@@ -11,6 +11,8 @@ import UIKit
 class TapeCollectionViewCell: UICollectionViewCell {
     
     
+    @IBOutlet weak var commentLabel: UILabel!
+    @IBOutlet weak var viewsCountLabel: UILabel!
     @IBOutlet weak var avatarImageView: UIImageView!
     @IBOutlet weak var nicknameLabel: UILabel!
     @IBOutlet weak var imageView: UIImageView! {
@@ -29,41 +31,52 @@ class TapeCollectionViewCell: UICollectionViewCell {
     @IBOutlet weak var likeButton: UIButton!
     @IBOutlet weak var likesCountLabel: UILabel!
 
-    @IBOutlet weak var profileView: TapeCollectionViewCell! {
-        didSet {
-            //profileView.layer.zPosition = 1
-        }
-    }
+    @IBOutlet weak var profileView: TapeCollectionViewCell! 
     
     @IBOutlet weak var commentButton: UIButton!
     
     weak var vc: ImagesViewController?
     private var progress: LoadingProgress?
     private var completion: LoadingCompletion?
-    var data: Image? = nil
+    var data: Post? = nil
     private var isZooming = false
     private var originalImageCenter: CGPoint?
     private let placeholder = UIImage(named: "placeholder")
     private var isLoaded = false
+    private var isHeightCalculated = false
     
     override func awakeFromNib() {
-        
+
     }
     
-    func configure(imageData: Image) {
-        guard imageData.url != data?.url else {
-            return
-        }
-        self.data = imageData
+    override func preferredLayoutAttributesFitting(_ layoutAttributes: UICollectionViewLayoutAttributes) -> UICollectionViewLayoutAttributes {
+        setNeedsLayout()
+        layoutIfNeeded()
+        let size = contentView.systemLayoutSizeFitting(layoutAttributes.size)
+        var newFrame = layoutAttributes.bounds
+        newFrame.size.height = CGFloat(ceilf(Float(size.height)))
+        newFrame.size.height = size.height
+        layoutAttributes.bounds = newFrame
+        return layoutAttributes
+    }
+    
+    func configure(postData: Post) {
+        guard postData.photos?.first?.url != data?.photos?.first?.url else { return }
+        self.data = postData
         imageView.image = placeholder
         
-        if imageData.isLiked! {
+        if postData.isUserLikes == true {
             likeButton.isSelected = true
         } else {
             likeButton.isSelected = false
         }
+        if let likesCount = postData.likesCount {
+            likesCountLabel.text = "\(likesCount) likes"
+        }
         
-        likesCountLabel.text = "\(imageData.likesCount!) likes"
+        if let viewsCount = postData.viewsCount {
+            viewsCountLabel.text = "\(viewsCount)"
+        }
         
         vc?.loadProfileInformation(setAvatar: { (img) in
             avatarImageView.image = img
@@ -72,11 +85,29 @@ class TapeCollectionViewCell: UICollectionViewCell {
             nicknameLabel.text = label
         })
         
-        loadImage(url: imageData.url!, progress: { (progress) in
+        /*
+        guard let photos = postData.photos else { return }
+        for photo in photos {
+            if let originalUrl = photo.url {
+                loadImage(url: originalUrl, progress: { (progress) in
+
+                }) { (img, url) in
+                    if url == originalUrl {
+                        self.data?.photos
+                        //god help me
+                    }
+                }
+            }
+        }
+        */
+        
+        guard let url = postData.photos?.first?.url else { return }
+        
+        loadImage(url: url, progress: { (progress) in
             self.updateProgressView(progress: progress)
         }) { (img, url) in
-            if url == self.data?.url {
-                self.data?.img = img
+            if url == self.data?.photos?.first?.url {
+                self.data?.photos?[0].img = img
                 self.isLoaded = true
                 self.imageView.image = img
             }
@@ -88,8 +119,19 @@ class TapeCollectionViewCell: UICollectionViewCell {
         vc?.cellIsLoading(url: url, progress: progress, completion: completion)
     }
     
-    func fetchPhotoComments(photoData: Image, completion: @escaping CommentsCompletion) {
-        vc?.fetchPhotoData(photoData: photoData, completion: completion)
+    func fetchPhotoComments() {
+        guard let postId = data?.id else { return }
+        guard let ownerId = data?.ownerId else { return }
+        vc?.fetchPostData(postId: postId, ownerId: ownerId, completion: { (response) in
+            guard let comments = response?.comments else { return }
+            if comments.isEmpty {
+                self.commentLabel.isHidden = true
+            } else {
+                self.commentLabel.isHidden = false
+                guard let text = comments.first?.text else { return }
+                self.commentLabel.text = text
+            }
+        })
     }
     
     func updateProgressView(progress: Float) {
@@ -100,25 +142,28 @@ class TapeCollectionViewCell: UICollectionViewCell {
     }
     
     override func prepareForReuse() {
-        //imageView.image = placeholder
     }
     
     @IBAction func commentButtonTapped(_ sender: UIButton) {
-        vc?.moveToDetailPhotoScreen(photo: data!)
+        if let data = data {
+            vc?.moveToDetailPhotoScreen(post: data)
+        }
     }
     
     @IBAction func likeButtonTapped(_ sender: UIButton) {
-        if data?.isLiked == true {
-            data?.isLiked = false
+        guard let postId = data?.id else { return }
+        guard let ownerId = data?.ownerId else { return }
+        if data?.isUserLikes == true {
+            data?.isUserLikes = false
             likeButton.isSelected = false
-            vc?.removeLike(photo: data!, completion: { (likesCount) in
+            vc?.removeLike(postId: postId, ownerId: ownerId, completion: { (likesCount) in
                 self.data?.likesCount = likesCount
                 self.likesCountLabel.text = "\(likesCount) likes"
             })
         } else {
-            data?.isLiked = true
+            data?.isUserLikes = true
             likeButton.isSelected = true
-            vc?.setLike(photo: data!, completion: { (likesCount) in
+            vc?.setLike(postId: postId, ownerId: ownerId, completion: { (likesCount) in
                 self.data?.likesCount = likesCount
                 self.likesCountLabel.text = "\(likesCount) likes"
             })
@@ -129,9 +174,11 @@ class TapeCollectionViewCell: UICollectionViewCell {
         if sender.state == .ended {
             let location = sender.location(in: self)
             if imageView.frame.contains(location) {
-                if !data!.isLiked! {
-                    vc?.setLike(photo: data!, completion: { (likesCount) in
-                        self.data?.isLiked = true
+                if data?.isUserLikes == false {
+                    guard let postId = data?.id else { return }
+                    guard let ownerId = data?.ownerId else { return }
+                    vc?.setLike(postId: postId, ownerId: ownerId, completion: { (likesCount) in
+                        self.data?.isUserLikes = true
                         self.likeButton.isSelected = true
                         self.likesCountLabel.text = "\(likesCount) likes"
                     })

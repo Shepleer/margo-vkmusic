@@ -18,7 +18,6 @@ struct CommentsResponse {
 
 extension CommentsResponse: Mappable {
     init?(map: Map) {
-        mapping(map: map)
     }
     
     mutating func mapping(map: Map) {
@@ -46,5 +45,18 @@ extension Comment: Mappable {
         date <- (map["date"])
         text <- (map["text"])
         postId <- (map["pid"])
+    }
+}
+
+struct SendCommentResponse {
+    var commentId: Int?
+}
+
+extension SendCommentResponse: Mappable {
+    init?(map: Map) {
+    }
+    
+    mutating func mapping(map: Map) {
+        commentId <- (map["comment_id"])
     }
 }

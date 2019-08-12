@@ -9,23 +9,29 @@
 import UIKit
 
 protocol ImagesViewControllerProtocol: class {
-    func configureWithPhotos(images: [Image])
+    func configureWithPhotos(posts: [Post])
     func loadAvatar(image: UIImage)
     func setProfileData(user: User)
-    func setLike(photo: Image, completion: @escaping (_ likes: Int) -> ())
-    func removeLike(photo: Image, completion: @escaping (_ likes: Int) -> ())
-    func fetchPhotoData(photoData: Image, completion: @escaping CommentsCompletion)
-    func moveToDetailPhotoScreen(photo: Image)
+    func setLike(postId: Int, ownerId: Int, completion: @escaping LikesCountCompletion)
+    func removeLike(postId: Int, ownerId: Int, completion: @escaping LikesCountCompletion)
+    func fetchPostData(postId: Int, ownerId: Int, completion: @escaping CommentsCompletion)
+    func moveToDetailPhotoScreen(post: Post)
+}
+
+protocol PhotosViewControllerCellDelegate: class {
+    
 }
 
 class ImagesViewController: UIViewController {
     
     var presenter: ImagePresenterProtocol?
-    var flowLayout: ImagesCollectionViewFlowLayout? = nil
-    var images = [Image]()
+    var flowLayout: ImagesCollectionViewFlowLayout = ImagesCollectionViewFlowLayout()
+    var tapeFlowLayout: TapeCollectionViewFlowLayout = TapeCollectionViewFlowLayout()
+    var posts = [Post]()
     var profile: User? = nil
     var avatarImage: UIImage? = nil
     var router: ImagesRouter?
+    private var proposedContentOffset: CGPoint? = nil
     private let photosCollectionViewFooterIdentifier = "photosFooter"
     
     @IBOutlet weak var activityViewTopOffset: NSLayoutConstraint!
@@ -58,7 +64,8 @@ class ImagesViewController: UIViewController {
         configureUI()
         presenter?.nextFetch()
         imageCollectionView.register(UINib(nibName: "PhotosCollectionFooterView", bundle: nil), forSupplementaryViewOfKind: UICollectionView.elementKindSectionFooter, withReuseIdentifier: photosCollectionViewFooterIdentifier)
-        //imageCollectionView.register(PhotosCollectionFooterView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionFooter, withReuseIdentifier: photosCollectionViewFooterIdentifier)
+        flowLayout.vc = self
+        tapeFlowLayout.vc = self
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -66,7 +73,7 @@ class ImagesViewController: UIViewController {
     }
     
     func getViewModeState() -> CellType {
-        return flowLayout?.cellType ?? CellType.Grid
+        return flowLayout.cellType ?? CellType.Grid
     }
     
     func cancellingDownload(image: Image) {
@@ -79,22 +86,17 @@ class ImagesViewController: UIViewController {
     
     @IBAction func tapeModeButtonTapped(_ sender: UIButton) {
         setTapeMode()
-    }
-    
-    func changeViewMode() {
-        flowLayout?.prepare()
-        let scrollViewContentSize = CGSize(width: view.frame.width, height: headerView.frame.height + headerViewBottom.accessibilityFrame.height + secondHeaderView.frame.height + secondHeaderBottom.accessibilityFrame.height + imageCollectionView.collectionViewLayout.collectionViewContentSize.height)
-        mainScrollView.contentSize = scrollViewContentSize
+        imageCollectionView.reloadData()
     }
 }
 
 extension ImagesViewController: ImagesViewControllerProtocol {
-    func configureWithPhotos(images: [Image]) {
-        self.images.append(contentsOf: images)
+    func configureWithPhotos(posts: [Post]) {
+        self.posts.append(contentsOf: posts)
         imageCollectionView.reloadSections(IndexSet(integer: 0))
         let scrollViewContentSize = CGSize(width: view.frame.width, height: headerView.frame.height + headerViewBottom.accessibilityFrame.height + secondHeaderView.frame.height + secondHeaderBottom.accessibilityFrame.height + imageCollectionView.collectionViewLayout.collectionViewContentSize.height)
         mainScrollView.contentSize = scrollViewContentSize
-        presenter?.imagesDownloaded()
+        presenter?.postsDownloaded()
     }
     
     func loadAvatar(image: UIImage) {
@@ -112,8 +114,8 @@ extension ImagesViewController: ImagesViewControllerProtocol {
         }
     }
     
-    func fetchPhotoData(photoData: Image, completion: @escaping CommentsCompletion) {
-        presenter?.fetchComments(photoData: photoData, completion: completion)
+    func fetchPostData(postId: Int, ownerId: Int, completion: @escaping CommentsCompletion) {
+        presenter?.fetchComments(postId: postId, ownerId: ownerId, completion: completion)
     }
     
     func cellIsLoading(url: String, progress: @escaping (_ progress: Float) -> (), completion: @escaping (_ image: UIImage, _ url: String) -> ()) {
@@ -133,17 +135,17 @@ extension ImagesViewController: ImagesViewControllerProtocol {
         }
     }
     
-    func setLike(photo: Image, completion: @escaping LikesCountCompletion) {
-        presenter?.setLike(photo: photo, completion: completion)
+    func setLike(postId: Int, ownerId: Int, completion: @escaping LikesCountCompletion) {
+        presenter?.setLike(postId: postId, ownerId: ownerId, completion: completion)
     }
     
-    func removeLike(photo: Image, completion: @escaping LikesCountCompletion) {
-        presenter?.removeLike(photo: photo, completion: completion)
+    func removeLike(postId: Int, ownerId: Int, completion: @escaping LikesCountCompletion) {
+        presenter?.removeLike(postId: postId, ownerId: ownerId, completion: completion)
     }
     
-    func moveToDetailPhotoScreen(photo: Image) {
+    func moveToDetailPhotoScreen(post: Post) {
         profile?.avatarImage = avatarImage
-        router?.moveToDetailScreen(photo: photo, profile: profile!)
+        router?.moveToDetailScreen(post: post, profile: profile!)
     }
     
     func disableScrollView() {
@@ -152,6 +154,10 @@ extension ImagesViewController: ImagesViewControllerProtocol {
     
     func enableScrollView() {
         mainScrollView.isScrollEnabled = true
+    }
+    
+    func setCurrentContentOffset(offset: CGPoint) {
+        proposedContentOffset = offset
     }
 }
 
@@ -191,7 +197,7 @@ extension ImagesViewController: UIScrollViewDelegate {
 
 extension ImagesViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return images.count
+        return posts.count
     }
     
     func numberOfSections(in collectionView: UICollectionView) -> Int {
@@ -214,11 +220,11 @@ extension ImagesViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cellIdentifier = "imgCell"
         let tapeCellIdentifier = "bigCell"
-        if flowLayout?.cellType == .Grid {
+        if flowLayout.cellType == .Grid {
             let cell = imageCollectionView.dequeueReusableCell(withReuseIdentifier: cellIdentifier, for: indexPath) as? ImageCollectionViewCell
             cell?.vc = self
             return cell!
-        } else if flowLayout?.cellType == .Tape {
+        } else if flowLayout.cellType == .Tape {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: tapeCellIdentifier, for: indexPath) as? TapeCollectionViewCell
             cell?.vc = self
             return cell!
@@ -227,13 +233,14 @@ extension ImagesViewController: UICollectionViewDelegate {
     }
     
     func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
-        let image = images[indexPath.row]
-        if flowLayout?.cellType == .Grid {
+        let post = posts[indexPath.row]
+        if flowLayout.cellType == .Grid {
             let cell = cell as! ImageCollectionViewCell
-            cell.configure(imageData: image)
-        } else if flowLayout?.cellType == .Tape {
+            cell.configure(postData: post)
+        } else if flowLayout.cellType == .Tape {
             let cell = cell as! TapeCollectionViewCell
-            cell.configure(imageData: image)
+            cell.configure(postData: post)
+            cell.fetchPhotoComments()
         }
     }
     
@@ -245,10 +252,19 @@ extension ImagesViewController: UICollectionViewDelegate {
         }
     }
     
+
+    
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         setTapeMode()
-        if let center = imageCollectionView.layoutAttributesForItem(at: indexPath)?.center {
-            mainScrollView.setContentOffset(CGPoint(x: 0, y: center.y - headerView.frame.height - secondHeaderView.frame.height), animated: false)
+        if posts.count - 1 == indexPath.row {
+            if let height = imageCollectionView.layoutAttributesForItem(at: indexPath)?.bounds.height {
+                let contentOffset = CGPoint(x: 0, y: imageCollectionView.contentSize.height - height - headerView.frame.height - secondHeaderView.frame.height)
+                mainScrollView.setContentOffset(contentOffset, animated: false)
+            }
+        } else {
+            if let center = imageCollectionView.layoutAttributesForItem(at: indexPath)?.center {
+                mainScrollView.setContentOffset(CGPoint(x: 0, y: center.y - headerView.frame.height - secondHeaderView.frame.height), animated: false)
+            }
         }
     }
 }
@@ -257,10 +273,7 @@ private extension ImagesViewController {
     func configureUI() {
         navigationController?.isNavigationBarHidden = true
         gridModeButton.isSelected = true
-        if let layout = imageCollectionView.collectionViewLayout as? ImagesCollectionViewFlowLayout {
-            flowLayout = layout
-            flowLayout?.vc = self
-        }
+        
         mainScrollView.frame = view.frame
         let scrollViewContentSize = CGSize(width: view.frame.width, height: headerView.frame.height + headerViewBottom.accessibilityFrame.height + secondHeaderView.frame.height + secondHeaderBottom.accessibilityFrame.height + imageCollectionView.contentSize.height)
         mainScrollView.contentSize = scrollViewContentSize
@@ -275,22 +288,43 @@ private extension ImagesViewController {
     }
     
     func setGridMode() {
-        if flowLayout?.cellType != .Grid {
-            flowLayout?.cellType = .Grid
-            changeViewMode()
+        if flowLayout.cellType != .Grid {
+            flowLayout.cellType = .Grid
             tapeModeButton.isSelected = false
             gridModeButton.isSelected = true
             imageCollectionView.reloadSections(IndexSet(integer: 0))
+            setGridFlowLayout()
         }
     }
     
     func setTapeMode() {
-        if flowLayout?.cellType != .Tape {
-            flowLayout?.cellType = .Tape
-            changeViewMode()
+        changeFlowLayout()
+        if flowLayout.cellType != .Tape {
+            flowLayout.cellType = .Tape
             tapeModeButton.isSelected = true
             gridModeButton.isSelected = false
             imageCollectionView.reloadSections(IndexSet(integer: 0))
+            changeFlowLayout()
+        }
+    }
+    
+    func changeFlowLayout() {
+        imageCollectionView.setCollectionViewLayout(tapeFlowLayout, animated: false) { (finished) in
+            if finished {
+                self.mainScrollView.contentOffset = self.proposedContentOffset ?? CGPoint(x: 0, y: 0)
+                let scrollViewContentSize = CGSize(width: self.view.frame.width, height: self.headerView.frame.height + self.headerViewBottom.accessibilityFrame.height + self.secondHeaderView.frame.height + self.secondHeaderBottom.accessibilityFrame.height + self.imageCollectionView.collectionViewLayout.collectionViewContentSize.height)
+                self.mainScrollView.contentSize = scrollViewContentSize
+            }
+        }
+    }
+    
+    func setGridFlowLayout() {
+        imageCollectionView.setCollectionViewLayout(flowLayout, animated: true) { (finished) in
+            if finished {
+                self.mainScrollView.contentOffset = self.proposedContentOffset ?? CGPoint(x: 0, y: 0)
+                let scrollViewContentSize = CGSize(width: self.view.frame.width, height: self.headerView.frame.height + self.headerViewBottom.accessibilityFrame.height + self.secondHeaderView.frame.height + self.secondHeaderBottom.accessibilityFrame.height + self.imageCollectionView.collectionViewLayout.collectionViewContentSize.height)
+                self.mainScrollView.contentSize = scrollViewContentSize
+            }
         }
     }
 }

@@ -9,12 +9,12 @@
 import Foundation
 
 protocol CommentsPageServiceProtocol {
-    func nextFetch(id: Int, ownerId: Int, completion: @escaping (_ photos: [Comment]) -> ()) -> ()
+    func nextFetch(postId: Int, ownerId: Int, completion: @escaping (_ comments: [Comment]) -> ()) -> ()
     func fetchComplete()
 }
 
 class CommentsPageService {
-    private var offset = 20
+    private var offset = 0
     private var isLoading = false
     private var isAllLoaded = false
     var requestService: APIService?
@@ -26,12 +26,12 @@ class CommentsPageService {
 }
 
 extension CommentsPageService: CommentsPageServiceProtocol {
-    func nextFetch(id: Int, ownerId: Int, completion: @escaping (_ photos: [Comment]) -> ()) -> () {
+    func nextFetch(postId: Int, ownerId: Int, completion: @escaping (_ comments: [Comment]) -> ()) -> () {
         if isLoading || isAllLoaded {
             return
         }
         isLoading = true
-        let url = "https://api.vk.com/method/photos.getComments?owner_id=\(ownerId)&photo_id=\(id)&need_likes=1&offset=\(offset)&sort=asc&extended=1&access_token=\(RequestConfigurations.token)&v=5.101"
+        let url = "https://api.vk.com/method/wall.getComments?owner_id=\(ownerId)&post_id=\(postId)&need_likes=1&offset=0&count=20&sort=asc&thread_items_count=10&preview_lenght=0&extended=1&access_token=\(RequestConfigurations.token)&v=5.101"
         requestService?.getData(urlStr: url, method: .get, body: nil, headers: nil, completion: { (response: CommentsResponse?, err) in
             if let response = response {
                 self.offset += 20

@@ -10,13 +10,13 @@ import UIKit
 
 protocol ImagePresenterProtocol {
     func viewDidLoad()
-    func imagesDownloaded()
+    func postsDownloaded()
     func cancelDownload(image: Image)
     func loadImage(url: String, progress: @escaping (_ progress: Float) -> (), completion: @escaping (_ image: UIImage, _ url: String) -> ())
-    func setLike(photo: Image, completion: @escaping (_ likes: Int) -> ())
-    func removeLike(photo: Image, completion: @escaping (_ likes: Int) -> ())
+    func setLike(postId: Int, ownerId: Int, completion: @escaping LikesCountCompletion)
+    func removeLike(postId: Int, ownerId: Int, completion: @escaping LikesCountCompletion)
     func nextFetch()
-    func fetchComments(photoData: Image, completion: @escaping CommentsCompletion)
+    func fetchComments(postId: Int, ownerId: Int, completion: @escaping CommentsCompletion)
     func checkIsAllLoaded() -> Bool
 }
 
@@ -30,6 +30,7 @@ class ImagePresenter: NSObject {
 }
 
 extension ImagePresenter: ImagePresenterProtocol {
+    
     func viewDidLoad() {
         getProfile()
     }
@@ -38,7 +39,7 @@ extension ImagePresenter: ImagePresenterProtocol {
         downloadService?.cancelDownload(image: image)
     }
     
-    func imagesDownloaded() {
+    func postsDownloaded() {
         pageService?.fetchComplete()
     }
     
@@ -46,21 +47,21 @@ extension ImagePresenter: ImagePresenterProtocol {
         downloadService?.downloadImage(url: url, progress: progress, completion: completion)
     }
     
-    func setLike(photo: Image, completion: @escaping (_ likes: Int) -> ()) {
-        userService?.setLike(photo: photo, completion: completion)
+    func fetchComments(postId: Int, ownerId: Int, completion: @escaping CommentsCompletion) {
+        userService?.fetchPostComments(postId: postId, ownerId: ownerId, completion: completion)
     }
     
-    func removeLike(photo: Image, completion: @escaping (_ likes: Int) -> ()) {
-        userService?.removeLike(photo: photo, completion: completion)
+    func setLike(postId: Int, ownerId: Int, completion: @escaping LikesCountCompletion) {
+        userService?.setLike(postId: postId, ownerId: ownerId, completion: completion)
     }
     
-    func fetchComments(photoData: Image, completion: @escaping CommentsCompletion) {
-        userService?.fetchPhotoComments(photoData: photoData, completion: completion)
+    func removeLike(postId: Int, ownerId: Int, completion: @escaping LikesCountCompletion) {
+        userService?.removeLike(postId: postId, ownerId: ownerId, completion: completion)
     }
     
     func nextFetch() {
-        pageService?.nextFetch(completion: { (images) in
-            self.vc?.configureWithPhotos(images: images)
+        pageService?.nextFetch(completion: { (posts) in
+            self.vc?.configureWithPhotos(posts: posts)
         })
     }
     

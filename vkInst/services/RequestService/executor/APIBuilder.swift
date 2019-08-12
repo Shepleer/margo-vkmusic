@@ -20,7 +20,8 @@ protocol APIBuilderProtocol {
 class APIBuilder: APIBuilderProtocol {
     func build(url: String, method: requestMethod, _ body: Dictionary<String, Any>? = nil, _ headers: Dictionary<String, String>? = nil) throws -> URLRequest {
         var req: URLRequest
-        if let url = URL(string: url.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)!) {
+        guard let url = url.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else { throw RequestError.invalidURL }
+        if let url = URL(string: url) {
             req = URLRequest(url: url)
             req.httpMethod = method.rawValue
             if let body = body {
