@@ -9,6 +9,19 @@
 import Foundation
 import ObjectMapper
 
+struct CreatePostResponse {
+    var postId: Int?
+}
+
+extension CreatePostResponse: Mappable {
+    init?(map: Map) {
+    }
+    
+    mutating func mapping(map: Map) {
+        postId <- (map["post_id"])
+    }
+}
+
 struct PostResponse {
     var count: Int?
     var items: [Post]?
@@ -44,6 +57,7 @@ struct Post {
     //var profiles: [User]?
     //var groups: [Group]?
     var photos: [Image]?
+    var gifs: [Gif]?
 }
 
 extension Post: Mappable {
@@ -71,8 +85,10 @@ extension Post: Mappable {
         //groups <- (map["groups"])
         if map.JSON["copy_history"] == nil {
             photos <- (map["attachments"], AttachmentsTransform())
+            gifs <- (map["attachments"], AttachmentsGifTransform())
         } else {
             photos <- (map["copy_history"], CopyHistoryTransform())
+            gifs <- (map["copy_history"], CopyHistoryGifTransform())
         }
     }
 }
@@ -121,6 +137,58 @@ fileprivate struct CopyHistoryTransform: TransformType {
     }
     
     func transformToJSON(_ value: [Image]?) -> [[String : Any]]? {
+        return nil
+    }
+}
+
+fileprivate struct CopyHistoryGifTransform: TransformType {
+    typealias Object = [Gif]
+    typealias JSON = [[String: Any]]
+    
+    func transformFromJSON(_ value: Any?) -> [Gif]? {
+        var gifs = [Gif]()
+        if let history = value as? [[String: Any]] {
+            if let attachments = history[0]["attachments"] as? [[String: Any]] {
+                for item in attachments {
+                    if let document = item["doc"] as? [String: Any] {
+                        if document["ext"] as? String == "gif" {
+                            if let gif = Gif(map: Map(mappingType: .fromJSON, JSON: document)) {
+                                gifs.append(gif)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return gifs
+    }
+    
+    func transformToJSON(_ value: [Gif]?) -> [[String : Any]]? {
+        return nil
+    }
+}
+
+fileprivate struct AttachmentsGifTransform: TransformType {
+    typealias Object = [Gif]
+    typealias JSON = [[String: Any]]
+    
+    func transformFromJSON(_ value: Any?) -> [Gif]? {
+        var gifs = [Gif]()
+        if let attachments = value as? [[String: Any]] {
+            for item in attachments {
+                if let document = item["doc"] as? [String: Any] {
+                    if document["ext"] as? String == "gif" {
+                        if let gif = Gif(map: Map(mappingType: .fromJSON, JSON: document)) {
+                            gifs.append(gif)
+                        }
+                    }
+                }
+            }
+        }
+        return gifs
+    }
+    
+    func transformToJSON(_ value: [Gif]?) -> [[String : Any]]? {
         return nil
     }
 }

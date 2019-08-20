@@ -11,8 +11,8 @@ import ObjectMapper
 
 
 protocol APIServiceProtocol {
-    func getData<T: Mappable>(urlStr: String, method: requestMethod, body: Dictionary<String, Any>?, headers: Dictionary<String, String>?, completion: @escaping (_ response: T?, _ error: Error?) -> ())
-    func getData<T: Mappable>(urlStr: String, method: requestMethod, body: Dictionary<String, Any>?, headers: Dictionary<String, String>?, completion: @escaping (_ response: [T]?, _ error: Error?) -> ())
+    func getData<T: Mappable>(urlStr: String, method: requestMethod, body: Data?, headers: Dictionary<String, String>?, completion: @escaping (_ response: T?, _ error: Error?) -> ())
+    func getData<T: Mappable>(urlStr: String, method: requestMethod, body: Data?, headers: Dictionary<String, String>?, completion: @escaping (_ response: [T]?, _ error: Error?) -> ())
 }
 
 enum RequestError: Error {
@@ -20,6 +20,7 @@ enum RequestError: Error {
     case invalidJSON
     case runError
     case parseError
+    case badData
 }
 
 extension RequestError: LocalizedError {
@@ -33,6 +34,8 @@ extension RequestError: LocalizedError {
             return NSLocalizedString("Wrong JSON", comment: "Wrong JSON")
         case .parseError:
             return NSLocalizedString("Parse error", comment: "Check response data")
+        case .badData:
+            return NSLocalizedString("Bad data", comment: "Something wrong with request body")
         }
     }
 }
@@ -43,7 +46,7 @@ class APIService: APIServiceProtocol {
     var parser: APIParserProtocol?
     
     private let queue = DispatchQueue.global(qos: .background)
-    func getData<T: Mappable>(urlStr: String, method: requestMethod, body: Dictionary<String, Any>? = nil,
+    func getData<T: Mappable>(urlStr: String, method: requestMethod, body: Data? = nil,
                               headers: Dictionary<String, String>? = nil, completion: @escaping (_ outArray: T?, _ error: Error?) -> ()) {
         queue.async { [weak self] in
             var req: URLRequest?
@@ -73,7 +76,7 @@ class APIService: APIServiceProtocol {
         }
     }
     
-    func getData<T: Mappable>(urlStr: String, method: requestMethod, body: Dictionary<String, Any>? = nil,
+    func getData<T: Mappable>(urlStr: String, method: requestMethod, body: Data? = nil,
                               headers: Dictionary<String, String>? = nil, completion: @escaping (_ outArray: [T]?, _ error: Error?) -> ()) {
         queue.async { [weak self] in
             var req: URLRequest?

@@ -26,6 +26,7 @@ extension PhotosResponse: Mappable {
 
 struct Image {
     var img: UIImage?
+    var accessKey: String?
     var url: String?
     var id: Int?
     var albumId: Int?
@@ -39,8 +40,10 @@ extension Image: Mappable {
     }
     
     mutating func mapping(map: Map) {
+        accessKey <- (map["access_key"])
         url <- (map["sizes"], UrlTransform())
         id <- (map["id"])
+        albumId <- (map["album_id"])
         ownerId <- (map["owner_id"])
         caption <- (map["text"])
     }

@@ -7,7 +7,7 @@
 //
 
 import Foundation
-
+import Photos
 protocol DetailPhotoPresenterProtocol {
     func viewDidLoad()
     func fetchComments(postId: Int, ownerId: Int)

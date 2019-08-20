@@ -14,7 +14,7 @@ protocol ConformRouterProtocol {
 
 class ConformRouter: ConformRouterProtocol {
     func moveToMainVC() {
-        let vc = Builder.shared.createGalleryVC()
+        guard let vc = Builder.shared.createGalleryVC() else { return }
         let window = UIApplication.shared.keyWindow
         let rootViewController = window?.rootViewController
         vc.view.frame = (rootViewController?.view.frame)!

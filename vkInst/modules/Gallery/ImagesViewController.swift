@@ -36,6 +36,7 @@ class ImagesViewController: UIViewController {
     
     @IBOutlet weak var activityViewTopOffset: NSLayoutConstraint!
     @IBOutlet weak var activityView: UIView!
+    @IBOutlet weak var addPostButton: UIButton!
     @IBOutlet weak var headerViewBottom: NSLayoutConstraint!
     @IBOutlet weak var secondHeaderBottom: NSLayoutConstraint!
     @IBOutlet weak var followersCountLabel: UILabel!
@@ -88,6 +89,10 @@ class ImagesViewController: UIViewController {
         setTapeMode()
         imageCollectionView.reloadData()
     }
+    
+    @IBAction func uploadPostButtonPressed(_ sender: UIButton) {
+        router?.moveToUploadPostScreen()
+    }
 }
 
 extension ImagesViewController: ImagesViewControllerProtocol {
@@ -120,6 +125,10 @@ extension ImagesViewController: ImagesViewControllerProtocol {
     
     func cellIsLoading(url: String, progress: @escaping (_ progress: Float) -> (), completion: @escaping (_ image: UIImage, _ url: String) -> ()) {
         presenter?.loadImage(url: url, progress: progress, completion: completion)
+    }
+    
+    func loadGif(url: String, progress: @escaping (_ progress: Float) -> (), completion: @escaping (_ image: UIImage, _ url: String) -> ()) {
+        presenter?.loadGif(url: url, progress: progress, completion: completion)
     }
     
     func loadProfileInformation(setAvatar: (_ avatar: UIImage) -> (), setName: (_ label: String) -> ()) {
@@ -206,7 +215,7 @@ extension ImagesViewController: UICollectionViewDataSource {
     
     
     func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
-        let footerView = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: photosCollectionViewFooterIdentifier, for: indexPath) as! PhotosCollectionFooterView
+        guard let footerView = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: photosCollectionViewFooterIdentifier, for: indexPath) as? PhotosCollectionFooterView else { fatalError() }
         footerView.backgroundColor = UIColor.clear
         return footerView
     }
@@ -221,13 +230,13 @@ extension ImagesViewController: UICollectionViewDelegate {
         let cellIdentifier = "imgCell"
         let tapeCellIdentifier = "bigCell"
         if flowLayout.cellType == .Grid {
-            let cell = imageCollectionView.dequeueReusableCell(withReuseIdentifier: cellIdentifier, for: indexPath) as? ImageCollectionViewCell
-            cell?.vc = self
-            return cell!
+            guard let cell = imageCollectionView.dequeueReusableCell(withReuseIdentifier: cellIdentifier, for: indexPath) as? ImageCollectionViewCell else { fatalError() }
+            cell.vc = self
+            return cell
         } else if flowLayout.cellType == .Tape {
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: tapeCellIdentifier, for: indexPath) as? TapeCollectionViewCell
-            cell?.vc = self
-            return cell!
+            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: tapeCellIdentifier, for: indexPath) as? TapeCollectionViewCell else { fatalError() }
+            cell.vc = self
+            return cell
         }
         return UICollectionViewCell(frame: .null)
     }
@@ -235,10 +244,10 @@ extension ImagesViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
         let post = posts[indexPath.row]
         if flowLayout.cellType == .Grid {
-            let cell = cell as! ImageCollectionViewCell
+            guard let cell = cell as? ImageCollectionViewCell else { fatalError() }
             cell.configure(postData: post)
         } else if flowLayout.cellType == .Tape {
-            let cell = cell as! TapeCollectionViewCell
+            guard let cell = cell as? TapeCollectionViewCell else { fatalError() }
             cell.configure(postData: post)
             cell.fetchPhotoComments()
         }

@@ -25,20 +25,37 @@ class ImageCollectionViewCell: UICollectionViewCell {
     }
     
     func configure(postData: Post) {
-        guard postData.photos?.first?.url != data?.photos?.first?.url else { return }
+        guard postData.photos?.first?.url != data?.photos?.first?.url || postData.gifs?.first?.url != data?.gifs?.first?.url else { return }
         data = postData
         imageView.image = placeholder
         
         progressIndicatorView.isHidden = false
-        guard let url = postData.photos?[0].url else { return }
-        loadImage(url: url, progress: { (progress) in
-        }) { (img, url) in
-            if url == self.data?.photos?.first?.url {
-                self.isLoaded = true
-                self.imageView.image = img
-                self.progressIndicatorView.isHidden = true
+        
+        if let url = postData.gifs?.first?.url {
+            loadGif(url: url, progress: { (progress) in
+            }) { (gif, url) in
+                if url == self.data?.gifs?.first?.url {
+                    self.isLoaded = true
+                    self.imageView.image = gif
+                    self.imageView.startAnimating()
+                    self.progressIndicatorView.isHidden = true
+                }
+            }
+        } else if let url = postData.photos?.first?.url {
+            loadImage(url: url, progress: { (progress) in
+            }) { (img, url) in
+                if url == self.data?.photos?.first?.url {
+                    self.isLoaded = true
+                    self.imageView.image = img
+                    self.progressIndicatorView.isHidden = true
+                }
             }
         }
+    }
+    
+    func loadGif(url: String, progress: @escaping LoadingProgress, completion: @escaping PhotoLoadingCompletion) {
+        isLoaded = false
+        vc?.loadGif(url: url, progress: progress, completion: completion)
     }
     
     func loadImage(url: String, progress: @escaping LoadingProgress, completion: @escaping PhotoLoadingCompletion) {

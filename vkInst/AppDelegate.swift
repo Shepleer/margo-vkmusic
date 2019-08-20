@@ -15,16 +15,18 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        let rootVC: UIViewController
+        let rootVC: UIViewController?
         let tokenEndDate = UserDefaults.standard.double(forKey: "lifetime")
         let presentTime = NSTimeIntervalSince1970
-        if UserDefaults.standard.string(forKey: "accessToken") != nil && tokenEndDate > presentTime{
+        if UserDefaults.standard.string(forKey: "accessToken") != nil && tokenEndDate > presentTime {
             rootVC = Builder.shared.createGalleryVC()
         } else {
             rootVC = Builder.shared.buildLogInScreen()
         }
-        window?.rootViewController = rootVC
-        window?.makeKeyAndVisible()
+        if let rootVC = rootVC {
+            window?.rootViewController = rootVC
+            window?.makeKeyAndVisible()
+        }
         return true
     }
     

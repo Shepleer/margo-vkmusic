@@ -61,7 +61,7 @@ class TapeCollectionViewCell: UICollectionViewCell {
     }
     
     func configure(postData: Post) {
-        guard postData.photos?.first?.url != data?.photos?.first?.url else { return }
+        guard postData.photos?.first?.url != data?.photos?.first?.url || postData.gifs?.first?.url == data?.gifs?.first?.url else { return }
         self.data = postData
         imageView.image = placeholder
         
@@ -101,15 +101,24 @@ class TapeCollectionViewCell: UICollectionViewCell {
         }
         */
         
-        guard let url = postData.photos?.first?.url else { return }
-        
-        loadImage(url: url, progress: { (progress) in
-            self.updateProgressView(progress: progress)
-        }) { (img, url) in
-            if url == self.data?.photos?.first?.url {
-                self.data?.photos?[0].img = img
-                self.isLoaded = true
-                self.imageView.image = img
+        if let url = postData.gifs?.first?.url {
+            loadGif(url: url, progress: { (progress) in
+            }) { (gif, url) in
+                if url == self.data?.gifs?.first?.url {
+                    self.data?.gifs?[0].gif = gif
+                    self.isLoaded = true
+                    self.imageView.image = gif
+                }
+            }
+        } else if let url = postData.photos?.first?.url {
+            loadImage(url: url, progress: { (progress) in
+                self.updateProgressView(progress: progress)
+            }) { (img, url) in
+                if url == self.data?.photos?.first?.url {
+                    self.data?.photos?[0].img = img
+                    self.isLoaded = true
+                    self.imageView.image = img
+                }
             }
         }
     }
@@ -117,6 +126,11 @@ class TapeCollectionViewCell: UICollectionViewCell {
     func loadImage(url: String, progress: @escaping LoadingProgress, completion: @escaping PhotoLoadingCompletion) {
         isLoaded = false
         vc?.cellIsLoading(url: url, progress: progress, completion: completion)
+    }
+    
+    func loadGif(url: String, progress: @escaping LoadingProgress, completion: @escaping PhotoLoadingCompletion) {
+        isLoaded = false
+        vc?.loadGif(url: url, progress: progress, completion: completion)
     }
     
     func fetchPhotoComments() {

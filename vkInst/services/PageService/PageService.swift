@@ -38,7 +38,7 @@ extension PageService: PageServiceProtocol {
                 if response.count! <= self.offset {
                     self.isAllLoaded = true
                 }
-                guard let posts = response.items?.filter({ $0.photos?.isEmpty == false }) else { return }
+                guard let posts = response.items?.filter({ $0.photos?.isEmpty == false || $0.gifs?.isEmpty == false }) else { return }
                 completion(posts)
             }
         })

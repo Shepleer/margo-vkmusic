@@ -18,7 +18,12 @@ class ImagesRouter {
 
 extension ImagesRouter: ImagesRouterProtocol {
     func moveToDetailScreen(post: Post, profile: User) {
-        let viewController = Builder.shared.buildDetailPhotoScreen(data: post, profile: profile)
+        guard let viewController = Builder.shared.buildDetailPhotoScreen(data: post, profile: profile) else { return }
+        vc?.navigationController?.pushViewController(viewController, animated: true)
+    }
+    
+    func moveToUploadPostScreen() {
+        guard let viewController = Builder.shared.buildUploadPostScreen() else { return }
         vc?.navigationController?.pushViewController(viewController, animated: true)
     }
 }

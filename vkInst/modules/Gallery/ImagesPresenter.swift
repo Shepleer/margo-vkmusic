@@ -13,6 +13,7 @@ protocol ImagePresenterProtocol {
     func postsDownloaded()
     func cancelDownload(image: Image)
     func loadImage(url: String, progress: @escaping (_ progress: Float) -> (), completion: @escaping (_ image: UIImage, _ url: String) -> ())
+    func loadGif(url: String, progress: @escaping (_ progress: Float) -> (), completion: @escaping (_ image: UIImage, _ url: String) -> ())
     func setLike(postId: Int, ownerId: Int, completion: @escaping LikesCountCompletion)
     func removeLike(postId: Int, ownerId: Int, completion: @escaping LikesCountCompletion)
     func nextFetch()
@@ -45,6 +46,10 @@ extension ImagePresenter: ImagePresenterProtocol {
     
     func loadImage(url: String, progress: @escaping (_ progress: Float) -> (), completion: @escaping (_ image: UIImage, _ url: String) -> ()) {
         downloadService?.downloadImage(url: url, progress: progress, completion: completion)
+    }
+    
+    func loadGif(url: String, progress: @escaping (_ progress: Float) -> (), completion: @escaping (_ image: UIImage, _ url: String) -> ()) {
+        downloadService?.downloadGif(url: url, progress: progress, completion: completion)
     }
     
     func fetchComments(postId: Int, ownerId: Int, completion: @escaping CommentsCompletion) {

@@ -26,7 +26,6 @@ class UserService {
         static let userId = UserDefaults.standard.string(forKey: "userId")!
         static let token = UserDefaults.standard.string(forKey: "accessToken")!
         static let userGet = "https://api.vk.com/method/users.get?fields=photo_100,counters,screen_name&access_token=\(token)&v=5.101"
-        static let test = "https://api.vk.com/method/execute?code=return[API.users.isAppUser()];&access_token=\(token)&v=5.101"
     }
 }
 

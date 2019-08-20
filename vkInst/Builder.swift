@@ -13,9 +13,9 @@ class Builder {
     static let shared = Builder()
     private init() {}
     
-    func buildLogInScreen() -> UIViewController {
+    func buildLogInScreen() -> UIViewController? {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
-        let vc = storyboard.instantiateViewController(withIdentifier: "LogInVC") as! LogInViewController
+        guard let vc = storyboard.instantiateViewController(withIdentifier: "LogInVC") as? LogInViewController else { return nil }
         let nav = UINavigationController(rootViewController: vc)
         let presenter = LogInPresenter()
         let router = LogInRouter()
@@ -26,9 +26,9 @@ class Builder {
         return nav
     }
     
-    func buildConformWebView() -> UIViewController {
+    func buildConformWebView() -> UIViewController? {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
-        let vc = storyboard.instantiateViewController(withIdentifier: "WebVC") as! ConformViewController
+        guard let vc = storyboard.instantiateViewController(withIdentifier: "WebVC") as? ConformViewController else { return nil }
         let presenter = ConformPresenter()
         let router = ConformRouter()
         vc.presenter = presenter
@@ -37,9 +37,9 @@ class Builder {
         return vc
     }
     
-    func createGalleryVC() -> UIViewController {
+    func createGalleryVC() -> UIViewController? {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
-        let vc = storyboard.instantiateViewController(withIdentifier: "ImagesVC") as! ImagesViewController
+        guard let vc = storyboard.instantiateViewController(withIdentifier: "ImagesVC") as? ImagesViewController else { return nil }
         let nav = UINavigationController(rootViewController: vc)
         let requestService = buildAPIService()
         let presenter = ImagePresenter()
@@ -61,24 +61,51 @@ class Builder {
         return nav
     }
     
-    func buildDetailPhotoScreen(data: Post, profile: User) -> UIViewController {
+    func buildDetailPhotoScreen(data: Post, profile: User) -> UIViewController? {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
-        let vc = storyboard.instantiateViewController(withIdentifier: "detailVC") as? DetailPhotoViewController
+        guard let vc = storyboard.instantiateViewController(withIdentifier: "detailVC") as? DetailPhotoViewController else { return nil }
         let presenter = DetailPhotoPresenter()
         let router = DetailPhotoRouter()
         let requestService = buildAPIService()
         let pagingService = CommentsPageService()
         let userService = UserService()
-        vc?.presenter = presenter
-        vc?.postData = data
-        vc?.profile = profile
+        vc.presenter = presenter
+        vc.postData = data
+        vc.profile = profile
         presenter.vc = vc
         presenter.userService = userService
         presenter.pagingService = pagingService
         presenter.router = router
         pagingService.requestService = requestService
         userService.requestService = requestService
-        return vc!
+        return vc
+    }
+    
+    func buildUploadPostScreen() -> UIViewController? {
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        guard let vc = storyboard.instantiateViewController(withIdentifier: "uploadPostVC") as? UploadPostViewController else { return nil }
+        let presenter = UploadPostPresenter()
+        let uploadService = buildUploadService()
+        let router = UploadPostRouter()
+        
+        vc.presenter = presenter
+        presenter.vc = vc
+        presenter.router = router
+        presenter.uploadService = uploadService
+        router.vc = vc
+        return vc
+    }
+    
+    func buildExternalGalleryViewController() -> UIViewController? {
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        guard let vc = storyboard.instantiateViewController(withIdentifier: "externalGalleryVC") as? ExternalPickerCollectionViewController else { return nil }
+        let presenter = ExternalPickerPresenter()
+        let router = ExternalPickerRouter()
+        vc.presenter = presenter
+        presenter.vc = vc
+        presenter.router = router
+        router.vc = vc
+        return vc
     }
     
     func buildAPIService() -> APIService {
@@ -99,5 +126,12 @@ class Builder {
         configuration.requestCachePolicy = .useProtocolCachePolicy
         downloadService.session = URLSession(configuration: .default, delegate: downloadService, delegateQueue: nil)
         return downloadService
+    }
+    
+    func buildUploadService() -> UploadService {
+        let requestService = buildAPIService()
+        let uploadService = UploadService()
+        uploadService.requestService = requestService
+        return uploadService
     }
 }

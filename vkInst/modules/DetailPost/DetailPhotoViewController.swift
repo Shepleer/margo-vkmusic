@@ -27,7 +27,6 @@ class DetailPhotoViewController: UIViewController {
     @IBOutlet weak var avatarImageView: UIImageView!
     @IBOutlet weak var photoImageView: UIImageView! {
         didSet {
-            
             photoImageView.layer.zPosition = -9999
         }
     }
@@ -57,8 +56,16 @@ class DetailPhotoViewController: UIViewController {
         loadPhotoAndProfileData()
         invisibleScrollView.delegate = self
         configureUI()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillHideNotification, object: nil)
+        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillShowNotification, object: nil)
     }
     
     @IBAction func sendCommentButtonTapped(_ sender: UIButton) {
@@ -66,6 +73,8 @@ class DetailPhotoViewController: UIViewController {
             guard let postId = postData?.id else { return }
             guard let ownerId = postData?.ownerId else { return }
             presenter?.sendComment(postId: postId, ownerId: ownerId, commentText: comment)
+            let comment = Comment(id: ownerId, fromId: nil, date: nil, text: comment, postId: postId)
+            configureDataSource(comments: [comment])
         }
         commentTextField.text = nil
         view.endEditing(true)
@@ -89,13 +98,6 @@ class DetailPhotoViewController: UIViewController {
                 self.likesCountLabel.text = "\(likesCount) likes"
             })
         }
- 
-    }
-    
-    
-    deinit {
-        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillHideNotification, object: nil)
-        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillShowNotification, object: nil)
     }
 }
 
@@ -165,7 +167,14 @@ extension DetailPhotoViewController: UIGestureRecognizerDelegate {
 
 private extension DetailPhotoViewController {
     func loadPhotoAndProfileData() {
-        photoImageView.image = postData?.photos?.first?.img
+        if let gif = postData?.gifs?.first?.gif {
+            photoImageView.image = gif
+        } else if let img = postData?.photos?.first?.img {
+            photoImageView.image = img
+        }
+        
+        guard let viewsCount = postData?.viewsCount else { return }
+        viewsCountLabel.text = "\(viewsCount) views"
         guard let likesCount = postData?.likesCount else { return }
         likesCountLabel.text = "\(likesCount) likes"
         nicknameLabel.text = profile?.screenName
@@ -192,7 +201,9 @@ private extension DetailPhotoViewController {
         }
         
         guard let photosCount = postData?.photos?.count else { return }
-        pageControl.numberOfPages = photosCount
+        guard let gifsCount = postData?.gifs?.count else { return }
+        let viewsCount = gifsCount + photosCount
+        pageControl.numberOfPages = viewsCount
         pageControl.currentPage = 0
         pageControl.hidesForSinglePage = true
         
@@ -308,12 +319,12 @@ private extension DetailPhotoViewController {
     @objc func keyboardWillShow(notification: NSNotification) {
         let info = notification.userInfo!
         let keyboardFrame: CGRect = (info[UIResponder.keyboardFrameEndUserInfoKey] as! NSValue).cgRectValue
-        self.commentFieldBottomConstraint.constant = -keyboardFrame.size.height
+        commentFieldBottomConstraint.constant = -keyboardFrame.size.height
     }
     
     @objc func keyboardWillHide(notification: NSNotification) {
         let info = notification.userInfo!
         let keyboardFrame: CGRect = (info[UIResponder.keyboardFrameEndUserInfoKey] as! NSValue).cgRectValue
-        self.commentFieldBottomConstraint.constant = 0
+        commentFieldBottomConstraint.constant = 0
     }
 }
