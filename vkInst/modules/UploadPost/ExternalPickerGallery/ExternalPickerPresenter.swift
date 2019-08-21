@@ -9,8 +9,6 @@
 import UIKit
 import Photos
 
-
-
 protocol ExternalPickerPresenterProtocol {
     func pickDidEnded(assets: [PHAsset])
 }

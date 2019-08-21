@@ -15,5 +15,4 @@ class OpenMoreCollectionViewCell: UICollectionViewCell {
         contentView.layer.borderWidth = 3
         contentView.layer.borderColor = UIColor.white.cgColor
     }
-    
 }

@@ -19,7 +19,6 @@ class ExternalPickerCollectionViewController: UICollectionViewController {
         static let pickerCollectionViewCellReuseIdentifier = "externalGalleryCell"
         static let photosSortDescriptorKey = "creationDate"
         static let collectionViewInitFatalErrorDescription = "Unexpected cell in collection view"
-        
     }
     
     var selectedItems = [Int]()

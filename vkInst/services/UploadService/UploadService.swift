@@ -7,24 +7,26 @@
 //
 
 import Foundation
-import UIKit
+import ObjectMapper
+
 
 typealias PostUploadCompletion = (_ id: Int) -> ()
+typealias UploadTaskComletions = (completion: PostUploadCompletion, progress: Update, task: URLSessionUploadTask)
+typealias ActiveUploads = [String: UploadTaskComletions]
 
 protocol UploadServiceProtocol {
+    func transferPhotosToServer(imageData: Data, fileName: String, progress: @escaping Update, completion: @escaping PostUploadCompletion)
     func getWallUploadServer()
-    func transferPhotosToServer()
-    func saveChanges()
-    func createPost(message: String?, completion: @escaping PostUploadCompletion)
-    func pushImagesToUpload(_ images: [UIImage])
 }
 
-class UploadService {
+class UploadService: NSObject {
     var requestService: APIService?
     var uploadServer: UploadServer? = nil
+    var session: URLSession? = nil
     var uploadPhotos = [UploadServerPhotoResponse?]()
     var photosIds = [Int]()
-    var imagesToUpload = [UIImage]()
+    var activeUploads: ActiveUploads = [:]
+    
     
     private struct RequestConfigurations {
         static let userId = UserDefaults.standard.string(forKey: "userId")!
@@ -34,11 +36,16 @@ class UploadService {
 
 extension UploadService: UploadServiceProtocol {
     
-    func pushImagesToUpload(_ images: [UIImage]) {
-        imagesToUpload = images
-        transferPhotosToServer()
+    func transferPhotosToServer(imageData: Data, fileName: String, progress: @escaping Update, completion: @escaping PostUploadCompletion) {
+        DispatchQueue.global(qos: .background).async { [weak self] in
+            guard let session = self!.session else { return }
+            guard let req = self!.buildUploadRequest(imageData: imageData, fileName: fileName) else { return }
+            let uploadTask = session.uploadTask(withStreamedRequest: req)
+            self!.activeUploads[fileName] = (completion, progress, uploadTask) as? (PostUploadCompletion, Update, URLSessionUploadTask)
+            uploadTask.resume()
+        }
     }
-
+    
     func getWallUploadServer() {
         let url = "https://api.vk.com/method/photos.getWallUploadServer?access_token=\(RequestConfigurations.token)&v=5.101"
         requestService?.getData(urlStr: url, method: .get, completion: { (response: UploadServer?, err) in
@@ -47,81 +54,78 @@ extension UploadService: UploadServiceProtocol {
         })
     }
     
-    func transferPhotosToServer() {
-        guard let url = uploadServer?.uploadUrl else { return }
-        let fileName = "just.jpeg"
-        let boundary = "Boundary-\(UUID().uuidString)"
-        for image in imagesToUpload {
-            guard let imageData = image.jpegData(compressionQuality: 1) else { return }
-            guard let data = converImageDataToFormData(originData: imageData, boundary: boundary, fileName: fileName) else { return }
-            let contentLength = String(data.count)
-            requestService?.getData(urlStr: url, method: .post, body: data, headers: ["Content-Type": "multipart/form-data; boundary=\(boundary)", "Content-Length": contentLength], completion: { (response: UploadServerPhotoResponse?, err) in
-                guard let res = response else { return }
-                self.uploadPhotos.append(res)
-                if self.uploadPhotos.count == self.imagesToUpload.count {
-                    self.saveChanges()
-                }
-            })
-        }
-    }
-    
-    func saveChanges() {
-        for uploadPhoto in uploadPhotos {
-            guard let server = uploadPhoto?.server else { return }
-            guard let photo = uploadPhoto?.photo else { return }
-            guard let hash = uploadPhoto?.hash else { return }
-            let url = "https://api.vk.com/method/photos.saveWallPhoto?user_id=\(RequestConfigurations.userId)&photo=\(photo)&server=\(server)&hash=\(hash)&access_token=\(RequestConfigurations.token)&v=5.101"
-            requestService?.getData(urlStr: url, method: .get, completion: { (response: [Image]?, err) in
-                guard let id = response?.first?.id else { return }
-                self.photosIds.append(id)
-            })
-        }
-    }
-    
-    func createPost(message: String?, completion: @escaping PostUploadCompletion) {
-        guard message != nil || (photosIds != nil && photosIds.isEmpty == false) else { return }
-        let ownerId = RequestConfigurations.userId
-        var attachments = ""
-        var userMessage = ""
-        if let message = message {
-            userMessage = "message=\(message)"
-            if photosIds != nil && photosIds.isEmpty == false {
-                userMessage.append("&")
-            }
-        }
-        if photosIds == photosIds {
-            if !photosIds.isEmpty {
-                attachments.append("attachments=")
-                for i in 0...photosIds.count - 1 {
-                    let attachment = "photo\(ownerId)_\(photosIds[i])"
-                    if i != photosIds.count - 1 {
-                        attachments.append(attachment + ",")
-                    } else {
-                        attachments.append(attachment)
-                    }
-                }
-            }
-        }
-        let url = "https://api.vk.com/method/wall.post?\(userMessage)\(attachments)&access_token=\(RequestConfigurations.token)&v=5.101"
-        requestService?.getData(urlStr: url, method: .get, completion: { (response: CreatePostResponse?, err) in
-            if let id = response?.postId {
-                completion(id)
-            }
-        })
+    func cancelUpload(fileName: String) {
+        guard let task = activeUploads[fileName]?.task else { return }
+        task.cancel()
+        activeUploads[fileName] = nil
     }
 }
 
 private extension UploadService {
+    func buildUploadRequest(imageData: Data, fileName: String) -> URLRequest? {
+        guard let urlString = uploadServer?.uploadUrl else { return nil }
+        let boundary = "Boundary-\(UUID().uuidString)"
+        guard let data = converImageDataToFormData(originData: imageData, boundary: boundary, fileName: fileName) else { return nil }
+        let contentLenght = String(data.count)
+        guard let url = URL(string: urlString) else { return nil }
+        var req = URLRequest(url: url)
+        req.httpMethod = "POST"
+        req.addValue("\(fileName)", forHTTPHeaderField: "fileName")
+        req.addValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+        req.addValue(contentLenght, forHTTPHeaderField: "Content-Length")
+        req.httpBody = data
+        return req
+    }
+    
     func converImageDataToFormData(originData: Data, boundary: String, fileName: String) -> Data? {
         let body = NSMutableData()
         let boundaryPrefix = "--\(boundary)\r\n"
         body.appendString(boundaryPrefix)
-        body.appendString("Content-Disposition: form-data; name=\"file\"; filename=\"sss.jpg\"\r\n")
+        body.appendString("Content-Disposition: form-data; name=\"file\"; filename=\"\(fileName).jpg\"\r\n")
         body.appendString("Content-Type: image/jpg\r\n\r\n")
         body.append(originData)
         body.appendString("\r\n")
         body.appendString("--".appending(boundary.appending("--")))
         return body as Data
+    }
+    
+    func saveChanges(uploadPhoto: UploadServerPhotoResponse, fileName: String) {
+        guard let server = uploadPhoto.server else { return }
+        guard let photo = uploadPhoto.photo else { return }
+        guard let hash = uploadPhoto.hash else { return }
+        let url = "https://api.vk.com/method/photos.saveWallPhoto?user_id=\(RequestConfigurations.userId)&photo=\(photo)&server=\(server)&hash=\(hash)&access_token=\(RequestConfigurations.token)&v=5.101"
+        requestService?.getData(urlStr: url, method: .get, completion: { (response: [Image]?, err) in
+            guard let id = response?.first?.id else { return }
+            guard let completion = self.activeUploads[fileName]?.completion else { return }
+            DispatchQueue.main.async {
+                completion(id)
+                self.activeUploads[fileName] = nil
+            }
+        })
+    }
+}
+
+extension UploadService: URLSessionTaskDelegate, URLSessionDataDelegate {
+    func urlSession(_ session: URLSession, task: URLSessionTask, didSendBodyData bytesSent: Int64, totalBytesSent: Int64, totalBytesExpectedToSend: Int64) {
+        DispatchQueue.global(qos: .background).async { [weak self] in
+            guard let fileName = task.originalRequest?.value(forHTTPHeaderField: "fileName") else { return }
+            let progress = Float(totalBytesSent) / Float(totalBytesExpectedToSend)
+            guard let progressCompletion = self!.activeUploads[fileName]?.progress else { return }
+            DispatchQueue.main.async {
+                progressCompletion(progress)
+            }
+        }
+    }
+    
+    func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
+        do {
+            guard let json = try JSONSerialization.jsonObject(with: data, options: .allowFragments) as? [String: Any] else { return }
+            guard let model = Mapper<UploadServerPhotoResponse>().map(JSON: json) else { return }
+            guard let fileName = dataTask.originalRequest?.value(forHTTPHeaderField: "fileName") else { return }
+            saveChanges(uploadPhoto: model, fileName: fileName)
+        } catch {
+            fatalError()
+        }
     }
 }
 

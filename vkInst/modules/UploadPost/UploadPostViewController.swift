@@ -11,6 +11,8 @@ import Photos
 
 protocol UploadPostViewControllerProtocol: class {
     func pickComplete(assets: [PHAsset])
+    func startUploadPhoto(data: Data, fileName: String, progress: @escaping Update, completion: @escaping PostUploadCompletion)
+    func photoDidUpload(id: Int)
 }
 
 class UploadPostViewController: UIViewController {
@@ -33,18 +35,17 @@ class UploadPostViewController: UIViewController {
         static let selectedImageCollectionViewCellReuseIdentifier = "uploadPostSelectedCell"
         static let openGalleryCollectionViewCell = "openGalleryCell"
         static let collectionViewInitFatalErrorDescription = "Unexpected cell in collection view"
-        
     }
-    
-    
-    
     
     var smallFlowLayout = SmallPhotoPickerFlowLayout()
     var bigFlowLayout = BigPhotoPickerFlowLayout()
     var photosFromGallery: PHFetchResult<PHAsset>?
     var presenter: UploadPostPresenterProtocol?
     var selectedAssets = [PHAsset]()
-    
+    var assetsToUpload = [PHAsset]()
+    var itemToUploadCount = 0
+    var selectedItems = [Int]()
+    var uploadPhotosIds = [Int]()
     override func viewDidLoad() {
         super.viewDidLoad()
         presenter?.viewDidLoad()
@@ -76,8 +77,12 @@ class UploadPostViewController: UIViewController {
             photoPickerCollectionView.isHidden = true
             closePhotoPickerButton.isHidden = true
         }
-        //presenter?.uploadImages(images: selectedImages)
-        photoPickerCollectionView.reloadSections(IndexSet(integer: 0))
+        for item in selectedItems {
+            guard let asset = photosFromGallery?.object(at: item) else { return }
+            assetsToUpload.append(asset)
+        }
+        selectedImagesCollectionView.reloadData()
+        photoPickerCollectionView.reloadData()
     }
     
     @IBAction func openGalleryButton(_ sender: UIButton) {
@@ -86,17 +91,17 @@ class UploadPostViewController: UIViewController {
 }
 
 extension UploadPostViewController: UploadPostViewControllerProtocol {
-    func addSelectedImage(image: UIImage) {
-        //selectedImages.append(image)
-    }
-    
-    func removeSelectedImage(image: UIImage) {
-        //guard let i = selectedImages.firstIndex(of: image) else { return }
-        //selectedImages.remove(at: i)
-    }
-    
     func pickComplete(assets: [PHAsset]) {
-        print(assets)
+        assetsToUpload.append(contentsOf: assets)
+        selectedImagesCollectionView.reloadData()
+    }
+    
+    func startUploadPhoto(data: Data, fileName: String, progress: @escaping Update, completion: @escaping PostUploadCompletion) {
+        presenter?.uploadPhoto(data: data, fileName: fileName, progress: progress, completion: completion)
+    }
+    
+    func photoDidUpload(id: Int) {
+        uploadPhotosIds.append(id)
     }
 }
 
@@ -106,7 +111,7 @@ extension UploadPostViewController: UICollectionViewDataSource, UICollectionView
             guard let photosCount = photosFromGallery?.count else { return 0 }
             return 30 + 1
         } else if collectionView == selectedImagesCollectionView {
-            return selectedAssets.count
+            return assetsToUpload.count
         }
         return 0
     }
@@ -123,39 +128,53 @@ extension UploadPostViewController: UICollectionViewDataSource, UICollectionView
                 let cellIdentifier = Constants.pickerCollectionViewCellReuseIdentifier
                 guard let cell = photoPickerCollectionView.dequeueReusableCell(withReuseIdentifier: cellIdentifier, for: indexPath) as? AlbumUploadCollectionViewCell else { fatalError(Constants.collectionViewInitFatalErrorDescription) }
                 guard let asset = photosFromGallery?.object(at: indexPath.item) else { fatalError() }
-            
                 cell.configureCell(asset: asset, cellSize: bigFlowLayout.itemSize)
+                if let k = selectedItems.firstIndex(of: indexPath.item) {
+                    cell.setSerialNumber(number: k + 1)
+                    collectionView.selectItem(at: indexPath, animated: true, scrollPosition: [])
+                }
                 return cell
             }
         } else if collectionView == selectedImagesCollectionView {
             let cellIdentifier = Constants.selectedImageCollectionViewCellReuseIdentifier
             guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellIdentifier, for: indexPath) as? UploadPostSelectedCell else {
                 fatalError(Constants.collectionViewInitFatalErrorDescription) }
+            let asset = assetsToUpload[indexPath.item]
+            cell.asset = asset
+            cell.vc = self
+            cell.configureCell()
             return cell
         }
         return UICollectionViewCell(frame: .null)
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        if indexPath.item == 30 {
-            presenter?.presentGallery()
-            collectionView.deselectItem(at: indexPath, animated: false)
-            return
+        if collectionView == pickerCollectionView {
+            if indexPath.item == 30 {
+                presenter?.presentGallery()
+                collectionView.reloadData()
+                return
+            }
+            guard let item = collectionView.cellForItem(at: indexPath) as? AlbumUploadCollectionViewCell else { return }
+            selectedItems.append(indexPath.item)
+            item.setSerialNumber(number: selectedItems.count)
+        } else if collectionView == selectedImagesCollectionView {
+            
         }
-        guard let item = collectionView.cellForItem(at: indexPath) as? AlbumUploadCollectionViewCell else { return }
-        //updateCollectionViewPresentationIfNeedet()
-        item.updateUI()
-        guard let img = item.getImage() else { return }
-        addSelectedImage(image: img)
     }
     
     func collectionView(_ collectionView: UICollectionView, didDeselectItemAt indexPath: IndexPath) {
-        guard let item = collectionView.cellForItem(at: indexPath) as? AlbumUploadCollectionViewCell else { return }
-        //updateCollectionViewPresentationIfNeedet()
-        
-        item.updateUI()
-        guard let img = item.getImage() else { return }
-        removeSelectedImage(image: img)
+        if collectionView == pickerCollectionView {
+            guard let item = collectionView.cellForItem(at: indexPath) as? AlbumUploadCollectionViewCell else { return }
+            if let i = selectedItems.firstIndex(of: indexPath.item) {
+                selectedItems.remove(at: i)
+            }
+            item.removeSerialNumber()
+            item.isSelected = false
+            collectionView.reloadData()
+        } else if collectionView == selectedImagesCollectionView {
+            
+        }
     }
 }
 
@@ -182,8 +201,6 @@ private extension UploadPostViewController {
         closePhotoPickerButton.isHidden = true
         photoPickerCollectionView.allowsMultipleSelection = true
         photoPickerCollectionView.collectionViewLayout = smallFlowLayout
-        
-        selectedImagesCollectionView.allowsMultipleSelection = false
         selectedImagesCollectionView.backgroundColor = UIColor.black
         let doneBarButtonItem = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(doneBarButtonItemPressed))
         navigationItem.rightBarButtonItem = doneBarButtonItem
@@ -214,7 +231,7 @@ private extension UploadPostViewController {
     
     @objc func doneBarButtonItemPressed() {
         let message = textView.text
-        presenter?.uploadPost(message: message, completion: { _ in
+        presenter?.uploadPost(message: message, photosIds: uploadPhotosIds, completion: { _ in
             self.presenter?.moveBack()
         })
     }

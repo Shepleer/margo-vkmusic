@@ -39,7 +39,7 @@
 		2C1EA6B122CA2120009C27E2 /* Private_Keys.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C1EA6B022CA2120009C27E2 /* Private_Keys.swift */; };
 		2C221A0922F840F9003F9214 /* DetailPhotoTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C221A0822F840F9003F9214 /* DetailPhotoTableViewCell.swift */; };
 		2C23309322D499CB004F2B2E /* PhotosCollectionViewFlowLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C23309222D499CB004F2B2E /* PhotosCollectionViewFlowLayout.swift */; };
-		2C24F57E2303FF7C00DD7630 /* AlbumUploadCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C24F57D2303FF7C00DD7630 /* AlbumUploadCollectionViewCell.swift */; };
+		2C24F57E2303FF7C00DD7630 /* RecentUploadCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C24F57D2303FF7C00DD7630 /* RecentUploadCollectionViewCell.swift */; };
 		2C2AC3D022F974500032247E /* Group.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C2AC3CF22F974500032247E /* Group.swift */; };
 		2C2AC3D322F9D3270032247E /* PhotosCollectionFooterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C2AC3D122F9D3270032247E /* PhotosCollectionFooterView.swift */; };
 		2C2AC3D422F9D3270032247E /* PhotosCollectionFooterView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2C2AC3D222F9D3270032247E /* PhotosCollectionFooterView.xib */; };
@@ -105,7 +105,7 @@
 		2C1EA6B022CA2120009C27E2 /* Private_Keys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Private_Keys.swift; sourceTree = "<group>"; };
 		2C221A0822F840F9003F9214 /* DetailPhotoTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailPhotoTableViewCell.swift; sourceTree = "<group>"; };
 		2C23309222D499CB004F2B2E /* PhotosCollectionViewFlowLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotosCollectionViewFlowLayout.swift; sourceTree = "<group>"; };
-		2C24F57D2303FF7C00DD7630 /* AlbumUploadCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlbumUploadCollectionViewCell.swift; sourceTree = "<group>"; };
+		2C24F57D2303FF7C00DD7630 /* RecentUploadCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecentUploadCollectionViewCell.swift; sourceTree = "<group>"; };
 		2C2AC3CF22F974500032247E /* Group.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Group.swift; sourceTree = "<group>"; };
 		2C2AC3D122F9D3270032247E /* PhotosCollectionFooterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotosCollectionFooterView.swift; sourceTree = "<group>"; };
 		2C2AC3D222F9D3270032247E /* PhotosCollectionFooterView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = PhotosCollectionFooterView.xib; sourceTree = "<group>"; };
@@ -156,7 +156,7 @@
 				2C34BC492306E6A800784957 /* ExternalPickerGallery */,
 				2C14526E2302BC9E009817B3 /* UploadPostViewController.swift */,
 				2C1452702302BCAE009817B3 /* UploadPostPresenter.swift */,
-				2C24F57D2303FF7C00DD7630 /* AlbumUploadCollectionViewCell.swift */,
+				2C24F57D2303FF7C00DD7630 /* RecentUploadCollectionViewCell.swift */,
 				2C1B2B56230AB7E800748048 /* UploadPostSelectedCell.swift */,
 				2C1B2B58230AE43A00748048 /* OpenMoreCollectionViewCell.swift */,
 				2C34BC472306BCC300784957 /* UploadPostRouter.swift */,
@@ -319,9 +319,9 @@
 		2C4690E822CA470E0026C508 /* services */ = {
 			isa = PBXGroup;
 			children = (
+				2CB721ED22F1B8380041D624 /* DownloadService */,
 				2C1452742302BDCA009817B3 /* UploadService */,
 				2C3B842C22F2E44400AC6C41 /* PageService */,
-				2CB721ED22F1B8380041D624 /* DownloadService */,
 				2C4690E922CA47190026C508 /* RequestService */,
 				2C1B81A722F1A37C008069BF /* UserService */,
 			);
@@ -478,7 +478,7 @@
 				2C1EA6AF22CA202C009C27E2 /* LogInPresenter.swift in Sources */,
 				2C34BC4F2306EB2200784957 /* ExternalPickerRouter.swift in Sources */,
 				2C1EA69822CA084F009C27E2 /* LogInViewController.swift in Sources */,
-				2C24F57E2303FF7C00DD7630 /* AlbumUploadCollectionViewCell.swift in Sources */,
+				2C24F57E2303FF7C00DD7630 /* RecentUploadCollectionViewCell.swift in Sources */,
 				2C1EA6B122CA2120009C27E2 /* Private_Keys.swift in Sources */,
 				2C4690E722CA3F7D0026C508 /* Extensions.swift in Sources */,
 				2C1B2B59230AE43A00748048 /* OpenMoreCollectionViewCell.swift in Sources */,

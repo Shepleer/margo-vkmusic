@@ -12,13 +12,21 @@ import Photos
 class AlbumUploadCollectionViewCell: UICollectionViewCell {
     
     @IBOutlet weak var photoView: UIImageView!
+    @IBOutlet weak var circularView: UIView!
+    @IBOutlet weak var serialNumberLabel: UILabel!
     
     var representedAssetIdentifier: String?
-    var photoManager = PHCachingImageManager()
+    var photoManager = PHImageManager()
     var vc: UploadPostViewController?
     
     override func awakeFromNib() {
+        serialNumberLabel.text = ""
         photoView.layer.cornerRadius = 10
+        circularView.layer.cornerRadius = circularView.bounds.width / 2
+        circularView.layer.borderColor = UIColor.white.cgColor
+        circularView.layer.borderWidth = 2
+        serialNumberLabel.isHidden = true
+        serialNumberLabel.text = nil
     }
     
     func configureCell(asset: PHAsset, cellSize: CGSize) {
@@ -28,22 +36,19 @@ class AlbumUploadCollectionViewCell: UICollectionViewCell {
         }
     }
     
-    func getImage() -> UIImage? {
-        guard let image = photoView.image else { return nil }
-        return image
+    func setSerialNumber(number: Int) {
+        isSelected = true
+        serialNumberLabel.text = "\(number)"
+        serialNumberLabel.isHidden = false
     }
     
-    func updateUI() {
-        if isSelected {
-            contentView.backgroundColor = UIColor.black
-            
-        } else {
-            contentView.backgroundColor = UIColor.clear
-            
-        }
+    func removeSerialNumber() {
+        serialNumberLabel.text = ""
+        serialNumberLabel.isHidden = true
     }
     
     override func prepareForReuse() {
-        
+        serialNumberLabel.isHidden = true
+        serialNumberLabel.text = nil
     }
 }

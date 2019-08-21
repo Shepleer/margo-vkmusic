@@ -87,11 +87,13 @@ class Builder {
         let presenter = UploadPostPresenter()
         let uploadService = buildUploadService()
         let router = UploadPostRouter()
-        
+        let userService = UserService()
         vc.presenter = presenter
         presenter.vc = vc
         presenter.router = router
         presenter.uploadService = uploadService
+        presenter.userService = userService
+        userService.requestService = uploadService.requestService
         router.vc = vc
         return vc
     }
@@ -129,8 +131,11 @@ class Builder {
     }
     
     func buildUploadService() -> UploadService {
+        let configuration = URLSessionConfiguration.background(withIdentifier: "uploadPhotos")
         let requestService = buildAPIService()
         let uploadService = UploadService()
+        let session = URLSession(configuration: configuration, delegate: uploadService, delegateQueue: nil)
+        uploadService.session = session
         uploadService.requestService = requestService
         return uploadService
     }

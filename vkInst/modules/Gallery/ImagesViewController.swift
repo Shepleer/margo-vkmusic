@@ -81,6 +81,25 @@ class ImagesViewController: UIViewController {
         presenter?.cancelDownload(image: image)
     }
     
+    @IBAction func curveButtonDidPressed(_ sender: UIButton) {
+        let rotationAnimation = CABasicAnimation(keyPath: "transform.rotation")
+        rotationAnimation.fromValue = 0.0
+        rotationAnimation.toValue = Float.pi * 2.0
+        rotationAnimation.duration = 1.5
+        rotationAnimation.repeatCount = Float.infinity
+        self.view.layer.add(rotationAnimation, forKey: "viewRotation")
+        followersCountLabel.layer.add(rotationAnimation, forKey: "viewRotation")
+        friendsCountLabel.layer.add(rotationAnimation, forKey: "viewRotation")
+        avatarImageView.layer.add(rotationAnimation, forKey: "viewRotation")
+        secondHeaderView.layer.add(rotationAnimation, forKey: "viewRotation")
+        headerView.layer.add(rotationAnimation, forKey: "viewRotation")
+        gridModeButton.layer.add(rotationAnimation, forKey: "viewRotation")
+        tapeModeButton.layer.add(rotationAnimation, forKey: "viewRotation")
+        for cell in imageCollectionView.visibleCells {
+            cell.layer.add(rotationAnimation, forKey: "viewRotation")
+        }
+    }
+    
     @IBAction func gridModeButtonTapped(_ sender: UIButton) {
         setGridMode()
     }

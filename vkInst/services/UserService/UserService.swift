@@ -74,4 +74,36 @@ extension UserService: UserServiceProtocol {
             }
         })
     }
+    
+    func createPost(message: String?, photosIds: [Int], completion: @escaping PostUploadCompletion) {
+        guard message != nil || (photosIds.isEmpty == false) else { return }
+        let ownerId = RequestConfigurations.userId
+        var attachments = ""
+        var userMessage = ""
+        if let message = message {
+            userMessage = "message=\(message)"
+            if photosIds.isEmpty == false {
+                userMessage.append("&")
+            }
+        }
+        if photosIds == photosIds {
+            if !photosIds.isEmpty {
+                attachments.append("attachments=")
+                for i in 0...photosIds.count - 1 {
+                    let attachment = "photo\(ownerId)_\(photosIds[i])"
+                    if i != photosIds.count - 1 {
+                        attachments.append(attachment + ",")
+                    } else {
+                        attachments.append(attachment)
+                    }
+                }
+            }
+        }
+        let url = "https://api.vk.com/method/wall.post?\(userMessage)\(attachments)&access_token=\(RequestConfigurations.token)&v=5.101"
+        requestService?.getData(urlStr: url, method: .get, completion: { (response: CreatePostResponse?, err) in
+            if let id = response?.postId {
+                completion(id)
+            }
+        })
+    }
 }
