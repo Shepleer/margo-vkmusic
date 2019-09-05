@@ -35,8 +35,8 @@ class UploadService: NSObject {
     }
     
     private struct RequestConfigurations {
-        static let userId = UserDefaults.standard.string(forKey: "userId")!
-        static let token = UserDefaults.standard.string(forKey: "accessToken")!
+        static let userId = UserDefaults.standard.string(forKey: "userId") ?? "Token has expired"
+        static let token = UserDefaults.standard.string(forKey: "accessToken") ?? "Token has expired"
     }
 }
 

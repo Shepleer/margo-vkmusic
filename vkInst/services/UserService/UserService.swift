@@ -24,8 +24,8 @@ class UserService {
     private var requestService: APIService
     private var user: User?
     private struct RequestConfigurations {
-        static let userId = UserDefaults.standard.string(forKey: "userId")!
-        static let token = UserDefaults.standard.string(forKey: "accessToken")!
+        static let userId = UserDefaults.standard.string(forKey: "userId") ?? "Token has expired"
+        static let token = UserDefaults.standard.string(forKey: "accessToken") ?? "Token has expired"
         static let userGet = "https://api.vk.com/method/users.get?fields=photo_100,counters,screen_name&access_token=\(token)&v=5.101"
     }
     

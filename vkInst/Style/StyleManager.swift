@@ -10,28 +10,14 @@ import Foundation
 import UIKit
 
 enum AppColorScheme: String {
-    case primaryLight = "PrimayLight"
     case primary          = "Primary"
-    case primaryDark      = "PrimaryDark"
-    case secondaryWhite   = "SecondaryWhite"
-    case secondaryLight   = "SecondaryLight"
-    case secondaryMedium  = "SecondaryMedium"
     case secondary        = "Secondary"
-    case secondaryDark    = "SecondaryDark"
-    case secondaryBlack   = "SecondaryBlack"
     case background       = "Background"
     
     var color: UIColor {
         switch self {
-        case .primaryLight: return ThemeService.currentTheme().primaryLightColor
         case .primary: return ThemeService.currentTheme().primaryColor
-        case .primaryDark: return ThemeService.currentTheme().primaryDarkColor
-        case .secondaryWhite: return ThemeService.currentTheme().secondaryWhiteColor
-        case .secondaryLight: return ThemeService.currentTheme().secondaryLightColor
         case .secondary: return ThemeService.currentTheme().secondaryColor
-        case .secondaryMedium: return ThemeService.currentTheme().secondaryMediumColor
-        case .secondaryDark: return ThemeService.currentTheme().secondaryDarkColor
-        case .secondaryBlack: return ThemeService.currentTheme().secondaryBlackColor
         case .background: return ThemeService.currentTheme().backgroundColor
         }
     }
@@ -42,50 +28,10 @@ enum Theme: Int {
     case Dark
     case Secret
     
-    var primaryLightColor: UIColor {
-        switch self {
-        case .Light: return LightPalette.red
-        case .Dark: return LightPalette.red
-        case .Secret: return LightPalette.red
-        }
-    }
-    
     var primaryColor: UIColor {
         switch self {
-        case .Light: return LightPalette.red
-        case .Dark: return LightPalette.red
-        case .Secret: return LightPalette.red
-        }
-    }
-    
-    var primaryDarkColor: UIColor {
-        switch self {
-        case .Light: return LightPalette.red
-        case .Dark: return LightPalette.red
-        case .Secret: return LightPalette.red
-        }
-    }
-    
-    var secondaryWhiteColor: UIColor {
-        switch self {
-        case .Light: return LightPalette.red
-        case .Dark: return LightPalette.red
-        case .Secret: return LightPalette.red
-        }
-    }
-    
-    var secondaryLightColor: UIColor {
-        switch self {
-        case .Light: return LightPalette.red
-        case .Dark: return LightPalette.red
-        case .Secret: return LightPalette.red
-        }
-    }
-    
-    var secondaryMediumColor: UIColor {
-        switch self {
-        case .Light: return LightPalette.red
-        case .Dark: return LightPalette.red
+        case .Light: return LightPalette.black
+        case .Dark: return DarkPallete.gray
         case .Secret: return LightPalette.red
         }
     }
@@ -93,31 +39,15 @@ enum Theme: Int {
     var secondaryColor: UIColor {
         switch self {
         case .Light: return LightPalette.black
-        case .Dark: return LightPalette.red
+        case .Dark: return DarkPallete.gray
         case .Secret: return LightPalette.red
         }
     }
-    
-    var secondaryDarkColor: UIColor {
-        switch self {
-        case .Light: return LightPalette.red
-        case .Dark: return LightPalette.red
-        case .Secret: return LightPalette.red
-        }
-    }
-    
-    var secondaryBlackColor: UIColor {
-        switch self {
-        case .Light: return LightPalette.red
-        case .Dark: return LightPalette.red
-        case .Secret: return LightPalette.red
-        }
-    }
-    
+
     var backgroundColor: UIColor {
         switch self {
         case .Light: return LightPalette.white
-        case .Dark: return LightPalette.white
+        case .Dark: return DarkPallete.darkGray
         case .Secret: return LightPalette.white
         }
     }
@@ -142,7 +72,7 @@ private struct LightPalette {
     static var white: UIColor { return UIColor.white }
     static var gray: UIColor { return UIColor(red: 167, green: 167, blue: 169, alpha: 1) }
     static var red: UIColor { return UIColor(red: 235, green: 74, blue: 92, alpha: 1) }
-    
+    static var darkBlue: UIColor { return UIColor(red: 22, green: 140, blue: 200, alpha: 1) }
 }
 
 private struct DarkPallete {

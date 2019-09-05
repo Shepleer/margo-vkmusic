@@ -267,10 +267,6 @@ private extension DetailPhotoViewController {
         likesCountLabel.text = "\(likesCount) likes"
         nicknameLabel.text = profile?.screenName
         avatarImageView.image = profile?.avatarImage
-        
-        //if let comments = postData?.comments {
-        //    self.comments = comments
-        //}
         view.layoutIfNeeded()
     }
     
@@ -418,7 +414,6 @@ private extension DetailPhotoViewController {
         let keyboardFrame: CGRect = (info[UIResponder.keyboardFrameEndUserInfoKey] as! NSValue).cgRectValue
         commentFieldBottomConstraint.constant = 0
     }
-    
     
     func startDoubleTapAnimation() {
         bigLikeImageWidthAnchor.constant = 70

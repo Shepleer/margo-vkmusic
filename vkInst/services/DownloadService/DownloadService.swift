@@ -41,7 +41,7 @@ extension DownloadService: DownloadServiceProtocol {
                     completion(img, url.absoluteString)
                 } else {
                     let strUrl = url.absoluteString
-                    guard let task = self!.session?.downloadTask(with: url) else { return }
+                    guard let task = strongSelf.session?.downloadTask(with: url) else { return }
                     strongSelf.activeDownloads[strUrl] = (completion, progress, task) as (PhotoLoadingCompletion, DownloadProgress, Task)
                     task.resume()
                 }
@@ -102,9 +102,10 @@ extension DownloadService: URLSessionDownloadDelegate {
             queue.async { [weak self] in
                 guard let strongSelf = self, let req = downloadTask.originalRequest,
                     let url = downloadTask.originalRequest?.url?.absoluteString else { return }
-                if let comp = strongSelf.activeDownloads[url]?.completion {
+                if let comp = strongSelf.activeDownloads[url]?.completion,
+                    let response = downloadTask.response {
                     if URLCache.shared.cachedResponse(for: req) == nil {
-                        URLCache.shared.storeCachedResponse(CachedURLResponse(response: downloadTask.response!, data: data), for: req)
+                        URLCache.shared.storeCachedResponse(CachedURLResponse(response: response, data: data), for: req)
                     }
                     DispatchQueue.main.async {
                         comp(img, url)

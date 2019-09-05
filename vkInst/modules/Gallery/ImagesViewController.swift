@@ -154,10 +154,10 @@ extension ImagesViewController: ImagesViewControllerProtocol {
     func setProfileData(user: User) {
         profile = user
         if let friends = user.counters?.friends {
-            friendsCountLabel.text = "Friends: \(friends)"
+            friendsCountLabel.text = "\(friends)"
         }
         if let followers = user.counters?.followers {
-            followersCountLabel.text = "Followers: \(followers)"
+            followersCountLabel.text = "\(followers)"
         }
     }
     
@@ -348,7 +348,6 @@ private extension ImagesViewController {
         gridModeButton.isSelected = true
         addPostView.layer.cornerRadius = addPostView.bounds.width / 2
         addPostView.layer.shadowRadius = 4
-        addPostView.layer.shadowOffset = CGSize(width: 5, height: 5)
         addPostView.layer.shadowOpacity = 0.5
         secondHeaderView.layer.shadowOpacity = 0.2
         secondHeaderView.layer.shadowOffset = CGSize(width: 5, height: secondHeaderView.frame.height / 3)

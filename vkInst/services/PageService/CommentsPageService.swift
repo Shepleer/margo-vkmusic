@@ -19,8 +19,8 @@ class CommentsPageService {
     private var isAllLoaded = false
     var requestService: APIService
     private struct RequestConfigurations {
-        static let userId = UserDefaults.standard.string(forKey: "userId")!
-        static let token = UserDefaults.standard.string(forKey: "accessToken")!
+        static let userId = UserDefaults.standard.string(forKey: "userId") ?? "Token has expired"
+        static let token = UserDefaults.standard.string(forKey: "accessToken") ?? "Token has expired"
     }
     
     init(requestService: APIService) {
