@@ -10,7 +10,7 @@ import Foundation
 import UIKit
 
 protocol UploadPostRouterProtocol {
-    func moveBackToGalleryScreen()
+    func moveBackToGalleryScreen(newPost: Post)
     func presentExternalGalleryViewController()
 }
 
@@ -19,8 +19,10 @@ class UploadPostRouter {
 }
 
 extension UploadPostRouter: UploadPostRouterProtocol {
-    func moveBackToGalleryScreen() {
-        guard let nav = vc?.navigationController else { return }
+    func moveBackToGalleryScreen(newPost: Post) {
+        guard let nav = vc?.navigationController,
+            let imagesViewController = nav.viewControllers.first as? ImagesViewControllerProtocol else { return }
+        imagesViewController.insertNewPost(post: newPost)
         nav.popViewController(animated: true)
     }
     

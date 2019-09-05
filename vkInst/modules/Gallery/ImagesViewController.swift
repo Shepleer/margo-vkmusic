@@ -16,6 +16,8 @@ protocol ImagesViewControllerProtocol: class {
     func removeLike(postId: Int, ownerId: Int, completion: @escaping LikesCountCompletion)
     func fetchPostData(postId: Int, ownerId: Int, completion: @escaping CommentsCompletion)
     func moveToDetailPhotoScreen(post: Post)
+    func viewControllerWillReleased()
+    func insertNewPost(post: Post)
 }
 
 protocol PhotosViewControllerCellDelegate: class {
@@ -30,10 +32,13 @@ class ImagesViewController: UIViewController {
     var posts = [Post]()
     var profile: User? = nil
     var avatarImage: UIImage? = nil
-    var router: ImagesRouter?
+    var isNeedFetchComments = true
+    var offset: Int = 0
+    
     private var proposedContentOffset: CGPoint? = nil
     private let photosCollectionViewFooterIdentifier = "photosFooter"
     
+
     @IBOutlet weak var activityViewTopOffset: NSLayoutConstraint!
     @IBOutlet weak var activityView: UIView!
     @IBOutlet weak var addPostButton: UIButton!
@@ -47,7 +52,10 @@ class ImagesViewController: UIViewController {
     @IBOutlet weak var headerView: UIView!
     @IBOutlet weak var gridModeButton: UIButton!
     @IBOutlet weak var tapeModeButton: UIButton!
+    @IBOutlet weak var addPostView: UIView!
     
+    @IBOutlet weak var tapeStateIndicator: UIView!
+    @IBOutlet weak var gridStateIndicator: UIView!
     @IBOutlet weak var imageCollectionView: UICollectionView! {
         didSet {
             imageCollectionView.delegate = self
@@ -73,9 +81,7 @@ class ImagesViewController: UIViewController {
         self.navigationController?.isNavigationBarHidden = true
     }
     
-    func getViewModeState() -> CellType {
-        return flowLayout.cellType ?? CellType.Grid
-    }
+
     
     func cancellingDownload(image: Image) {
         presenter?.cancelDownload(image: image)
@@ -100,6 +106,10 @@ class ImagesViewController: UIViewController {
         }
     }
     
+    @IBAction func settingsButtonTapped(_ sender: UIButton) {
+        presenter?.moveToSettingsScreen()
+    }
+    
     @IBAction func gridModeButtonTapped(_ sender: UIButton) {
         setGridMode()
     }
@@ -110,14 +120,24 @@ class ImagesViewController: UIViewController {
     }
     
     @IBAction func uploadPostButtonPressed(_ sender: UIButton) {
-        router?.moveToUploadPostScreen()
+        presenter?.moveToUploadPostScreen()
     }
 }
 
 extension ImagesViewController: ImagesViewControllerProtocol {
     func configureWithPhotos(posts: [Post]) {
         self.posts.append(contentsOf: posts)
-        imageCollectionView.reloadSections(IndexSet(integer: 0))
+        let startOffset = offset
+        self.offset = self.posts.count
+        var indexPaths = [IndexPath]()
+        for i in startOffset...offset - 1 {
+            indexPaths.append(IndexPath(item: i, section: 0))
+        }
+        imageCollectionView.performBatchUpdates({
+            print(offset)
+            imageCollectionView.insertItems(at: indexPaths)
+        }) { (complete) in
+        }
         let scrollViewContentSize = CGSize(width: view.frame.width, height: headerView.frame.height + headerViewBottom.accessibilityFrame.height + secondHeaderView.frame.height + secondHeaderBottom.accessibilityFrame.height + imageCollectionView.collectionViewLayout.collectionViewContentSize.height)
         mainScrollView.contentSize = scrollViewContentSize
         presenter?.postsDownloaded()
@@ -125,6 +145,9 @@ extension ImagesViewController: ImagesViewControllerProtocol {
     
     func loadAvatar(image: UIImage) {
         avatarImageView.image = image
+        UIView.animate(withDuration: 0.1) {
+            self.avatarImageView.alpha = 1
+        }
         avatarImage = image
     }
     
@@ -172,8 +195,9 @@ extension ImagesViewController: ImagesViewControllerProtocol {
     }
     
     func moveToDetailPhotoScreen(post: Post) {
-        profile?.avatarImage = avatarImage
-        router?.moveToDetailScreen(post: post, profile: profile!)
+        guard var profile = profile else { return }
+        profile.avatarImage = avatarImage
+        presenter?.moveToDetailScreen(post: post, profile: profile)
     }
     
     func disableScrollView() {
@@ -187,9 +211,22 @@ extension ImagesViewController: ImagesViewControllerProtocol {
     func setCurrentContentOffset(offset: CGPoint) {
         proposedContentOffset = offset
     }
+    
+    func viewControllerWillReleased() {
+        presenter?.releaseDownloadSession()
+    }
+    
+    func insertNewPost(post: Post) {
+        posts.insert(post, at: 0)
+        imageCollectionView.performBatchUpdates({
+            self.imageCollectionView.insertItems(at: [IndexPath(item: 0, section: 0)])
+        }) { (completion) in
+        }
+    }
 }
 
 extension ImagesViewController: UIScrollViewDelegate {
+    
     var endScrollRecommendedOffset: CGFloat {
         if let layout = imageCollectionView.collectionViewLayout as? UICollectionViewFlowLayout {
             return layout.itemSize.height * 3
@@ -219,6 +256,14 @@ extension ImagesViewController: UIScrollViewDelegate {
             if deltaOffset <= endScrollRecommendedOffset {
                 presenter?.nextFetch()
             }
+        }
+    }
+    
+    func scrollViewWillEndDragging(_ scrollView: UIScrollView, withVelocity velocity: CGPoint, targetContentOffset: UnsafeMutablePointer<CGPoint>) {
+        if scrollView == mainScrollView && (velocity.y >= 6 || velocity.y <= -6) {
+            isNeedFetchComments = false
+        } else {
+            isNeedFetchComments = true
         }
     }
 }
@@ -268,7 +313,9 @@ extension ImagesViewController: UICollectionViewDelegate {
         } else if flowLayout.cellType == .Tape {
             guard let cell = cell as? TapeCollectionViewCell else { fatalError() }
             cell.configure(postData: post)
-            cell.fetchPhotoComments()
+            if isNeedFetchComments {
+                cell.fetchPhotoComments()
+            }
         }
     }
     
@@ -279,8 +326,6 @@ extension ImagesViewController: UICollectionViewDelegate {
             }
         }
     }
-    
-
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         setTapeMode()
@@ -301,18 +346,22 @@ private extension ImagesViewController {
     func configureUI() {
         navigationController?.isNavigationBarHidden = true
         gridModeButton.isSelected = true
-        
+        addPostView.layer.cornerRadius = addPostView.bounds.width / 2
+        addPostView.layer.shadowRadius = 4
+        addPostView.layer.shadowOffset = CGSize(width: 5, height: 5)
+        addPostView.layer.shadowOpacity = 0.5
+        secondHeaderView.layer.shadowOpacity = 0.2
+        secondHeaderView.layer.shadowOffset = CGSize(width: 5, height: secondHeaderView.frame.height / 3)
+        secondHeaderView.layer.shadowRadius = 5
         mainScrollView.frame = view.frame
         let scrollViewContentSize = CGSize(width: view.frame.width, height: headerView.frame.height + headerViewBottom.accessibilityFrame.height + secondHeaderView.frame.height + secondHeaderBottom.accessibilityFrame.height + imageCollectionView.contentSize.height)
         mainScrollView.contentSize = scrollViewContentSize
         mainScrollView.contentInsetAdjustmentBehavior = .never
+        mainScrollView.showsVerticalScrollIndicator = false
         view.addGestureRecognizer(mainScrollView.panGestureRecognizer)
         imageCollectionView.delegate = self
         avatarImageView.layer.cornerRadius = avatarImageView.frame.width / 2
         avatarImageView.layer.borderColor = UIColor.darkGray.cgColor
-        avatarImageView.layer.borderWidth = 4
-        avatarImageView.layer.shadowRadius = 10
-        view.setGradientBackground(firstColor: UIColor.darkGray, secondColor: UIColor.lightGray)
     }
     
     func setGridMode() {
@@ -320,23 +369,28 @@ private extension ImagesViewController {
             flowLayout.cellType = .Grid
             tapeModeButton.isSelected = false
             gridModeButton.isSelected = true
-            imageCollectionView.reloadSections(IndexSet(integer: 0))
+            imageCollectionView.reloadData()
             setGridFlowLayout()
         }
     }
     
     func setTapeMode() {
-        changeFlowLayout()
         if flowLayout.cellType != .Tape {
             flowLayout.cellType = .Tape
             tapeModeButton.isSelected = true
             gridModeButton.isSelected = false
-            imageCollectionView.reloadSections(IndexSet(integer: 0))
+            imageCollectionView.reloadData()
             changeFlowLayout()
         }
     }
     
     func changeFlowLayout() {
+        UIView.animate(withDuration: 0.3) {
+            self.tapeStateIndicator.alpha = 1.0
+            self.tapeModeButton.alpha = 1.0
+            self.gridStateIndicator.alpha = 0.5
+            self.gridModeButton.alpha = 0.5
+        }
         imageCollectionView.setCollectionViewLayout(tapeFlowLayout, animated: false) { (finished) in
             if finished {
                 self.mainScrollView.contentOffset = self.proposedContentOffset ?? CGPoint(x: 0, y: 0)
@@ -347,7 +401,13 @@ private extension ImagesViewController {
     }
     
     func setGridFlowLayout() {
-        imageCollectionView.setCollectionViewLayout(flowLayout, animated: true) { (finished) in
+        UIView.animate(withDuration: 0.3) {
+            self.tapeStateIndicator.alpha = 0.5
+            self.tapeModeButton.alpha = 0.5
+            self.gridStateIndicator.alpha = 1.0
+            self.gridModeButton.alpha = 1.0
+        }
+        imageCollectionView.setCollectionViewLayout(flowLayout, animated: false) { (finished) in
             if finished {
                 self.mainScrollView.contentOffset = self.proposedContentOffset ?? CGPoint(x: 0, y: 0)
                 let scrollViewContentSize = CGSize(width: self.view.frame.width, height: self.headerView.frame.height + self.headerViewBottom.accessibilityFrame.height + self.secondHeaderView.frame.height + self.secondHeaderBottom.accessibilityFrame.height + self.imageCollectionView.collectionViewLayout.collectionViewContentSize.height)

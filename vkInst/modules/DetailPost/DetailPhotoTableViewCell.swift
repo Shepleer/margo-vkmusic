@@ -17,7 +17,9 @@ class DetailPhotoTableViewCell: UITableViewCell {
     }
     
     func configureCell(data: Comment) {
-        commentLabel.text = data.text
+        guard let name = data.name,
+            let text = data.text else { return }
+        commentLabel.text = "\(name) \(text)"
     }
 
     override func setSelected(_ selected: Bool, animated: Bool) {

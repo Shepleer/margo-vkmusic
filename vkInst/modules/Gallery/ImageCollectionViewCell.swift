@@ -10,61 +10,59 @@ import UIKit
 
 class ImageCollectionViewCell: UICollectionViewCell {
     
-    @IBOutlet weak var progressIndicatorView: ProgressIndicatorView!
     @IBOutlet weak var imageView: UIImageView!
+    @IBOutlet weak var DeckImageView: UIImageView!
     
-    var vc: ImagesViewController?
-    var progress: LoadingProgress?
+    weak var vc: ImagesViewController?
+    var progress: DownloadProgress?
     var completion: LoadingCompletion?
     var data: Post? = nil
-    let placeholder = UIImage(named: "placeholder")
-    var isLoaded = false
     
     override func awakeFromNib() {
-        progressIndicatorView.progressColor = UIColor.black
     }
     
     func configure(postData: Post) {
         guard postData.photos?.first?.url != data?.photos?.first?.url || postData.gifs?.first?.url != data?.gifs?.first?.url else { return }
+        if let photosCount = postData.photos?.count,
+            let gifsCount = postData.gifs?.count {
+            if (photosCount + gifsCount) > 1 {
+                DeckImageView.isHidden = false
+            } else {
+                DeckImageView.isHidden = true
+            }
+        }
         data = postData
-        imageView.image = placeholder
-        
-        progressIndicatorView.isHidden = false
+        imageView.alpha = 0
         
         if let url = postData.gifs?.first?.url {
             loadGif(url: url, progress: { (progress) in
             }) { (gif, url) in
                 if url == self.data?.gifs?.first?.url {
-                    self.isLoaded = true
                     self.imageView.image = gif
+                    UIView.animate(withDuration: 0.1, animations: {
+                        self.imageView.alpha = 1
+                    })
                     self.imageView.startAnimating()
-                    self.progressIndicatorView.isHidden = true
                 }
             }
         } else if let url = postData.photos?.first?.url {
             loadImage(url: url, progress: { (progress) in
             }) { (img, url) in
                 if url == self.data?.photos?.first?.url {
-                    self.isLoaded = true
                     self.imageView.image = img
-                    self.progressIndicatorView.isHidden = true
+                    UIView.animate(withDuration: 0.1, animations: {
+                        self.imageView.alpha = 1
+                    })
                 }
             }
         }
     }
     
-    func loadGif(url: String, progress: @escaping LoadingProgress, completion: @escaping PhotoLoadingCompletion) {
-        isLoaded = false
+    func loadGif(url: String, progress: @escaping DownloadProgress, completion: @escaping PhotoLoadingCompletion) {
         vc?.loadGif(url: url, progress: progress, completion: completion)
     }
     
-    func loadImage(url: String, progress: @escaping LoadingProgress, completion: @escaping PhotoLoadingCompletion) {
-        isLoaded = false
+    func loadImage(url: String, progress: @escaping DownloadProgress, completion: @escaping PhotoLoadingCompletion) {
         vc?.cellIsLoading(url: url, progress: progress, completion: completion)
-    }
-    
-    override func prepareForReuse() {
-        progressIndicatorView.isHidden = true
-        //imageView.image = placeholder
     }
 }

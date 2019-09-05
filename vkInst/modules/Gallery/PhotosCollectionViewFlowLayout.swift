@@ -24,7 +24,8 @@ extension ImagesCollectionViewFlowLayout {
         guard collectionView != nil else { return }
         let size = ((collectionView?.frame.width)! / 3) - 1
         itemSize = CGSize(width: size, height: size)
-        sectionInset = UIEdgeInsets(top: self.minimumInteritemSpacing, left: 0.0, bottom: 0.0, right: 0.0)
+        
+        sectionInset = UIEdgeInsets(top: 0.0, left: 0.0, bottom: 0.0, right: 0.0)
         sectionInsetReference = .fromSafeArea
         minimumLineSpacing = 1
         minimumInteritemSpacing = 1

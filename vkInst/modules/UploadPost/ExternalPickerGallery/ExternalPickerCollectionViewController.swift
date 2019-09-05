@@ -110,6 +110,7 @@ private extension ExternalPickerCollectionViewController {
         self.collectionView.allowsSelection = true
         self.collectionView.allowsMultipleSelection = true
         navigationController?.isToolbarHidden = false
+        navigationController?.isNavigationBarHidden = false 
         navigationController?.navigationBar.barTintColor = UIColor.black
         navigationController?.toolbar.barTintColor = UIColor.black
         let addSelectedImages = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(addSelectedImagesButtonPressed))

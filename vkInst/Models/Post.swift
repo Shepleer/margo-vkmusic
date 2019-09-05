@@ -38,6 +38,7 @@ extension PostResponse: Mappable {
 }
 
 struct Post {
+    var uuid = UUID().uuidString
     var id: Int?
     var ownerId: Int?
     var fromId: Int?

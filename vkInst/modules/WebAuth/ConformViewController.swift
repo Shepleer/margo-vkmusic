@@ -15,23 +15,28 @@ class ConformViewController: UIViewController, WKUIDelegate {
         static let redirectURL = "https://oauth.vk.com/blank.html#"
     }
     
+    @IBOutlet weak var containerStackView: UIStackView!
     var logInWebView: WKWebView!
     var presenter: ConformPresenter?
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        navigationController?.isNavigationBarHidden = false
         ConfigureWebView()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        navigationController?.navigationBar.isHidden = false
     }
 }
 
 private extension ConformViewController {
     func ConfigureWebView() {
         let config = WKWebViewConfiguration()
-        logInWebView = WKWebView(frame: .null, configuration: config)
+        logInWebView = WKWebView(frame: containerStackView.frame, configuration: config)
         logInWebView.uiDelegate = self
         logInWebView.navigationDelegate = self
-        view = logInWebView
+        containerStackView.addArrangedSubview(logInWebView)
+        containerStackView.layoutIfNeeded()
         let url = URL(string: Constants.loginURL)
         let req = URLRequest(url: url!)
         logInWebView.load(req)
@@ -45,6 +50,12 @@ extension ConformViewController: WKNavigationDelegate {
         if redirect[...index] == Constants.redirectURL[...index] {
             DispatchQueue.global().async {
                 self.presenter?.parseUserCredentials(redirectString: redirect)
+            }
+            let cookiesStore = webView.configuration.websiteDataStore.httpCookieStore
+            cookiesStore.getAllCookies { (cookies) in
+                for cookie in cookies {
+                    webView.configuration.websiteDataStore.httpCookieStore.delete(cookie, completionHandler: nil)
+                }
             }
             presenter?.moveToMusicPlayerVC()
         }

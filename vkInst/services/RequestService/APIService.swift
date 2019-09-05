@@ -40,68 +40,84 @@ extension RequestError: LocalizedError {
     }
 }
 
-class APIService: APIServiceProtocol {
-    var builder: APIBuilderProtocol?
-    var runner: APIRunnerProtocol?
-    var parser: APIParserProtocol?
-    
+class APIService {
+    var builder: APIBuilderProtocol
+    var runner: APIRunnerProtocol
+    var parser: APIParserProtocol
     private let queue = DispatchQueue.global(qos: .background)
+    init(builder: APIBuilder, runner: APIRunner, parser: APIParser) {
+        self.builder = builder
+        self.runner = runner
+        self.parser = parser
+    }
+}
+
+extension APIService: APIServiceProtocol {
     func getData<T: Mappable>(urlStr: String, method: requestMethod, body: Data? = nil,
                               headers: Dictionary<String, String>? = nil, completion: @escaping (_ outArray: T?, _ error: Error?) -> ()) {
         queue.async { [weak self] in
             var req: URLRequest?
+            guard let strongSelf = self else { return }
             do {
-                req = try (self!.builder?.build(url: urlStr, method: method, body, headers))!
+                req = try strongSelf.builder.build(url: urlStr, method: method, body, headers)
             } catch {
                 completion(nil, error)
                 return
             }
-            self!.runner?.run(request: req!, completion: { (data, error) in
-                if let error = error {
-                    completion(nil, error)
-                    return
-                }
-                do {
-                    if let response: T = try (self!.parser?.parse(data: data!)) {
+            if let req = req {
+                strongSelf.runner.run(request: req, completion: { (data, error) in
+                    if let error = error {
+                        completion(nil, error)
+                        return
+                    }
+                    do {
+                        guard let data = data else { return }
+                        if let response: T = try (strongSelf.parser.parse(data: data)) {
+                            DispatchQueue.main.async {
+                                completion(response, nil)
+                            }
+                        }
+                    } catch {
                         DispatchQueue.main.async {
-                            completion(response, nil)
+                            completion(nil, error)
                         }
                     }
-                } catch {
-                    DispatchQueue.main.async {
-                        completion(nil, error)
-                    }
-                }
-            })
+                })
+            }
         }
     }
     
     func getData<T: Mappable>(urlStr: String, method: requestMethod, body: Data? = nil,
                               headers: Dictionary<String, String>? = nil, completion: @escaping (_ outArray: [T]?, _ error: Error?) -> ()) {
         queue.async { [weak self] in
+            guard let strongSelf = self else { return }
             var req: URLRequest?
             do {
-                req = try (self!.builder?.build(url: urlStr, method: method, body, headers))!
+                req = try strongSelf.builder.build(url: urlStr, method: method, body, headers)
             } catch {
                 completion(nil, error)
                 return
             }
-            self!.runner?.run(request: req!, completion: { (data, error) in
-                if let error = error {
-                    completion(nil, error)
-                    return
-                }
-                do {
-                    let response: [T] = try (self!.parser?.parse(data: data!))!
-                    DispatchQueue.main.async {
-                        completion(response, nil)
-                    }
-                } catch {
-                    DispatchQueue.main.async {
+            if let req = req {
+                strongSelf.runner.run(request: req, completion: { (data, error) in
+                    if let error = error {
                         completion(nil, error)
+                        return
                     }
-                }
-            })
+                    do {
+                        guard let data = data,
+                            let response: [T] = try (strongSelf.parser.parse(data: data))
+                            else { return }
+                        DispatchQueue.main.async {
+                            completion(response, nil)
+                        }
+                    } catch {
+                        DispatchQueue.main.async {
+                            completion(nil, error)
+                        }
+                    }
+                })
+            }
         }
     }
 }

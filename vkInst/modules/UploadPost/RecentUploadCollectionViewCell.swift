@@ -17,7 +17,7 @@ class AlbumUploadCollectionViewCell: UICollectionViewCell {
     
     var representedAssetIdentifier: String?
     var photoManager = PHImageManager()
-    var vc: UploadPostViewController?
+    weak var vc: UploadPostViewController?
     
     override func awakeFromNib() {
         serialNumberLabel.text = ""
@@ -37,7 +37,6 @@ class AlbumUploadCollectionViewCell: UICollectionViewCell {
     }
     
     func setSerialNumber(number: Int) {
-        isSelected = true
         serialNumberLabel.text = "\(number)"
         serialNumberLabel.isHidden = false
     }

@@ -13,17 +13,23 @@ import UIKit
     private var progressLayer = CAShapeLayer()
     private var trackLayer = CAShapeLayer()
     
+    private func setupView() {
+        self.backgroundColor = UIColor.clear
+        self.layer.cornerRadius = frame.width / 2
+        self.clipsToBounds = true
+    }
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
+        setupView()
     }
     
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
+        setupView()
     }
     
     override func draw(_ rect: CGRect) {
-        self.backgroundColor = UIColor.clear
-        self.layer.cornerRadius = rect.width / 2
         let circlePath = UIBezierPath(arcCenter: CGPoint(x: rect.width / 2, y: rect.height / 2), radius: (rect.width - 1.5) / 2, startAngle: CGFloat(-0.5 * .pi), endAngle: CGFloat(1.5 * .pi), clockwise: true)
         progressLayer.path = circlePath.cgPath
         progressLayer.fillColor = UIColor.clear.cgColor
@@ -39,23 +45,37 @@ import UIKit
         }
     }
     
+    private var nextValue: Float? = nil
     private var basic: Float = 0
     private var isAnimating = false
-    func setProgressWithAnimation(duration: TimeInterval, value: Float) {
+    func setProgressWithAnimation(value: Float) {
         if isAnimating == false {
             isAnimating = true
-            let animation = CABasicAnimation(keyPath: "strokeEnd")
-            animation.duration = duration
+            let animation = createProgressAnimation()
             animation.fromValue = basic
             animation.toValue = value
             basic = value
-            animation.timingFunction = CAMediaTimingFunction(name: CAMediaTimingFunctionName.linear)
-            progressLayer.strokeEnd = CGFloat(value)
-            progressLayer.add(animation, forKey: "animateprogress")
-            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + duration) {
-                self.isAnimating = false
+            progressLayer.add(animation, forKey: "animateProgress")
+            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.3) { [weak self] in
+                guard let strongSelf = self else { return }
+                strongSelf.isAnimating = false
+                if let nextValue = strongSelf.nextValue {
+                    let value = nextValue
+                    strongSelf.nextValue = nil
+                    strongSelf.setProgressWithAnimation(value: value)
+                }
             }
+        } else {
+            nextValue = value
         }
+    }
+    
+    private func createProgressAnimation() -> CABasicAnimation {
+        let animation = CABasicAnimation(keyPath: "strokeEnd")
+        animation.duration = 0.3
+        animation.timingFunction = CAMediaTimingFunction(name: CAMediaTimingFunctionName.linear)
+        animation.isRemovedOnCompletion = false
+        return animation
     }
     
     func rotate() {

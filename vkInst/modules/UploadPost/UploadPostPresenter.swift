@@ -12,10 +12,16 @@ import Photos
 
 protocol UploadPostPresenterProtocol {
     func viewDidLoad()
-    func uploadPhoto(data: Data, fileName: String, progress: @escaping Update, completion: @escaping PostUploadCompletion)
-    func uploadPost(message: String?, photosIds: [Int], completion: @escaping PostUploadCompletion)
-    func moveBack()
+    func uploadPhoto(data: Data, fileName: String, progress: @escaping UploadProgress, completion: @escaping PostUploadCompletion)
+    func uploadPost(message: String?, completion: @escaping PostUploadCompletion, createPostCompletion: @escaping CreatePostCompletion)
+    func moveBack(newPost: Post)
     func presentGallery()
+    //func cancelUpload(fileName: String, completion: @escaping CancelCompletion)
+    func cancelUpload(index: Int)
+    func updateDataSource(assets: [PHAsset])
+    func getCountOfUploadItems() -> Int
+    func getUploadImage(at indexPath: IndexPath) -> UploadImage
+    func invalidateSession()
 }
 
 class UploadPostPresenter {
@@ -23,28 +29,119 @@ class UploadPostPresenter {
     var uploadService: UploadServiceProtocol?
     var router: UploadPostRouterProtocol?
     var userService: UserService?
+    var uploadImages = [UploadImage]()
+    var requestManager = PHImageManager()
 }
 
 extension UploadPostPresenter: UploadPostPresenterProtocol {
+    
     func viewDidLoad() {
         uploadService?.getWallUploadServer()
     }
     
-    func uploadPost(message: String?, photosIds: [Int], completion: @escaping PostUploadCompletion) {
-        userService?.createPost(message: message, photosIds: photosIds, completion: completion)
+    func uploadPost(message: String?, completion: @escaping PostUploadCompletion, createPostCompletion: @escaping CreatePostCompletion) {
+        var photosIds = [Int]()
+        for uploadImage in uploadImages {
+            if let id = uploadImage.id {
+                photosIds.append(id)
+            }
+        }
+        userService?.createPost(message: message, photosIds: photosIds, completion: completion, createPostCompletion: createPostCompletion)
     }
     
-    func moveBack() {
-        router?.moveBackToGalleryScreen()
+    func invalidateSession() {
+        uploadService?.invalidateSession()
+    }
+    
+    func moveBack(newPost: Post) {
+        invalidateSession()
+        router?.moveBackToGalleryScreen(newPost: newPost)
     }
     
     func presentGallery() {
         router?.presentExternalGalleryViewController()
     }
     
-    func uploadPhoto(data: Data, fileName: String, progress: @escaping Update, completion: @escaping PostUploadCompletion) {
-        uploadService?.transferPhotosToServer(imageData: data, fileName: fileName, progress: progress, completion: completion)
+    func uploadPhoto(data: Data, fileName: String, progress: @escaping UploadProgress, completion: @escaping PostUploadCompletion) {
+        //uploadService?.transferPhotosToServer(imageData: data, fileName: fileName, progress: progress, completion: completion)
     }
+    
+    func updateDataSource(assets: [PHAsset]) {
+        guard assets.isEmpty == false else { return }
+        var nextUploadImages = [UploadImage]()
+        for asset in assets {
+            let uploadImage = UploadImage(asset: asset)
+            nextUploadImages.append(uploadImage)
+        }
+        let deliveryMode = PHImageRequestOptionsDeliveryMode.highQualityFormat
+        let requestOptions = PHImageRequestOptions()
+        requestOptions.deliveryMode = deliveryMode
+        uploadImages.append(contentsOf: nextUploadImages)
+        for uploadImage in nextUploadImages {
+            requestData(uploadImage: uploadImage, options: requestOptions)
+        }
+    }
+    
+    //func cancelUpload(fileName: String, completion: @escaping CancelCompletion) {
+        //uploadService?.cancelUpload(fileName: fileName, completion: completion)
+    //}
+    
+    func cancelUpload(index: Int) {
+        let fileName = uploadImages[index].fileName
+        uploadService?.cancelUpload(fileName: fileName)
+    }
+    
+    func startUploading() {
+        guard uploadImages.isEmpty == false else { return }
+        let deliveryMode = PHImageRequestOptionsDeliveryMode.highQualityFormat
+        let requestOptions = PHImageRequestOptions()
+        requestOptions.deliveryMode = deliveryMode
+        for uploadImage in uploadImages {
+            requestData(uploadImage: uploadImage, options: requestOptions)
+        }
+    }
+    
+    func requestData(uploadImage: UploadImage, options: PHImageRequestOptions) {
+        requestManager.requestImageData(for: uploadImage.asset, options: options) { [weak self] (data, str, orientation, nil) in
+            guard let strongSelf = self,
+                let data = data else { return }
+            strongSelf.uploadRequestedData(data: data, uploadImage: uploadImage)
+        }
+    }
+    
+    func uploadRequestedData(data: Data, uploadImage: UploadImage) {
+        self.uploadService?.transferPhotosToServer(imageData: data, fileName: uploadImage.fileName, progress: { [weak self] (progress) in
+            guard let strongSelf = self,
+                let i = strongSelf.uploadImages.firstIndex(where: { $0.fileName == uploadImage.fileName }) else { return }
+            strongSelf.uploadImages[i].progress = progress
+            strongSelf.vc?.setProgress(at: i, progress: progress)
+        }, completion: { [weak self] (id) in
+            print("\(uploadImage.fileName) ----- \(id)")
+            guard let strongSelf = self,
+                let i = strongSelf.uploadImages.firstIndex(where: { $0.fileName == uploadImage.fileName }) else { return }
+            strongSelf.uploadImages[i].id = id
+        }, cancel: { [weak self] (isCanceled) in
+            guard let strongSelf = self,
+                let i = strongSelf.uploadImages.firstIndex(where: { $0.fileName == uploadImage.fileName }) else { return }
+            strongSelf.uploadImages.remove(at: i)
+            strongSelf.vc?.deleteCell(at: i)
+        })
+    }
+    
+    func getCountOfUploadItems() -> Int {
+        return uploadImages.count
+    }
+    
+    func getUploadImage(at indexPath: IndexPath) -> UploadImage {
+        let item = indexPath.item
+        return uploadImages[item]
+    }
+    
+    func pickComplete() {
+        
+    }
+    
+
 }
 
 private extension UploadPostPresenter {

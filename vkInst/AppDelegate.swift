@@ -16,7 +16,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         let rootVC: UIViewController?
-        let tokenEndDate = UserDefaults.standard.double(forKey: "lifetime") - 96400
+        let tokenEndDate = UserDefaults.standard.double(forKey: "lifetime")
         let presentTime = NSTimeIntervalSince1970
         if UserDefaults.standard.string(forKey: "accessToken") == nil || tokenEndDate < presentTime {
             rootVC = Builder.shared.buildLogInScreen()
@@ -27,6 +27,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             window?.rootViewController = rootVC
             window?.makeKeyAndVisible()
         }
+        ThemeService.applyTheme(theme: ThemeService.currentTheme())
+        
         return true
     }
     

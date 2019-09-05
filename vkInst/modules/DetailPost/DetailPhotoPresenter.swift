@@ -15,6 +15,9 @@ protocol DetailPhotoPresenterProtocol {
     func sendComment(postId: Int, ownerId: Int, commentText: String)
     func setLike(postId: Int, ownerId: Int, completion: @escaping LikesCountCompletion)
     func removeLike(postId: Int, ownerId: Int, completion: @escaping LikesCountCompletion)
+    func downloadPhoto(url: String, progress: @escaping DownloadProgress, completion: @escaping PhotoLoadingCompletion)
+    func downloadGif(url: String, progress: @escaping DownloadProgress, completion: @escaping PhotoLoadingCompletion)
+    func invalidateDownloadService()
 }
 
 class DetailPhotoPresenter {
@@ -22,7 +25,7 @@ class DetailPhotoPresenter {
     var router: DetailPhotoRouterProtocol?
     var pagingService: CommentsPageServiceProtocol?
     var userService: UserService?
-    
+    var downloadService: DownloadServiceProtocol?
 }
 
 extension DetailPhotoPresenter: DetailPhotoPresenterProtocol {
@@ -47,9 +50,21 @@ extension DetailPhotoPresenter: DetailPhotoPresenterProtocol {
     }
     
     func fetchComments(postId: Int, ownerId: Int) {
-        pagingService?.nextFetch(postId: postId, ownerId: ownerId, completion: { (comments) in
-            self.vc?.configureDataSource(comments: comments)
+        pagingService?.nextFetch(postId: postId, ownerId: ownerId, completion: { (comments, profiles, groups) in
+            self.vc?.configureDataSource(comments: comments,profiles: profiles,groups: groups)
         })
+    }
+    
+    func downloadPhoto(url: String, progress: @escaping DownloadProgress, completion: @escaping PhotoLoadingCompletion) {
+        downloadService?.downloadImage(url: url, progress: progress, completion: completion)
+    }
+    
+    func downloadGif(url: String, progress: @escaping DownloadProgress, completion: @escaping PhotoLoadingCompletion) {
+        downloadService?.downloadGif(url: url, progress: progress, completion: completion)
+    }
+    
+    func invalidateDownloadService() {
+        downloadService?.invalidateSession()
     }
 }
 

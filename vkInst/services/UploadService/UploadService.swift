@@ -11,22 +11,28 @@ import ObjectMapper
 
 
 typealias PostUploadCompletion = (_ id: Int) -> ()
-typealias UploadTaskComletions = (completion: PostUploadCompletion, progress: Update, task: URLSessionUploadTask)
+typealias UploadProgress = ((_ progress: Float) -> ())
+typealias UploadTaskComletions = (completion: PostUploadCompletion, progress: UploadProgress, cancel: CancelCompletion, task: URLSessionUploadTask)
 typealias ActiveUploads = [String: UploadTaskComletions]
+typealias CancelCompletion = (_ isCanceled: Bool) -> ()
 
 protocol UploadServiceProtocol {
-    func transferPhotosToServer(imageData: Data, fileName: String, progress: @escaping Update, completion: @escaping PostUploadCompletion)
+    func transferPhotosToServer(imageData: Data, fileName: String, progress: @escaping UploadProgress, completion: @escaping PostUploadCompletion, cancel: @escaping CancelCompletion)
     func getWallUploadServer()
+    func cancelUpload(fileName: String)
+    func invalidateSession()
 }
 
 class UploadService: NSObject {
-    var requestService: APIService?
-    var uploadServer: UploadServer? = nil
-    var session: URLSession? = nil
-    var uploadPhotos = [UploadServerPhotoResponse?]()
+    private var requestService: APIService
+    var uploadServer: UploadServer?
+    weak var session: URLSession?
     var photosIds = [Int]()
     var activeUploads: ActiveUploads = [:]
     
+    init(requestService: APIService) {
+        self.requestService = requestService
+    }
     
     private struct RequestConfigurations {
         static let userId = UserDefaults.standard.string(forKey: "userId")!
@@ -36,28 +42,37 @@ class UploadService: NSObject {
 
 extension UploadService: UploadServiceProtocol {
     
-    func transferPhotosToServer(imageData: Data, fileName: String, progress: @escaping Update, completion: @escaping PostUploadCompletion) {
+    func invalidateSession() {
+        session?.invalidateAndCancel()
+    }
+    
+    func transferPhotosToServer(imageData: Data, fileName: String, progress: @escaping UploadProgress, completion: @escaping PostUploadCompletion, cancel: @escaping CancelCompletion) {
         DispatchQueue.global(qos: .background).async { [weak self] in
-            guard let session = self!.session else { return }
-            guard let req = self!.buildUploadRequest(imageData: imageData, fileName: fileName) else { return }
+            guard let strongSelf = self,
+                let session = strongSelf.session,
+                let req = strongSelf.buildUploadRequest(imageData: imageData, fileName: fileName)
+                else { return }
             let uploadTask = session.uploadTask(withStreamedRequest: req)
-            self!.activeUploads[fileName] = (completion, progress, uploadTask) as? (PostUploadCompletion, Update, URLSessionUploadTask)
+            strongSelf.activeUploads[fileName] = (completion, progress, cancel, uploadTask) as (PostUploadCompletion, UploadProgress, CancelCompletion, URLSessionUploadTask)
             uploadTask.resume()
         }
     }
     
     func getWallUploadServer() {
         let url = "https://api.vk.com/method/photos.getWallUploadServer?access_token=\(RequestConfigurations.token)&v=5.101"
-        requestService?.getData(urlStr: url, method: .get, completion: { (response: UploadServer?, err) in
-            guard let response = response else { return }
-            self.uploadServer = response
+        requestService.getData(urlStr: url, method: .get, completion: { [weak self] (response: UploadServer?, err) in
+            guard let strongSelf = self,
+                let response = response else { return }
+            strongSelf.uploadServer = response
         })
     }
     
     func cancelUpload(fileName: String) {
-        guard let task = activeUploads[fileName]?.task else { return }
+        guard let task = activeUploads[fileName]?.task,
+            let cancel = activeUploads[fileName]?.cancel else { return }
         task.cancel()
-        activeUploads[fileName] = nil
+        cancel(true)
+        activeUploads.removeValue(forKey: fileName)
     }
 }
 
@@ -90,16 +105,18 @@ private extension UploadService {
     }
     
     func saveChanges(uploadPhoto: UploadServerPhotoResponse, fileName: String) {
-        guard let server = uploadPhoto.server else { return }
-        guard let photo = uploadPhoto.photo else { return }
-        guard let hash = uploadPhoto.hash else { return }
+        guard let server = uploadPhoto.server,
+            let photo = uploadPhoto.photo,
+            let hash = uploadPhoto.hash
+            else { return }
         let url = "https://api.vk.com/method/photos.saveWallPhoto?user_id=\(RequestConfigurations.userId)&photo=\(photo)&server=\(server)&hash=\(hash)&access_token=\(RequestConfigurations.token)&v=5.101"
-        requestService?.getData(urlStr: url, method: .get, completion: { (response: [Image]?, err) in
-            guard let id = response?.first?.id else { return }
-            guard let completion = self.activeUploads[fileName]?.completion else { return }
+        requestService.getData(urlStr: url, method: .get, completion: { [weak self] (response: [Image]?, err) in
+            guard let strongSelf = self,
+                let id = response?.first?.id,
+                let completion = strongSelf.activeUploads[fileName]?.completion
+                else { return }
             DispatchQueue.main.async {
                 completion(id)
-                self.activeUploads[fileName] = nil
             }
         })
     }
@@ -108,9 +125,11 @@ private extension UploadService {
 extension UploadService: URLSessionTaskDelegate, URLSessionDataDelegate {
     func urlSession(_ session: URLSession, task: URLSessionTask, didSendBodyData bytesSent: Int64, totalBytesSent: Int64, totalBytesExpectedToSend: Int64) {
         DispatchQueue.global(qos: .background).async { [weak self] in
-            guard let fileName = task.originalRequest?.value(forHTTPHeaderField: "fileName") else { return }
+            guard let strongSelf = self,
+                let fileName = task.originalRequest?.value(forHTTPHeaderField: "fileName")
+                else { return }
             let progress = Float(totalBytesSent) / Float(totalBytesExpectedToSend)
-            guard let progressCompletion = self!.activeUploads[fileName]?.progress else { return }
+            guard let progressCompletion = strongSelf.activeUploads[fileName]?.progress else { return }
             DispatchQueue.main.async {
                 progressCompletion(progress)
             }

@@ -9,16 +9,38 @@
 import UIKit
 import ImageIO
 
+extension UIView {
+    
+}
+
+extension UIView: CAAnimationDelegate {
+    
+}
 
 extension UIView {
-    func setGradientBackground(firstColor: UIColor, secondColor: UIColor) {
-        let gradientLayer = CAGradientLayer()
-        gradientLayer.frame = bounds
-        gradientLayer.colors = [firstColor.cgColor, secondColor.cgColor]
-        gradientLayer.locations = [0.0, 1.0]
-        gradientLayer.startPoint = CGPoint(x: 1.0, y: 1.0)
-        gradientLayer.endPoint = CGPoint(x: 0.0, y: 0.0)
-        layer.insertSublayer(gradientLayer, at: 0)
+    class func fromNib<T: UIView>() -> T {
+        return Bundle.main.loadNibNamed(String(describing: T.self), owner: self, options: nil)![0] as! T
+    }
+    
+    func loadNib() -> PhotoContainerView {
+        let bundle = Bundle(for: type(of: self))
+        let nibName = type(of: self).description().components(separatedBy: ".").last!
+        let nib = UINib(nibName: nibName, bundle: bundle)
+        return nib.instantiate(withOwner: self, options: nil).first as! PhotoContainerView
+    }
+    
+    
+    func pinSubview(_ subview: UIView) {
+        guard let superview = subview.superview, superview == self else {
+            debugPrint("pinSubview has failed. Subview not in the view hierarchy.")
+            return
+        }
+        subview.translatesAutoresizingMaskIntoConstraints = false
+        
+        subview.leadingAnchor.constraint(equalTo: leadingAnchor).isActive = true
+        subview.trailingAnchor.constraint(equalTo: trailingAnchor).isActive = true
+        subview.topAnchor.constraint(equalTo: topAnchor).isActive = true
+        subview.bottomAnchor.constraint(equalTo: bottomAnchor).isActive = true
     }
 }
 

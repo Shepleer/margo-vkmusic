@@ -37,6 +37,7 @@
 		2C1EA6AB22CA0A0E009C27E2 /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = 2C1EA6AA22CA0A0E009C27E2 /* .gitignore */; };
 		2C1EA6AF22CA202C009C27E2 /* LogInPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C1EA6AE22CA202C009C27E2 /* LogInPresenter.swift */; };
 		2C1EA6B122CA2120009C27E2 /* Private_Keys.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C1EA6B022CA2120009C27E2 /* Private_Keys.swift */; };
+		2C21D922231928BD004A4C70 /* GradientBackgroudView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C21D921231928BD004A4C70 /* GradientBackgroudView.swift */; };
 		2C221A0922F840F9003F9214 /* DetailPhotoTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C221A0822F840F9003F9214 /* DetailPhotoTableViewCell.swift */; };
 		2C23309322D499CB004F2B2E /* PhotosCollectionViewFlowLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C23309222D499CB004F2B2E /* PhotosCollectionViewFlowLayout.swift */; };
 		2C24F57E2303FF7C00DD7630 /* RecentUploadCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C24F57D2303FF7C00DD7630 /* RecentUploadCollectionViewCell.swift */; };
@@ -48,6 +49,9 @@
 		2C34BC4D2306EB1400784957 /* ExternalPickerPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C34BC4C2306EB1400784957 /* ExternalPickerPresenter.swift */; };
 		2C34BC4F2306EB2200784957 /* ExternalPickerRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C34BC4E2306EB2200784957 /* ExternalPickerRouter.swift */; };
 		2C34BC512306EBD200784957 /* ExternalGalleryCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C34BC502306EBD200784957 /* ExternalGalleryCollectionViewCell.swift */; };
+		2C365C00230D5E22003E3D5F /* SettingsTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C365BFF230D5E22003E3D5F /* SettingsTableViewController.swift */; };
+		2C365C02230D5E2E003E3D5F /* SettingsPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C365C01230D5E2E003E3D5F /* SettingsPresenter.swift */; };
+		2C365C04230D5E3E003E3D5F /* SettingRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C365C03230D5E3E003E3D5F /* SettingRouter.swift */; };
 		2C384B6E22E0DF8900DEBBAB /* ProgressIndicatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C384B6D22E0DF8900DEBBAB /* ProgressIndicatorView.swift */; };
 		2C39810A22CE0FE00042B1AE /* ImageCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C39810922CE0FE00042B1AE /* ImageCollectionViewCell.swift */; };
 		2C39810C22CE10340042B1AE /* ImagesPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C39810B22CE10340042B1AE /* ImagesPresenter.swift */; };
@@ -62,6 +66,10 @@
 		2C4690F822CA4C2B0026C508 /* Builder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C4690F722CA4C2B0026C508 /* Builder.swift */; };
 		2C6B23CF22FC1AD4001EDE14 /* Post.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C6B23CE22FC1AD4001EDE14 /* Post.swift */; };
 		2C6B23D122FC2921001EDE14 /* GlobalTransforms.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C6B23D022FC2921001EDE14 /* GlobalTransforms.swift */; };
+		2C71DC6D230ED97D00E0F4D1 /* UploadImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C71DC6C230ED97D00E0F4D1 /* UploadImage.swift */; };
+		2C8B94B823140D870054F65C /* PhotoContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C8B94B723140D870054F65C /* PhotoContainerView.swift */; };
+		2C8B94BA231413F10054F65C /* PhotoContainerView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2C8B94B9231413F10054F65C /* PhotoContainerView.xib */; };
+		2C8B94BD231453630054F65C /* MediaFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C8B94BC231453630054F65C /* MediaFile.swift */; };
 		2CB3C36C22DE06B700D58C9D /* DownloadService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CB3C36B22DE06B700D58C9D /* DownloadService.swift */; };
 		2CB721EF22F1B8920041D624 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CB721EE22F1B8920041D624 /* User.swift */; };
 		2CEF3940230449EA0072BE18 /* SmallPhotoPickerFlowLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CEF393F230449EA0072BE18 /* SmallPhotoPickerFlowLayout.swift */; };
@@ -103,6 +111,7 @@
 		2C1EA6AA22CA0A0E009C27E2 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 		2C1EA6AE22CA202C009C27E2 /* LogInPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogInPresenter.swift; sourceTree = "<group>"; };
 		2C1EA6B022CA2120009C27E2 /* Private_Keys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Private_Keys.swift; sourceTree = "<group>"; };
+		2C21D921231928BD004A4C70 /* GradientBackgroudView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GradientBackgroudView.swift; sourceTree = "<group>"; };
 		2C221A0822F840F9003F9214 /* DetailPhotoTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailPhotoTableViewCell.swift; sourceTree = "<group>"; };
 		2C23309222D499CB004F2B2E /* PhotosCollectionViewFlowLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotosCollectionViewFlowLayout.swift; sourceTree = "<group>"; };
 		2C24F57D2303FF7C00DD7630 /* RecentUploadCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecentUploadCollectionViewCell.swift; sourceTree = "<group>"; };
@@ -114,6 +123,9 @@
 		2C34BC4C2306EB1400784957 /* ExternalPickerPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalPickerPresenter.swift; sourceTree = "<group>"; };
 		2C34BC4E2306EB2200784957 /* ExternalPickerRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalPickerRouter.swift; sourceTree = "<group>"; };
 		2C34BC502306EBD200784957 /* ExternalGalleryCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalGalleryCollectionViewCell.swift; sourceTree = "<group>"; };
+		2C365BFF230D5E22003E3D5F /* SettingsTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsTableViewController.swift; sourceTree = "<group>"; };
+		2C365C01230D5E2E003E3D5F /* SettingsPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsPresenter.swift; sourceTree = "<group>"; };
+		2C365C03230D5E3E003E3D5F /* SettingRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingRouter.swift; sourceTree = "<group>"; };
 		2C384B6D22E0DF8900DEBBAB /* ProgressIndicatorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressIndicatorView.swift; sourceTree = "<group>"; };
 		2C39810922CE0FE00042B1AE /* ImageCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageCollectionViewCell.swift; sourceTree = "<group>"; };
 		2C39810B22CE10340042B1AE /* ImagesPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagesPresenter.swift; sourceTree = "<group>"; };
@@ -128,6 +140,10 @@
 		2C4690F722CA4C2B0026C508 /* Builder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Builder.swift; sourceTree = "<group>"; };
 		2C6B23CE22FC1AD4001EDE14 /* Post.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Post.swift; sourceTree = "<group>"; };
 		2C6B23D022FC2921001EDE14 /* GlobalTransforms.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalTransforms.swift; sourceTree = "<group>"; };
+		2C71DC6C230ED97D00E0F4D1 /* UploadImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UploadImage.swift; sourceTree = "<group>"; };
+		2C8B94B723140D870054F65C /* PhotoContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoContainerView.swift; sourceTree = "<group>"; };
+		2C8B94B9231413F10054F65C /* PhotoContainerView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = PhotoContainerView.xib; sourceTree = "<group>"; };
+		2C8B94BC231453630054F65C /* MediaFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaFile.swift; sourceTree = "<group>"; };
 		2CB3C36B22DE06B700D58C9D /* DownloadService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadService.swift; sourceTree = "<group>"; };
 		2CB721EE22F1B8920041D624 /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
 		2CEF393F230449EA0072BE18 /* SmallPhotoPickerFlowLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmallPhotoPickerFlowLayout.swift; sourceTree = "<group>"; };
@@ -200,7 +216,6 @@
 				2C15547422F055FE00E1A6E1 /* TapeCollectionViewCell.swift */,
 				2C23309222D499CB004F2B2E /* PhotosCollectionViewFlowLayout.swift */,
 				2C2AC3D122F9D3270032247E /* PhotosCollectionFooterView.swift */,
-				2C384B6D22E0DF8900DEBBAB /* ProgressIndicatorView.swift */,
 				2C39810B22CE10340042B1AE /* ImagesPresenter.swift */,
 				2C1E7F7122EEEEDB0002A863 /* ImagesRouter.swift */,
 				2C2AC3D222F9D3270032247E /* PhotosCollectionFooterView.xib */,
@@ -253,6 +268,8 @@
 		2C1EA6AC22CA200B009C27E2 /* modules */ = {
 			isa = PBXGroup;
 			children = (
+				2CC7037623168325000FF6C3 /* PhotoContainer */,
+				2C365BFE230D5DFF003E3D5F /* Settings */,
 				2C14526D2302BC6D009817B3 /* UploadPost */,
 				2C1D753A22F4968B007D5718 /* DetailPost */,
 				2C1B93D922CBA63A00209DEB /* Gallery */,
@@ -278,12 +295,14 @@
 				2C39810D22CE103F0042B1AE /* Image.swift */,
 				2C15547822F097F200E1A6E1 /* Like.swift */,
 				2CB721EE22F1B8920041D624 /* User.swift */,
+				2C6B23D022FC2921001EDE14 /* GlobalTransforms.swift */,
 				2C1D753822F459D2007D5718 /* Comment.swift */,
 				2C2AC3CF22F974500032247E /* Group.swift */,
 				2C6B23CE22FC1AD4001EDE14 /* Post.swift */,
 				2C14B21A23018F080097D4A1 /* Gif.swift */,
-				2C6B23D022FC2921001EDE14 /* GlobalTransforms.swift */,
 				2C1452772302C077009817B3 /* UploadServer.swift */,
+				2C71DC6C230ED97D00E0F4D1 /* UploadImage.swift */,
+				2C8B94BC231453630054F65C /* MediaFile.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -297,6 +316,16 @@
 				2C34BC4E2306EB2200784957 /* ExternalPickerRouter.swift */,
 			);
 			path = ExternalPickerGallery;
+			sourceTree = "<group>";
+		};
+		2C365BFE230D5DFF003E3D5F /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				2C365BFF230D5E22003E3D5F /* SettingsTableViewController.swift */,
+				2C365C01230D5E2E003E3D5F /* SettingsPresenter.swift */,
+				2C365C03230D5E3E003E3D5F /* SettingRouter.swift */,
+			);
+			path = Settings;
 			sourceTree = "<group>";
 		};
 		2C3B842C22F2E44400AC6C41 /* PageService */ = {
@@ -353,6 +382,17 @@
 				2CB3C36B22DE06B700D58C9D /* DownloadService.swift */,
 			);
 			path = DownloadService;
+			sourceTree = "<group>";
+		};
+		2CC7037623168325000FF6C3 /* PhotoContainer */ = {
+			isa = PBXGroup;
+			children = (
+				2C8B94B723140D870054F65C /* PhotoContainerView.swift */,
+				2C384B6D22E0DF8900DEBBAB /* ProgressIndicatorView.swift */,
+				2C8B94B9231413F10054F65C /* PhotoContainerView.xib */,
+				2C21D921231928BD004A4C70 /* GradientBackgroudView.swift */,
+			);
+			path = PhotoContainer;
 			sourceTree = "<group>";
 		};
 		346F4F1785E8B1478415E7EC /* Pods */ = {
@@ -437,6 +477,7 @@
 				2C1EA6A322CA0850009C27E2 /* LaunchScreen.storyboard in Resources */,
 				2C2AC3D422F9D3270032247E /* PhotosCollectionFooterView.xib in Resources */,
 				2C1EA6A022CA0850009C27E2 /* Assets.xcassets in Resources */,
+				2C8B94BA231413F10054F65C /* PhotoContainerView.xib in Resources */,
 				2C1EA69B22CA084F009C27E2 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -473,13 +514,17 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2C365C04230D5E3E003E3D5F /* SettingRouter.swift in Sources */,
 				2C34BC512306EBD200784957 /* ExternalGalleryCollectionViewCell.swift in Sources */,
+				2C8B94BD231453630054F65C /* MediaFile.swift in Sources */,
 				2C1B81A922F1A392008069BF /* UserService.swift in Sources */,
 				2C1EA6AF22CA202C009C27E2 /* LogInPresenter.swift in Sources */,
 				2C34BC4F2306EB2200784957 /* ExternalPickerRouter.swift in Sources */,
 				2C1EA69822CA084F009C27E2 /* LogInViewController.swift in Sources */,
 				2C24F57E2303FF7C00DD7630 /* RecentUploadCollectionViewCell.swift in Sources */,
 				2C1EA6B122CA2120009C27E2 /* Private_Keys.swift in Sources */,
+				2C71DC6D230ED97D00E0F4D1 /* UploadImage.swift in Sources */,
+				2C21D922231928BD004A4C70 /* GradientBackgroudView.swift in Sources */,
 				2C4690E722CA3F7D0026C508 /* Extensions.swift in Sources */,
 				2C1B2B59230AE43A00748048 /* OpenMoreCollectionViewCell.swift in Sources */,
 				2C1452712302BCAE009817B3 /* UploadPostPresenter.swift in Sources */,
@@ -496,10 +541,12 @@
 				2C15547622F055FE00E1A6E1 /* TapeCollectionViewCell.swift in Sources */,
 				2C1B93DB22CBA69900209DEB /* ImagesViewController.swift in Sources */,
 				2C1452732302BDC4009817B3 /* UploadService.swift in Sources */,
+				2C8B94B823140D870054F65C /* PhotoContainerView.swift in Sources */,
 				2C1452782302C077009817B3 /* UploadServer.swift in Sources */,
 				2CB3C36C22DE06B700D58C9D /* DownloadService.swift in Sources */,
 				2C4690F822CA4C2B0026C508 /* Builder.swift in Sources */,
 				2C1E7F7222EEEEDB0002A863 /* ImagesRouter.swift in Sources */,
+				2C365C02230D5E2E003E3D5F /* SettingsPresenter.swift in Sources */,
 				2C1B93D822CBA5C300209DEB /* ConformRouter.swift in Sources */,
 				2C4690F222CA47F50026C508 /* APIService.swift in Sources */,
 				2CEF3940230449EA0072BE18 /* SmallPhotoPickerFlowLayout.swift in Sources */,
@@ -509,6 +556,7 @@
 				2C4690E422CA331B0026C508 /* StyleManager.swift in Sources */,
 				2C34BC482306BCC300784957 /* UploadPostRouter.swift in Sources */,
 				2C23309322D499CB004F2B2E /* PhotosCollectionViewFlowLayout.swift in Sources */,
+				2C365C00230D5E22003E3D5F /* SettingsTableViewController.swift in Sources */,
 				2C384B6E22E0DF8900DEBBAB /* ProgressIndicatorView.swift in Sources */,
 				2C4690F322CA47F50026C508 /* APIParser.swift in Sources */,
 				2C39810C22CE10340042B1AE /* ImagesPresenter.swift in Sources */,

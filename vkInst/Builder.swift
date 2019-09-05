@@ -41,22 +41,18 @@ class Builder {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         guard let vc = storyboard.instantiateViewController(withIdentifier: "ImagesVC") as? ImagesViewController else { return nil }
         let nav = UINavigationController(rootViewController: vc)
-        let requestService = buildAPIService()
         let presenter = ImagePresenter()
         let router = ImagesRouter()
         let downloadService = buildDownloadService()
-        let userService = UserService()
-        let pageService = PageService()
+        let userService = UserService(requestService: buildAPIService())
+        let pageService = PageService(requestService: buildAPIService())
         router.vc = vc
-        userService.requestService = requestService
-        pageService.requestService = requestService
         presenter.userService = userService
         presenter.pageService = pageService
         presenter.downloadService = downloadService
-        presenter.service = requestService
+        presenter.service = buildAPIService()
         presenter.vc = vc
         vc.presenter = presenter
-        vc.router = router
         presenter.router = router
         return nav
     }
@@ -64,20 +60,17 @@ class Builder {
     func buildDetailPhotoScreen(data: Post, profile: User) -> UIViewController? {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         guard let vc = storyboard.instantiateViewController(withIdentifier: "detailVC") as? DetailPhotoViewController else { return nil }
+        vc.configureController(postData: data, profile: profile)
         let presenter = DetailPhotoPresenter()
         let router = DetailPhotoRouter()
-        let requestService = buildAPIService()
-        let pagingService = CommentsPageService()
-        let userService = UserService()
+        let pagingService = CommentsPageService(requestService: buildAPIService())
+        let userService = UserService(requestService: buildAPIService())
         vc.presenter = presenter
-        vc.postData = data
-        vc.profile = profile
         presenter.vc = vc
         presenter.userService = userService
         presenter.pagingService = pagingService
+        presenter.downloadService = buildDownloadService()
         presenter.router = router
-        pagingService.requestService = requestService
-        userService.requestService = requestService
         return vc
     }
     
@@ -87,13 +80,12 @@ class Builder {
         let presenter = UploadPostPresenter()
         let uploadService = buildUploadService()
         let router = UploadPostRouter()
-        let userService = UserService()
+        let userService = UserService(requestService: buildAPIService())
         vc.presenter = presenter
         presenter.vc = vc
         presenter.router = router
         presenter.uploadService = uploadService
         presenter.userService = userService
-        userService.requestService = uploadService.requestService
         router.vc = vc
         return vc
     }
@@ -110,14 +102,25 @@ class Builder {
         return vc
     }
     
+    func buildSettingsScreen() -> UIViewController? {
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        guard let vc = storyboard.instantiateViewController(withIdentifier: "settingsVC") as? SettingsTableViewController else { return nil }
+        let presenter = SettingsPresenter()
+        let router = SettingsRouter()
+        vc.presenter = presenter
+        presenter.vc = vc
+        presenter.router = router
+        router.vc = vc
+        return vc
+    }
+    
     func buildAPIService() -> APIService {
-        let manager = APIService()
         let builder = APIBuilder()
         let parser = APIParser()
         let runner = APIRunner()
-        manager.builder = builder
-        manager.parser = parser
-        manager.runner = runner
+        let manager = APIService(builder: builder,
+                                 runner: runner,
+                                 parser: parser)
         return manager
     }
     
@@ -131,12 +134,11 @@ class Builder {
     }
     
     func buildUploadService() -> UploadService {
-        let configuration = URLSessionConfiguration.background(withIdentifier: "uploadPhotos")
         let requestService = buildAPIService()
-        let uploadService = UploadService()
+        let uploadService = UploadService(requestService: requestService)
+        let configuration = URLSessionConfiguration.background(withIdentifier: "uploadPhotos")
         let session = URLSession(configuration: configuration, delegate: uploadService, delegateQueue: nil)
         uploadService.session = session
-        uploadService.requestService = requestService
         return uploadService
     }
 }

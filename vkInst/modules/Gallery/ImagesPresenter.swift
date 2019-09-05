@@ -19,6 +19,10 @@ protocol ImagePresenterProtocol {
     func nextFetch()
     func fetchComments(postId: Int, ownerId: Int, completion: @escaping CommentsCompletion)
     func checkIsAllLoaded() -> Bool
+    func moveToUploadPostScreen()
+    func moveToDetailScreen(post: Post, profile: User)
+    func moveToSettingsScreen()
+    func releaseDownloadSession()
 }
 
 class ImagePresenter: NSObject {
@@ -72,6 +76,22 @@ extension ImagePresenter: ImagePresenterProtocol {
     
     func checkIsAllLoaded() -> Bool {
         return pageService!.checkIsAllLoaded()
+    }
+    
+    func moveToUploadPostScreen() {
+        router?.moveToUploadPostScreen()
+    }
+    
+    func moveToDetailScreen(post: Post, profile: User) {
+        router?.moveToDetailScreen(post: post, profile: profile)
+    }
+    
+    func moveToSettingsScreen() {
+        router?.moveToSettingsScreen()
+    }
+    
+    func releaseDownloadSession() {
+        downloadService?.invalidateSession()
     }
 }
 
