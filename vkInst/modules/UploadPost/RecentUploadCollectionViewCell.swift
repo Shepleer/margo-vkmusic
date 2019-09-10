@@ -18,6 +18,7 @@ class AlbumUploadCollectionViewCell: UICollectionViewCell {
     var representedAssetIdentifier: String?
     var photoManager = PHImageManager()
     weak var vc: UploadPostViewController?
+    var identifier: String?
     
     override func awakeFromNib() {
         serialNumberLabel.text = ""
@@ -31,8 +32,11 @@ class AlbumUploadCollectionViewCell: UICollectionViewCell {
     
     func configureCell(asset: PHAsset, cellSize: CGSize) {
         representedAssetIdentifier = asset.localIdentifier
-        photoManager.requestImage(for: asset, targetSize: CGSize(width: asset.pixelWidth, height: asset.pixelHeight), contentMode: .aspectFill, options: nil) { image, _ in
-            self.photoView.image = image
+        let size = CGSize(width: asset.pixelWidth, height: asset.pixelHeight)
+        photoManager.requestImage(for: asset, targetSize: size, contentMode: .aspectFill, options: nil) { image, _ in
+            if self.identifier == asset.localIdentifier {
+                self.photoView.image = image
+            }
         }
     }
     

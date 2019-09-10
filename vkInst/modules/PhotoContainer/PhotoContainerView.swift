@@ -42,6 +42,7 @@ class PhotoContainerView: UIView {
 
 extension PhotoContainerView: PhotoContainerViewProtocol {
     func setMediaContent(mediaFile: Image) {
+        
         if let image = mediaFile.img {
             photoView.image = image
         } else {
@@ -83,6 +84,13 @@ extension PhotoContainerView: PhotoContainerViewProtocol {
                 }
             }
         }
+    }
+    
+    func getMediaHeight() -> CGFloat {
+        if let image = photoView.image {
+            return image.size.height
+        }
+        return 400
     }
 }
 

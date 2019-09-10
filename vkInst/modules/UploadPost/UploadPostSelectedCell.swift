@@ -22,19 +22,25 @@ class UploadPostSelectedCell: UICollectionViewCell {
     var fileName: String? = nil
     var photoId: Int?
     var id: Int? = nil
+    var identifier: String?
     
     override func awakeFromNib() {
         super.awakeFromNib()
-        imageToUpload.layer.cornerRadius = imageToUpload.bounds.width / 4
+        imageToUpload.layer.cornerRadius = 10
         cancelView.rotate()
+        crossImageView.tintColor = ThemeService.currentTheme().primaryColor
     }
     
     func configureCell() {
         //guard id == nil else { return }
         guard let asset = asset else { fatalError() }
         requestManager.requestImage(for: asset, targetSize: CGSize(width: 120, height: 120), contentMode: .aspectFill, options: nil) { (image, nil) in
-            self.imageToUpload.image = image
+            if self.identifier == asset.localIdentifier {
+                self.imageToUpload.image = image
+            }
         }
+        
+        //MARK: BUG FIX COMMENT
         
         //let deliveryMode = PHImageRequestOptionsDeliveryMode.highQualityFormat
         //let requestOptions = PHImageRequestOptions()

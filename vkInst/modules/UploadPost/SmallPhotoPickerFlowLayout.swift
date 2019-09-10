@@ -26,7 +26,6 @@ class SmallPhotoPickerFlowLayout: UICollectionViewFlowLayout {
         let size = 120
         itemSize = CGSize(width: size, height: size)
         sectionInsetReference = .fromSafeArea
-        //minimumLineSpacing = 10
         minimumInteritemSpacing = 0
         sectionInset = UIEdgeInsets(top: 0.0, left: 10, bottom: 0.0, right: 10)
     }

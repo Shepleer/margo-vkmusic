@@ -30,6 +30,8 @@ class ExternalPickerCollectionViewController: UICollectionViewController {
     
     @IBOutlet weak var collectionViewFlowLayout: UICollectionViewFlowLayout!
     
+    
+    
     fileprivate var thumbnailSize: CGSize!
     
     // MARK: UIViewController / Life Cycle
@@ -43,6 +45,7 @@ class ExternalPickerCollectionViewController: UICollectionViewController {
     
     override func viewWillLayoutSubviews() {
         super.viewWillLayoutSubviews()
+        configureUIPresentation()
         adjustCollectionViewItemSize()
     }
     
@@ -109,12 +112,23 @@ private extension ExternalPickerCollectionViewController {
         self.clearsSelectionOnViewWillAppear = false
         self.collectionView.allowsSelection = true
         self.collectionView.allowsMultipleSelection = true
-        navigationController?.isToolbarHidden = false
-        navigationController?.isNavigationBarHidden = false 
         navigationController?.navigationBar.barTintColor = UIColor.black
         navigationController?.toolbar.barTintColor = UIColor.black
         let addSelectedImages = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(addSelectedImagesButtonPressed))
         navigationItem.rightBarButtonItem = addSelectedImages
+    }
+    
+    func configureUIPresentation() {
+        navigationController?.isToolbarHidden = false
+        navigationController?.isNavigationBarHidden = false
+        let currentTheme = ThemeService.currentTheme()
+        let primary = currentTheme.primaryColor
+        let secondary = currentTheme.secondaryColor
+        let background = currentTheme.backgroundColor
+        let secondaryBackground = currentTheme.secondaryBackgroundColor
+        
+        view.backgroundColor           = background
+        collectionView.backgroundColor = background
     }
     
     func checkSelectedImages() {

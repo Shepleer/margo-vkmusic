@@ -41,15 +41,27 @@ extension ImagesCollectionViewFlowLayout {
 class TapeCollectionViewFlowLayout: UICollectionViewFlowLayout {
     weak var vc: ImagesViewController?
     var isHeightCalculated = false
-    override func prepare() {
+    
+    override init() {
+        super.init()
+    }
+    
+    required init?(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder)
+    }
+    
+    private func setupDefaults() {
         guard collectionView != nil else { return }
-        //estimatedItemSize = CGSize(width: (collectionView?.frame.width)!, height: 200)
-        //itemSize = UICollectionViewFlowLayout.automaticSize
         itemSize = CGSize(width: (collectionView?.frame.width)!, height: 524)
         sectionInset = UIEdgeInsets(top: 0.0, left: 0.0, bottom: 0.0, right: 0.0)
         sectionInsetReference = .fromSafeArea
         minimumLineSpacing = 0
         minimumInteritemSpacing = 0
+    }
+    
+    override func prepare() {
+        setupDefaults()
+        
     }
     
     override func targetContentOffset(forProposedContentOffset proposedContentOffset: CGPoint) -> CGPoint {

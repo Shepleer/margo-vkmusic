@@ -23,7 +23,7 @@ class DetailPhotoViewController: UIViewController {
     private var isZooming = false
     private var originalImageCenter: CGPoint?
     
-    
+    var refreshControll = UIRefreshControl()
     @IBOutlet weak var hearthImageViewWidthAnchor: NSLayoutConstraint!
     @IBOutlet weak var hearthImageViewHeightAnchor: NSLayoutConstraint!
     @IBOutlet weak var bigLikeImageView: UIImageView!
@@ -61,9 +61,12 @@ class DetailPhotoViewController: UIViewController {
         }
     }
     @IBOutlet weak var pageControl: UIPageControl!
+    @IBOutlet weak var profileMetadataView: UIView!
+    @IBOutlet weak var postMetadataView: UIView!
+    @IBOutlet weak var viewsCountImage: UIImageView!
     
-    let fillHearthImage = UIImage(named: "hearth-red")
-    let emptyHearthImage = UIImage(named: "hearth-deselected-black")
+    let fillHearthImage = UIImage(named: "HearthFill")
+    let emptyHearthImage = UIImage(named: "HearthDeselected")
     
     
     func configureController(postData: Post, profile: User) {
@@ -74,6 +77,8 @@ class DetailPhotoViewController: UIViewController {
     override func willMove(toParent parent: UIViewController?) {
         super.willMove(toParent: parent)
         if parent == nil {
+            guard let galleryViewController = navigationController?.viewControllers.first as? ImagesViewControllerProtocol else { return }
+            galleryViewController.updateOffset()
             presenter?.invalidateDownloadService()
         }
     }
@@ -86,6 +91,7 @@ class DetailPhotoViewController: UIViewController {
     }
     
     override func viewWillAppear(_ animated: Bool) {
+        configurePresentation()
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
     }
@@ -122,6 +128,7 @@ class DetailPhotoViewController: UIViewController {
                 self.postData?.likesCount = likesCount
                 self.likeButton.isSelected = false
                 self.likesCountLabel.text = "\(likesCount) likes"
+                self.updatePostData()
             })
         } else {
             startSelectLikeAnimation()
@@ -130,6 +137,7 @@ class DetailPhotoViewController: UIViewController {
                 self.postData?.likesCount = likesCount
                 self.likeButton.isSelected = true
                 self.likesCountLabel.text = "\(likesCount) likes"
+                self.updatePostData()
             })
         }
     }
@@ -274,8 +282,8 @@ private extension DetailPhotoViewController {
         invisibleScrollView.delegate = self
         let scrollViewContentSize = CGSize(width: view.frame.width, height: commentsTableView.contentSize.height + photoContentView.frame.width - 70)
         invisibleScrollView.contentSize = scrollViewContentSize
+        invisibleScrollView.refreshControl = refreshControll
         view.addGestureRecognizer(invisibleScrollView.panGestureRecognizer)
-        self.navigationController?.isNavigationBarHidden = false
         avatarImageView.layer.cornerRadius = avatarImageView.frame.width / 2
         mediaContentScrollView.isPagingEnabled = true
         commentsTableView.separatorStyle = .none
@@ -304,7 +312,6 @@ private extension DetailPhotoViewController {
             contentStackView.addArrangedSubview(PhotoContainerView)
         }
         
-        
         let pinchGesture = UIPinchGestureRecognizer(target: self, action: #selector(scale(sender:)))
         pinchGesture.delaysTouchesEnded = false
         pinchGesture.cancelsTouchesInView = false
@@ -322,6 +329,41 @@ private extension DetailPhotoViewController {
         panGesture.cancelsTouchesInView = false
         panGesture.delegate = self
         contentStackView.addGestureRecognizer(panGesture)
+    }
+    
+    func configurePresentation() {
+        let currentTheme = ThemeService.currentTheme()
+        let primary = currentTheme.primaryColor
+        let secondary = currentTheme.secondaryColor
+        let background = currentTheme.backgroundColor
+        let secondaryBackground = currentTheme.secondaryBackgroundColor
+        let placeholder = NSAttributedString(string: "Write here", attributes: [NSAttributedString.Key.foregroundColor: secondary])
+        navigationController?.isNavigationBarHidden = false
+        
+        profileMetadataView.backgroundColor            = background
+        postMetadataView.backgroundColor               = background
+        commentsTableView.backgroundColor              = background
+        view.backgroundColor                           = background
+        commentField.backgroundColor                   = background
+        commentTextField.backgroundColor               = secondaryBackground
+        commentTextField.attributedPlaceholder         = placeholder
+        commentTextField.textColor                     = primary
+        viewsCountImage.tintColor                      = primary
+        commentButton.tintColor                        = primary
+        hearthImageView.tintColor                      = primary
+        sendCommentButton.tintColor                    = primary
+        bigLikeImageView.tintColor                     = UIColor.white
+        viewsCountLabel.textColor                      = primary
+        likesCountLabel.textColor                      = primary
+        nicknameLabel.textColor                        = primary
+    }
+    
+    func updatePostData() {
+        guard let galleryViewController = navigationController?.viewControllers.first as? ImagesViewControllerProtocol,
+            let id = postData?.id,
+            let likesCount = postData?.likesCount,
+            let isUserLikes = postData?.isUserLikes else { return }
+        galleryViewController.updatePostData(postId: id, likesCount: likesCount, isUserLikes: isUserLikes)
     }
     
     @objc func swiped(sender: UISwipeGestureRecognizer) {
@@ -416,6 +458,7 @@ private extension DetailPhotoViewController {
     }
     
     func startDoubleTapAnimation() {
+        
         bigLikeImageWidthAnchor.constant = 70
         bigLikeImageHeightAnchor.constant = 70
         UIView.animate(withDuration: 0.4,

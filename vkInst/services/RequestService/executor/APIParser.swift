@@ -18,7 +18,6 @@ class APIParser: APIParserProtocol {
     func parse<T: Mappable>(data: Data) throws -> T? {
         do {
             let json = try JSONSerialization.jsonObject(with: data, options: .allowFragments)
-            //print(json)
             guard let dictionary = json as? [String: Any] else {
                 throw RequestError.invalidJSON
             }
@@ -29,7 +28,9 @@ class APIParser: APIParserProtocol {
                     throw RequestError.parseError
                 }
             } else if let error = dictionary["error"] as? Dictionary<String, Any> {
-                print(error)
+                if let model = Mapper<VkApiRequestError>().map(JSON: error) {
+                    return model
+                }
             } else {
                 if let model = Mapper<T>().map(JSON: dictionary) {
                     return model
@@ -43,13 +44,13 @@ class APIParser: APIParserProtocol {
         return nil
     }
     
+    
     func parse<T: Mappable>(data: Data) throws -> Array<T> {
         do {
             guard let json = try JSONSerialization.jsonObject(with: data, options: .allowFragments) as? [String: Any] else { fatalError() }
             guard let response = json["response"] as? [[String: Any]] else {
                 throw RequestError.invalidJSON
             }
-            //print(json)
             return Mapper<T>().mapArray(JSONArray: response)
         } catch {
             throw RequestError.parseError

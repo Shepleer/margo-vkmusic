@@ -77,6 +77,9 @@ extension UserService: UserServiceProtocol {
             if let likes = likes?.likes {
                 completion(likes)
             }
+            if let err = err as? VkApiRequestError {
+                print(err)
+            }
         })
     }
     

@@ -16,6 +16,13 @@ class DetailPhotoTableViewCell: UITableViewCell {
         super.awakeFromNib()
     }
     
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        let currentTheme = ThemeService.currentTheme()
+        contentView.backgroundColor = currentTheme.backgroundColor
+        commentLabel.textColor      = currentTheme.primaryColor
+    }
+    
     func configureCell(data: Comment) {
         guard let name = data.name,
             let text = data.text else { return }

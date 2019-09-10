@@ -10,9 +10,10 @@ import UIKit
 
 class OpenMoreCollectionViewCell: UICollectionViewCell {
     
+    @IBOutlet weak var plusImage: UIImageView!
+    
     override func awakeFromNib() {
-        contentView.layer.cornerRadius = contentView.bounds.width / 4
-        contentView.layer.borderWidth = 3
-        contentView.layer.borderColor = UIColor.white.cgColor
+        super.awakeFromNib()
+        plusImage.tintColor = ThemeService.currentTheme().primaryColor
     }
 }

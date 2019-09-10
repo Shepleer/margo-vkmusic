@@ -12,6 +12,8 @@ class TapeCollectionViewCell: UICollectionViewCell {
     @IBOutlet weak var bigLikeWidthAnchor: NSLayoutConstraint!
     @IBOutlet weak var bigLikeHeightAnchor: NSLayoutConstraint!
     @IBOutlet weak var bigLikeImageView: UIImageView!
+    @IBOutlet weak var photoHeightAnchor: NSLayoutConstraint!
+    @IBOutlet weak var scrollViewHeightAnchor: NSLayoutConstraint!
     
     @IBOutlet weak var mediaContentStackView: UIStackView! {
         didSet {
@@ -32,7 +34,6 @@ class TapeCollectionViewCell: UICollectionViewCell {
         }
     }
     @IBOutlet weak var pageControl: UIPageControl!
-    @IBOutlet weak var commentLabel: UILabel!
     @IBOutlet weak var viewsCountLabel: UILabel!
     @IBOutlet weak var avatarImageView: UIImageView!
     @IBOutlet weak var nicknameLabel: UILabel!
@@ -56,10 +57,12 @@ class TapeCollectionViewCell: UICollectionViewCell {
     @IBOutlet weak var hearthImageViewHeightAnchor: NSLayoutConstraint!
     @IBOutlet weak var hearthImageViewWidthAnchor: NSLayoutConstraint!
     @IBOutlet weak var hearthImageView: UIImageView!
-    @IBOutlet weak var commentView: UIView!
+    @IBOutlet weak var viewsCountImage: UIImageView!
+    @IBOutlet weak var postMetadataView: UIView!
     
-    let fillHearthImage = UIImage(named: "hearth-red")
-    let emptyHearthImage = UIImage(named: "hearth-deselected-black")
+    
+    let fillHearthImage = UIImage(named: "HearthFill")
+    let emptyHearthImage = UIImage(named: "HearthDeselected")
     
     weak var vc: ImagesViewController?
     private var progress: DownloadProgress?
@@ -71,21 +74,16 @@ class TapeCollectionViewCell: UICollectionViewCell {
     private var isHeightCalculated = false
     
     override func awakeFromNib() {
-    
+        
     }
     
-    override func preferredLayoutAttributesFitting(_ layoutAttributes: UICollectionViewLayoutAttributes) -> UICollectionViewLayoutAttributes {
-        setNeedsLayout()
-        layoutIfNeeded()
-        let size = contentView.systemLayoutSizeFitting(layoutAttributes.size)
-        var newFrame = layoutAttributes.bounds
-        newFrame.size.height = CGFloat(ceilf(Float(size.height)))
-        newFrame.size.height = size.height
-        layoutAttributes.bounds = newFrame
-        return layoutAttributes
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        configureUI()
     }
     
     func configure(postData: Post) {
+
         self.data = postData
         setPostMetadata()
         var mediaFiles = [Any]()
@@ -118,21 +116,6 @@ class TapeCollectionViewCell: UICollectionViewCell {
             }
             mediaContentStackView.addArrangedSubview(PhotoContainerView)
         }
-    }
-    
-    func fetchPhotoComments() {
-        guard let postId = data?.id else { return }
-        guard let ownerId = data?.ownerId else { return }
-        vc?.fetchPostData(postId: postId, ownerId: ownerId, completion: { (response) in
-            guard let comments = response?.comments else { return }
-            if comments.isEmpty {
-                self.commentLabel.isHidden = true
-            } else {
-                self.commentLabel.isHidden = false
-                guard let text = comments.first?.text else { return }
-                self.commentLabel.text = text
-            }
-        })
     }
     
     func updateProgressView(progress: Float) {
@@ -175,6 +158,41 @@ class TapeCollectionViewCell: UICollectionViewCell {
             })
         }
     }
+    
+    func setPostMetadata() {
+        guard let isUserLikes = data?.isUserLikes,
+            let likesCount = data?.likesCount,
+            let viewsCount = data?.viewsCount
+            else { return }
+        if isUserLikes {
+            likeButton.isSelected = true
+            hearthImageView.image = fillHearthImage
+        } else {
+            likeButton.isSelected = false
+            hearthImageView.image = emptyHearthImage
+        }
+        
+        likesCountLabel.text = "\(likesCount) likes"
+        viewsCountLabel.text = "\(viewsCount)"
+    }
+    
+    func configureUI() {
+        let currentTheme = ThemeService.currentTheme()
+        let primary = currentTheme.primaryColor
+        let secondary = currentTheme.secondaryColor
+        let background = currentTheme.backgroundColor
+        let secondaryBackground = currentTheme.secondaryBackgroundColor
+        
+        commentButton.tintColor          = primary
+        hearthImageView.tintColor        = primary
+        viewsCountImage.tintColor        = primary
+        viewsCountLabel.textColor        = primary
+        nicknameLabel.textColor          = primary
+        profileView.backgroundColor      = background
+        postMetadataView.backgroundColor = background
+        likesCountLabel.textColor        = primary
+        bigLikeImageView.tintColor       = UIColor.white
+    }
 }
 
 extension TapeCollectionViewCell: UIScrollViewDelegate {
@@ -212,23 +230,6 @@ extension TapeCollectionViewCell: DownloadMediaProtocol {
 }
 
 private extension TapeCollectionViewCell {
-    
-    func setPostMetadata() {
-        guard let isUserLikes = data?.isUserLikes,
-            let likesCount = data?.likesCount,
-            let viewsCount = data?.viewsCount
-            else { return }
-        if isUserLikes {
-            likeButton.isSelected = true
-            hearthImageView.image = fillHearthImage
-        } else {
-            likeButton.isSelected = false
-            hearthImageView.image = emptyHearthImage
-        }
-        
-        likesCountLabel.text = "\(likesCount) likes"
-        viewsCountLabel.text = "\(viewsCount)"
-    }
     
     
     @objc func tapped(sender: UITapGestureRecognizer) {

@@ -18,6 +18,8 @@ protocol ImagesViewControllerProtocol: class {
     func moveToDetailPhotoScreen(post: Post)
     func viewControllerWillReleased()
     func insertNewPost(post: Post)
+    func updatePostData(postId: Int, likesCount: Int, isUserLikes: Bool)
+    func updateOffset()
 }
 
 protocol PhotosViewControllerCellDelegate: class {
@@ -34,11 +36,12 @@ class ImagesViewController: UIViewController {
     var avatarImage: UIImage? = nil
     var isNeedFetchComments = true
     var offset: Int = 0
+    var openedCellIndex: Int = 0
     
     private var proposedContentOffset: CGPoint? = nil
     private let photosCollectionViewFooterIdentifier = "photosFooter"
     
-
+    private var refreshControl = UIRefreshControl()
     @IBOutlet weak var activityViewTopOffset: NSLayoutConstraint!
     @IBOutlet weak var activityView: UIView!
     @IBOutlet weak var addPostButton: UIButton!
@@ -53,7 +56,11 @@ class ImagesViewController: UIViewController {
     @IBOutlet weak var gridModeButton: UIButton!
     @IBOutlet weak var tapeModeButton: UIButton!
     @IBOutlet weak var addPostView: UIView!
+    @IBOutlet weak var friendsLabel: UILabel!
+    @IBOutlet weak var followersLabel: UILabel!
+    @IBOutlet weak var settingsButton: UIButton!
     
+    @IBOutlet weak var nicknameLabel: UILabel!
     @IBOutlet weak var tapeStateIndicator: UIView!
     @IBOutlet weak var gridStateIndicator: UIView!
     @IBOutlet weak var imageCollectionView: UICollectionView! {
@@ -66,7 +73,7 @@ class ImagesViewController: UIViewController {
             mainScrollView.delegate = self
         }
     }
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         presenter?.viewDidLoad()
@@ -78,10 +85,8 @@ class ImagesViewController: UIViewController {
     }
     
     override func viewWillAppear(_ animated: Bool) {
-        self.navigationController?.isNavigationBarHidden = true
+        configurePresentation()
     }
-    
-
     
     func cancellingDownload(image: Image) {
         presenter?.cancelDownload(image: image)
@@ -125,6 +130,23 @@ class ImagesViewController: UIViewController {
 }
 
 extension ImagesViewController: ImagesViewControllerProtocol {
+    
+    func updatePostData(postId: Int, likesCount: Int, isUserLikes: Bool) {
+        print("\(imageCollectionView.contentOffset.y) ---- \(mainScrollView.contentOffset.y)")
+        guard let visibleCells = imageCollectionView.visibleCells as? [TapeCollectionViewCell] else { return }
+        for item in visibleCells {
+            if postId == item.data?.id && likesCount != item.data?.likesCount && item.data?.isUserLikes != isUserLikes {
+                item.data?.isUserLikes = isUserLikes
+                item.data?.likesCount = likesCount
+                item.setPostMetadata()
+            }
+        }
+    }
+    
+    func updateOffset() {
+        mainScrollView.contentOffset = imageCollectionView.contentOffset
+    }
+    
     func configureWithPhotos(posts: [Post]) {
         self.posts.append(contentsOf: posts)
         let startOffset = offset
@@ -158,6 +180,9 @@ extension ImagesViewController: ImagesViewControllerProtocol {
         }
         if let followers = user.counters?.followers {
             followersCountLabel.text = "\(followers)"
+        }
+        if let username = user.screenName ?? user.firstName {
+            nicknameLabel.text = username
         }
     }
     
@@ -277,7 +302,6 @@ extension ImagesViewController: UICollectionViewDataSource {
         return 1
     }
     
-    
     func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
         guard let footerView = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: photosCollectionViewFooterIdentifier, for: indexPath) as? PhotosCollectionFooterView else { fatalError() }
         footerView.backgroundColor = UIColor.clear
@@ -289,7 +313,11 @@ extension ImagesViewController: UICollectionViewDataSource {
     }
 }
 
+extension ImagesViewController: UICollectionViewDelegateFlowLayout {
+}
+
 extension ImagesViewController: UICollectionViewDelegate {
+    
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cellIdentifier = "imgCell"
         let tapeCellIdentifier = "bigCell"
@@ -314,7 +342,6 @@ extension ImagesViewController: UICollectionViewDelegate {
             guard let cell = cell as? TapeCollectionViewCell else { fatalError() }
             cell.configure(postData: post)
             if isNeedFetchComments {
-                cell.fetchPhotoComments()
             }
         }
     }
@@ -328,6 +355,7 @@ extension ImagesViewController: UICollectionViewDelegate {
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        guard flowLayout.cellType == .Grid else { return }
         setTapeMode()
         if posts.count - 1 == indexPath.row {
             if let height = imageCollectionView.layoutAttributesForItem(at: indexPath)?.bounds.height {
@@ -340,27 +368,68 @@ extension ImagesViewController: UICollectionViewDelegate {
             }
         }
     }
+    
+    func collectionView(_ collectionView: UICollectionView, didHighlightItemAt indexPath: IndexPath) {
+        if let cell = imageCollectionView.cellForItem(at: indexPath) as? ImageCollectionViewCell {
+            cell.layer.opacity = 0.5
+        }
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, didUnhighlightItemAt indexPath: IndexPath) {
+        if let cell = imageCollectionView.cellForItem(at: indexPath) as? ImageCollectionViewCell {
+            cell.layer.opacity = 1.0
+        }
+    }
 }
 
 private extension ImagesViewController {
     func configureUI() {
         navigationController?.isNavigationBarHidden = true
+        refreshControl.addTarget(self, action: #selector(refreshData(_:)), for: .valueChanged)
+        mainScrollView.refreshControl = refreshControl
+        mainScrollView.alwaysBounceVertical = true
         gridModeButton.isSelected = true
         addPostView.layer.cornerRadius = addPostView.bounds.width / 2
-        addPostView.layer.shadowRadius = 4
-        addPostView.layer.shadowOpacity = 0.5
+        addPostView.layer.shadowRadius = 2
+        addPostView.layer.shadowOpacity = 0.2
+        addPostView.layer.shadowOffset = CGSize(width: 0, height: 2)
         secondHeaderView.layer.shadowOpacity = 0.2
         secondHeaderView.layer.shadowOffset = CGSize(width: 5, height: secondHeaderView.frame.height / 3)
-        secondHeaderView.layer.shadowRadius = 5
+        secondHeaderView.layer.shadowRadius = 30
         mainScrollView.frame = view.frame
         let scrollViewContentSize = CGSize(width: view.frame.width, height: headerView.frame.height + headerViewBottom.accessibilityFrame.height + secondHeaderView.frame.height + secondHeaderBottom.accessibilityFrame.height + imageCollectionView.contentSize.height)
         mainScrollView.contentSize = scrollViewContentSize
         mainScrollView.contentInsetAdjustmentBehavior = .never
         mainScrollView.showsVerticalScrollIndicator = false
         view.addGestureRecognizer(mainScrollView.panGestureRecognizer)
-        imageCollectionView.delegate = self
         avatarImageView.layer.cornerRadius = avatarImageView.frame.width / 2
-        avatarImageView.layer.borderColor = UIColor.darkGray.cgColor
+    }
+    
+    func configurePresentation() {
+        let currentTheme = ThemeService.currentTheme()
+        let primary = currentTheme.primaryColor
+        let secondary = currentTheme.secondaryColor
+        let background = currentTheme.backgroundColor
+        let secondaryBackground = currentTheme.secondaryBackgroundColor
+        navigationController?.isNavigationBarHidden = true
+        view.backgroundColor = background
+        friendsCountLabel.textColor = primary
+        friendsLabel.textColor = primary
+        followersCountLabel.textColor = primary
+        followersLabel.textColor = primary
+        nicknameLabel.textColor = primary
+        secondHeaderView.backgroundColor = secondaryBackground
+        addPostView.backgroundColor = background
+        addPostButton.tintColor = primary
+        tapeModeButton.tintColor = primary
+        gridModeButton.tintColor = primary
+        settingsButton.tintColor = primary
+        tapeStateIndicator.backgroundColor = primary
+        gridStateIndicator.backgroundColor = primary
+        guard let cells = imageCollectionView.visibleCells as? [TapeCollectionViewCell] else { return }
+        for cell in cells {
+            cell.configureUI()
+        }
     }
     
     func setGridMode() {
@@ -391,7 +460,7 @@ private extension ImagesViewController {
             self.gridModeButton.alpha = 0.5
         }
         imageCollectionView.setCollectionViewLayout(tapeFlowLayout, animated: false) { (finished) in
-            if finished {
+            if finished {                
                 self.mainScrollView.contentOffset = self.proposedContentOffset ?? CGPoint(x: 0, y: 0)
                 let scrollViewContentSize = CGSize(width: self.view.frame.width, height: self.headerView.frame.height + self.headerViewBottom.accessibilityFrame.height + self.secondHeaderView.frame.height + self.secondHeaderBottom.accessibilityFrame.height + self.imageCollectionView.collectionViewLayout.collectionViewContentSize.height)
                 self.mainScrollView.contentSize = scrollViewContentSize
@@ -413,5 +482,10 @@ private extension ImagesViewController {
                 self.mainScrollView.contentSize = scrollViewContentSize
             }
         }
+    }
+    
+    @objc func refreshData(_ sender: UIRefreshControl) {
+        print("refreshed")
+        refreshControl.endRefreshing()
     }
 }

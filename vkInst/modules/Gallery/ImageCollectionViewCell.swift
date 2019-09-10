@@ -33,7 +33,8 @@ class ImageCollectionViewCell: UICollectionViewCell {
         }
         data = postData
         imageView.alpha = 0
-        
+        DeckImageView.tintColor = UIColor.white
+
         if let url = postData.gifs?.first?.url {
             loadGif(url: url, progress: { (progress) in
             }) { (gif, url) in
@@ -65,4 +66,5 @@ class ImageCollectionViewCell: UICollectionViewCell {
     func loadImage(url: String, progress: @escaping DownloadProgress, completion: @escaping PhotoLoadingCompletion) {
         vc?.cellIsLoading(url: url, progress: progress, completion: completion)
     }
+    
 }

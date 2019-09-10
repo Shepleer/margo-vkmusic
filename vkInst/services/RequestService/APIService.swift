@@ -79,7 +79,9 @@ extension APIService: APIServiceProtocol {
                         }
                     } catch {
                         DispatchQueue.main.async {
-                            completion(nil, error)
+                            if let error = error as? VkApiRequestError {
+                                completion(nil, error)
+                            }
                         }
                     }
                 })
