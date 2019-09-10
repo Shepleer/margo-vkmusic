@@ -18,6 +18,7 @@ protocol DetailPhotoPresenterProtocol {
     func downloadPhoto(url: String, progress: @escaping DownloadProgress, completion: @escaping PhotoLoadingCompletion)
     func downloadGif(url: String, progress: @escaping DownloadProgress, completion: @escaping PhotoLoadingCompletion)
     func invalidateDownloadService()
+    func fetchPostMetadata(postId: Int, completion: @escaping CreatePostCompletion)
 }
 
 class DetailPhotoPresenter {
@@ -65,6 +66,14 @@ extension DetailPhotoPresenter: DetailPhotoPresenterProtocol {
     
     func invalidateDownloadService() {
         downloadService?.invalidateSession()
+    }
+    
+    func fetchPostMetadata(postId: Int, completion: @escaping CreatePostCompletion) {
+        userService?.getPost(with: postId, completion: completion)
+    }
+    
+    func refreshData() {
+        pagingService?.refreshPagination()
     }
 }
 

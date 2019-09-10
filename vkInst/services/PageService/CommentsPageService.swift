@@ -11,6 +11,7 @@ import Foundation
 protocol CommentsPageServiceProtocol {
     func nextFetch(postId: Int, ownerId: Int, completion: @escaping (_ comments: [Comment], _ profiles: [User], _ groups: [Group]) -> ())
     func fetchComplete()
+    func refreshPagination()
 }
 
 class CommentsPageService {
@@ -51,5 +52,11 @@ extension CommentsPageService: CommentsPageServiceProtocol {
     
     func fetchComplete() {
         isLoading = false
+    }
+    
+    func refreshPagination() {
+        offset = 0
+        isLoading = false
+        isAllLoaded = false
     }
 }

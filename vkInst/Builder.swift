@@ -57,10 +57,10 @@ class Builder {
         return nav
     }
     
-    func buildDetailPhotoScreen(data: Post, profile: User) -> UIViewController? {
+    func buildDetailPhotoScreen(data: Post, currentPage: Int, profile: User) -> UIViewController? {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         guard let vc = storyboard.instantiateViewController(withIdentifier: "detailVC") as? DetailPhotoViewController else { return nil }
-        vc.configureController(postData: data, profile: profile)
+        vc.configureController(postData: data, currentPage: currentPage, profile: profile)
         let presenter = DetailPhotoPresenter()
         let router = DetailPhotoRouter()
         let pagingService = CommentsPageService(requestService: buildAPIService())

@@ -15,7 +15,7 @@ protocol ImagesViewControllerProtocol: class {
     func setLike(postId: Int, ownerId: Int, completion: @escaping LikesCountCompletion)
     func removeLike(postId: Int, ownerId: Int, completion: @escaping LikesCountCompletion)
     func fetchPostData(postId: Int, ownerId: Int, completion: @escaping CommentsCompletion)
-    func moveToDetailPhotoScreen(post: Post)
+    func moveToDetailPhotoScreen(post: Post, currentPage: Int)
     func viewControllerWillReleased()
     func insertNewPost(post: Post)
     func updatePostData(postId: Int, likesCount: Int, isUserLikes: Bool)
@@ -219,10 +219,10 @@ extension ImagesViewController: ImagesViewControllerProtocol {
         presenter?.removeLike(postId: postId, ownerId: ownerId, completion: completion)
     }
     
-    func moveToDetailPhotoScreen(post: Post) {
+    func moveToDetailPhotoScreen(post: Post, currentPage: Int) {
         guard var profile = profile else { return }
         profile.avatarImage = avatarImage
-        presenter?.moveToDetailScreen(post: post, profile: profile)
+        presenter?.moveToDetailScreen(post: post, currentPage: currentPage, profile: profile)
     }
     
     func disableScrollView() {
@@ -485,7 +485,12 @@ private extension ImagesViewController {
     }
     
     @objc func refreshData(_ sender: UIRefreshControl) {
-        print("refreshed")
+        presenter?.getProfile()
+        presenter?.refreshPageService()
+        offset = 0
+        posts.removeAll()
+        imageCollectionView.reloadData()
+        presenter?.nextFetch()
         refreshControl.endRefreshing()
     }
 }

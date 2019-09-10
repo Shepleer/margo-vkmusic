@@ -133,7 +133,7 @@ class TapeCollectionViewCell: UICollectionViewCell {
     
     @IBAction func commentButtonTapped(_ sender: UIButton) {
         if let data = data {
-            vc?.moveToDetailPhotoScreen(post: data)
+            vc?.moveToDetailPhotoScreen(post: data, currentPage: pageControl.currentPage)
         }
     }
     

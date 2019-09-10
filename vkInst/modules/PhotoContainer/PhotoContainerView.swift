@@ -42,7 +42,6 @@ class PhotoContainerView: UIView {
 
 extension PhotoContainerView: PhotoContainerViewProtocol {
     func setMediaContent(mediaFile: Image) {
-        
         if let image = mediaFile.img {
             photoView.image = image
         } else {

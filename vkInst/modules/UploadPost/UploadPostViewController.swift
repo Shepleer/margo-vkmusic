@@ -209,6 +209,7 @@ extension UploadPostViewController: UICollectionViewDataSource, UICollectionView
             }
         } else if collectionView == selectedImagesCollectionView {
             presenter?.cancelUpload(index: indexPath.item)
+            updateDoneButtonState()
         }
     }
 }
@@ -221,6 +222,7 @@ extension UploadPostViewController: UITextViewDelegate {
             textView.textColor = currentTheme.primaryColor
             textView.font = textView.font?.withSize(15)
         }
+        updateDoneButtonState()
     }
     
     
@@ -231,6 +233,9 @@ extension UploadPostViewController: UITextViewDelegate {
             textView.text = Constants.textViewPlaceholder
             textView.textColor = currentTheme.secondaryColor
             textView.font = textView.font?.withSize(22)
+            updateDoneButtonState()
+        } else {
+            updateDoneButtonState()
         }
     }
 }
@@ -254,7 +259,6 @@ private extension UploadPostViewController {
     }
     
     func configureUI() {
-        
         photoPickerCollectionView.alpha = 0
         endSelectPhotosButton.alpha = 0
         photoPickerCollectionView.allowsMultipleSelection = true
@@ -275,6 +279,7 @@ private extension UploadPostViewController {
     }
     
     func configurePresentation() {
+        updateDoneButtonState()
         let currentTheme = ThemeService.currentTheme()
         let primary = currentTheme.primaryColor
         let secondary = currentTheme.secondaryColor
@@ -320,6 +325,7 @@ private extension UploadPostViewController {
             if complete {
                 self.addPhotoButton.isEnabled = true
                 self.cancelButton.isEnabled = false
+                self.updateDoneButtonState()
             }
         }
     }
@@ -335,6 +341,14 @@ private extension UploadPostViewController {
                 self.addPhotoButton.isEnabled = false
                 self.cancelButton.isEnabled = true
             }
+        }
+    }
+    
+    func updateDoneButtonState() {
+        if selectedImagesCollectionView.indexPathsForVisibleItems.isEmpty && (textView.text.isEmpty || textView.text == "What's new?") {
+            navigationItem.rightBarButtonItem?.isEnabled = false
+        } else {
+            navigationItem.rightBarButtonItem?.isEnabled = true
         }
     }
     

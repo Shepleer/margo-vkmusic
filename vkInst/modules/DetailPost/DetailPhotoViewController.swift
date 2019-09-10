@@ -22,6 +22,7 @@ class DetailPhotoViewController: UIViewController {
     let placeholder = UIImage(named: "placeholder")
     private var isZooming = false
     private var originalImageCenter: CGPoint?
+    private var currentPage = 0
     
     var refreshControll = UIRefreshControl()
     @IBOutlet weak var hearthImageViewWidthAnchor: NSLayoutConstraint!
@@ -69,9 +70,10 @@ class DetailPhotoViewController: UIViewController {
     let emptyHearthImage = UIImage(named: "HearthDeselected")
     
     
-    func configureController(postData: Post, profile: User) {
+    func configureController(postData: Post, currentPage: Int, profile: User) {
         self.postData = postData
         self.profile = profile
+        self.currentPage = currentPage
     }
     
     override func willMove(toParent parent: UIViewController?) {
@@ -146,7 +148,6 @@ class DetailPhotoViewController: UIViewController {
 extension DetailPhotoViewController: DetailPhotoViewControllerProtocol {
     func configureDataSource(comments: [Comment], profiles: [User]?, groups: [Group]?) {
         var comments = comments
-        
         var k = 0
         for comment in comments {
             if let users = profiles {
@@ -283,6 +284,7 @@ private extension DetailPhotoViewController {
         let scrollViewContentSize = CGSize(width: view.frame.width, height: commentsTableView.contentSize.height + photoContentView.frame.width - 70)
         invisibleScrollView.contentSize = scrollViewContentSize
         invisibleScrollView.refreshControl = refreshControll
+        refreshControll.addTarget(self, action: #selector(refreshPostMetadata(sender:)), for: .valueChanged)
         view.addGestureRecognizer(invisibleScrollView.panGestureRecognizer)
         avatarImageView.layer.cornerRadius = avatarImageView.frame.width / 2
         mediaContentScrollView.isPagingEnabled = true
@@ -301,16 +303,12 @@ private extension DetailPhotoViewController {
         pageControl.currentPage = 0
         pageControl.hidesForSinglePage = true
         
-        for mediaFile in mediaToPresent {
-            guard let PhotoContainerView: PhotoContainerView =  PhotoContainerView.fromNib() else { return }
-            PhotoContainerView.vc = self
-            if let gif = mediaFile as? Gif {
-                PhotoContainerView.setMediaContent(mediaFile: gif)
-            } else if let image = mediaFile as? Image {
-                PhotoContainerView.setMediaContent(mediaFile: image)
-            }
-            contentStackView.addArrangedSubview(PhotoContainerView)
-        }
+        fillMediaStackView()
+        
+        pageControl.currentPage = currentPage
+        let offset = contentStackView.bounds.size.width * CGFloat(integerLiteral: currentPage)
+        mediaContentScrollView.setContentOffset(CGPoint(x: offset, y: 0), animated: false)
+        
         
         let pinchGesture = UIPinchGestureRecognizer(target: self, action: #selector(scale(sender:)))
         pinchGesture.delaysTouchesEnded = false
@@ -356,6 +354,19 @@ private extension DetailPhotoViewController {
         viewsCountLabel.textColor                      = primary
         likesCountLabel.textColor                      = primary
         nicknameLabel.textColor                        = primary
+    }
+    
+    func fillMediaStackView() {
+        for mediaFile in mediaToPresent {
+            guard let PhotoContainerView: PhotoContainerView =  PhotoContainerView.fromNib() else { return }
+            PhotoContainerView.vc = self
+            if let gif = mediaFile as? Gif {
+                PhotoContainerView.setMediaContent(mediaFile: gif)
+            } else if let image = mediaFile as? Image {
+                PhotoContainerView.setMediaContent(mediaFile: image)
+            }
+            contentStackView.addArrangedSubview(PhotoContainerView)
+        }
     }
     
     func updatePostData() {
@@ -457,8 +468,28 @@ private extension DetailPhotoViewController {
         commentFieldBottomConstraint.constant = 0
     }
     
+    @objc func refreshPostMetadata(sender: UIRefreshControl) {
+        comments.removeAll()
+        commentsTableView.reloadData()
+        for view in contentStackView.subviews {
+            view.removeFromSuperview()
+        }
+        presenter?.refreshData()
+        currentPage = 0
+        pageControl.currentPage = 0
+        guard let postId = postData?.id,
+            let ownerId = profile?.id else { return }
+        presenter?.fetchComments(postId: postId, ownerId: ownerId)
+        presenter?.fetchPostMetadata(postId: postId, completion: { [weak self] (post) in
+            guard let self = self else { return }
+            self.postData = post
+            self.fillMediaStackView()
+            self.loadPhotoAndProfileData()
+            sender.endRefreshing()
+        })
+    }
+    
     func startDoubleTapAnimation() {
-        
         bigLikeImageWidthAnchor.constant = 70
         bigLikeImageHeightAnchor.constant = 70
         UIView.animate(withDuration: 0.4,

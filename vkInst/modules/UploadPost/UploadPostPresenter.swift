@@ -22,6 +22,7 @@ protocol UploadPostPresenterProtocol {
     func getCountOfUploadItems() -> Int
     func getUploadImage(at indexPath: IndexPath) -> UploadImage
     func invalidateSession()
+    func isHaveImagesToUpload() -> Bool
 }
 
 class UploadPostPresenter {
@@ -47,6 +48,10 @@ extension UploadPostPresenter: UploadPostPresenterProtocol {
             }
         }
         userService?.createPost(message: message, photosIds: photosIds, completion: completion, createPostCompletion: createPostCompletion)
+    }
+    
+    func isHaveImagesToUpload() -> Bool {
+        return !uploadImages.isEmpty
     }
     
     func invalidateSession() {

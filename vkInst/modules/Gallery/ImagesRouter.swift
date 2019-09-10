@@ -9,7 +9,7 @@
 import UIKit
 
 protocol ImagesRouterProtocol {
-    func moveToDetailScreen(post: Post, profile: User)
+    func moveToDetailScreen(post: Post, currentPage: Int, profile: User)
     func moveToUploadPostScreen()
     func moveToSettingsScreen()
 }
@@ -19,8 +19,8 @@ class ImagesRouter {
 }
 
 extension ImagesRouter: ImagesRouterProtocol {
-    func moveToDetailScreen(post: Post, profile: User) {
-        guard let viewController = Builder.shared.buildDetailPhotoScreen(data: post, profile: profile) else { return }
+    func moveToDetailScreen(post: Post, currentPage: Int, profile: User) {
+        guard let viewController = Builder.shared.buildDetailPhotoScreen(data: post, currentPage: currentPage, profile: profile) else { return }
         vc?.navigationController?.pushViewController(viewController, animated: true)
     }
     

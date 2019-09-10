@@ -12,6 +12,7 @@ protocol PageServiceProtocol {
     func nextFetch(completion: @escaping (_ photos: [Post]) -> ()) -> ()
     func fetchComplete()
     func checkIsAllLoaded() -> Bool
+    func refreshPageService()
 }
 
 class PageService {
@@ -54,5 +55,11 @@ extension PageService: PageServiceProtocol {
     
     func fetchComplete() {
         isLoading = false
+    }
+    
+    func refreshPageService() {
+        isLoading = false
+        isAllLoaded = false
+        offset = 0
     }
 }

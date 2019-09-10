@@ -20,9 +20,11 @@ protocol ImagePresenterProtocol {
     func fetchComments(postId: Int, ownerId: Int, completion: @escaping CommentsCompletion)
     func checkIsAllLoaded() -> Bool
     func moveToUploadPostScreen()
-    func moveToDetailScreen(post: Post, profile: User)
+    func moveToDetailScreen(post: Post, currentPage: Int, profile: User)
     func moveToSettingsScreen()
     func releaseDownloadSession()
+    func getProfile()
+    func refreshPageService()
 }
 
 class ImagePresenter: NSObject {
@@ -82,8 +84,8 @@ extension ImagePresenter: ImagePresenterProtocol {
         router?.moveToUploadPostScreen()
     }
     
-    func moveToDetailScreen(post: Post, profile: User) {
-        router?.moveToDetailScreen(post: post, profile: profile)
+    func moveToDetailScreen(post: Post, currentPage: Int, profile: User) {
+        router?.moveToDetailScreen(post: post, currentPage: currentPage, profile: profile)
     }
     
     func moveToSettingsScreen() {
@@ -93,9 +95,7 @@ extension ImagePresenter: ImagePresenterProtocol {
     func releaseDownloadSession() {
         downloadService?.invalidateSession()
     }
-}
-
-private extension ImagePresenter {
+    
     func getProfile() {
         userService?.getUserProfileInfo(completion: { (user) in
             self.downloadService?.downloadImage(url: user.avatarPhotoUrl!, progress: { (progress) in
@@ -104,5 +104,9 @@ private extension ImagePresenter {
             })
             self.vc?.setProfileData(user: user)
         })
+    }
+    
+    func refreshPageService() {
+        pageService?.refreshPageService()
     }
 }
