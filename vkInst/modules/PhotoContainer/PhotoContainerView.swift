@@ -22,6 +22,7 @@ class PhotoContainerView: UIView {
     
     @IBOutlet weak var progressView: ProgressIndicatorView!
     @IBOutlet weak var photoView: UIImageView!
+    @IBOutlet weak var imageWidthAnchor: NSLayoutConstraint!
     
     var url: String?
     weak var vc: DownloadMediaProtocol?
@@ -37,6 +38,8 @@ class PhotoContainerView: UIView {
     override func awakeFromNib() {
         configureView()
         progressView.rotate()
+        imageWidthAnchor.isActive = false
+        photoView.widthAnchor.constraint(equalToConstant: UIScreen.main.bounds.width).isActive = true
     }
 }
 

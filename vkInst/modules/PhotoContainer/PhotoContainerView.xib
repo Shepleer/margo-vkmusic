@@ -43,6 +43,7 @@
             <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
             <viewLayoutGuide key="safeArea" id="vUN-kp-3ea"/>
             <connections>
+                <outlet property="imageWidthAnchor" destination="VCg-XN-FX3" id="6aW-kb-tuu"/>
                 <outlet property="photoView" destination="osR-UO-Vd4" id="1lP-Nr-IyW"/>
                 <outlet property="progressView" destination="FBp-Bv-wdh" id="Hth-6D-1BV"/>
             </connections>

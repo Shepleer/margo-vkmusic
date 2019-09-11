@@ -12,7 +12,7 @@ class TapeCollectionViewCell: UICollectionViewCell {
     @IBOutlet weak var bigLikeWidthAnchor: NSLayoutConstraint!
     @IBOutlet weak var bigLikeHeightAnchor: NSLayoutConstraint!
     @IBOutlet weak var bigLikeImageView: UIImageView!
-    @IBOutlet weak var photoHeightAnchor: NSLayoutConstraint!
+    @IBOutlet weak var photoWidthAnchor: NSLayoutConstraint!
     @IBOutlet weak var scrollViewHeightAnchor: NSLayoutConstraint!
     
     @IBOutlet weak var mediaContentStackView: UIStackView! {
@@ -74,7 +74,7 @@ class TapeCollectionViewCell: UICollectionViewCell {
     private var isHeightCalculated = false
     
     override func awakeFromNib() {
-        
+        photoWidthAnchor.constant = UIScreen.main.bounds.width
     }
     
     override func layoutSubviews() {
@@ -230,8 +230,6 @@ extension TapeCollectionViewCell: DownloadMediaProtocol {
 }
 
 private extension TapeCollectionViewCell {
-    
-    
     @objc func tapped(sender: UITapGestureRecognizer) {
         if sender.state == .ended {
             let location = sender.location(in: self)

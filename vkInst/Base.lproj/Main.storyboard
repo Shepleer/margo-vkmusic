@@ -413,7 +413,7 @@
                                                     <outlet property="mediaContentStackView" destination="BwY-RY-Zj6" id="732-zE-dLc"/>
                                                     <outlet property="nicknameLabel" destination="Y3a-Bi-qNf" id="IpY-S2-rQA"/>
                                                     <outlet property="pageControl" destination="yjG-3f-CAo" id="Lax-Ro-gbA"/>
-                                                    <outlet property="photoHeightAnchor" destination="e3M-PE-bGw" id="Zci-1B-hAa"/>
+                                                    <outlet property="photoWidthAnchor" destination="e3M-PE-bGw" id="zVC-P9-bgA"/>
                                                     <outlet property="postMetadataView" destination="lFc-VE-AfY" id="6Io-jr-fbV"/>
                                                     <outlet property="profileView" destination="Ia1-pY-pxK" id="cHh-k8-yEL"/>
                                                     <outlet property="scrollViewHeightAnchor" destination="9iS-Ig-4MF" id="hhd-nU-Enj"/>
@@ -754,7 +754,7 @@
                                         </constraints>
                                     </view>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="yXR-og-bJN">
-                                        <rect key="frame" x="0.0" y="360" width="414" height="65"/>
+                                        <rect key="frame" x="0.0" y="455" width="414" height="65"/>
                                         <subviews>
                                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Lmv-XQ-p00">
                                                 <rect key="frame" x="50" y="5" width="30" height="30"/>
@@ -832,17 +832,17 @@
                                         </constraints>
                                     </view>
                                     <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" translatesAutoresizingMaskIntoConstraints="NO" id="DbG-PT-ULE">
-                                        <rect key="frame" x="0.0" y="91" width="414" height="269"/>
+                                        <rect key="frame" x="0.0" y="91" width="414" height="364"/>
                                         <subviews>
                                             <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="DIQ-re-XID">
-                                                <rect key="frame" x="0.0" y="0.0" width="414" height="269"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="414" height="364"/>
                                                 <constraints>
-                                                    <constraint firstAttribute="height" constant="269" id="igp-BN-V5W"/>
+                                                    <constraint firstAttribute="height" constant="364" id="igp-BN-V5W"/>
                                                     <constraint firstAttribute="width" priority="250" constant="414" id="pkv-To-hzg"/>
                                                 </constraints>
                                             </stackView>
                                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" alpha="0.0" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="HearthBig" translatesAutoresizingMaskIntoConstraints="NO" id="Nae-V1-aks">
-                                                <rect key="frame" x="207" y="134.66666666666669" width="0.0" height="0.0"/>
+                                                <rect key="frame" x="207" y="182" width="0.0" height="0.0"/>
                                                 <constraints>
                                                     <constraint firstAttribute="width" id="E9P-7v-zSZ"/>
                                                     <constraint firstAttribute="height" id="sIg-fG-zrh"/>
@@ -851,7 +851,7 @@
                                         </subviews>
                                         <constraints>
                                             <constraint firstAttribute="trailing" secondItem="DIQ-re-XID" secondAttribute="trailing" id="Fqd-ME-pMF"/>
-                                            <constraint firstAttribute="height" constant="269" id="FtK-Dt-fgU"/>
+                                            <constraint firstAttribute="height" constant="364" id="FtK-Dt-fgU"/>
                                             <constraint firstItem="Nae-V1-aks" firstAttribute="centerY" secondItem="DbG-PT-ULE" secondAttribute="centerY" id="OYv-Pc-p63"/>
                                             <constraint firstItem="Nae-V1-aks" firstAttribute="centerX" secondItem="DbG-PT-ULE" secondAttribute="centerX" id="TdN-S1-ig8"/>
                                             <constraint firstAttribute="bottom" secondItem="DIQ-re-XID" secondAttribute="bottom" id="U2n-DB-Ley"/>
@@ -863,10 +863,10 @@
                                         </connections>
                                     </scrollView>
                                     <pageControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" hidesForSinglePage="YES" numberOfPages="3" translatesAutoresizingMaskIntoConstraints="NO" id="DEl-61-nvt">
-                                        <rect key="frame" x="187.66666666666666" y="303" width="39" height="37"/>
+                                        <rect key="frame" x="187.66666666666666" y="398" width="39" height="37"/>
                                     </pageControl>
                                     <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" scrollEnabled="NO" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="dfe-wk-1bY">
-                                        <rect key="frame" x="0.0" y="425" width="414" height="306"/>
+                                        <rect key="frame" x="0.0" y="520" width="414" height="211"/>
                                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <prototypes>
                                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="commentCell" rowHeight="69" id="RWB-pL-1ht" customClass="DetailPhotoTableViewCell" customModule="vkInst" customModuleProvider="target">
@@ -983,6 +983,7 @@
                         <outlet property="commentTextField" destination="xpm-Ug-IxS" id="Zy0-jW-Lgg"/>
                         <outlet property="commentsTableView" destination="dfe-wk-1bY" id="kdD-Ub-v9i"/>
                         <outlet property="contentStackView" destination="DIQ-re-XID" id="0Mb-4M-Wms"/>
+                        <outlet property="contentWidhtAnchor" destination="pkv-To-hzg" id="Njm-ym-DgL"/>
                         <outlet property="hearthImageView" destination="5bw-ql-6RL" id="ma4-16-KdX"/>
                         <outlet property="hearthImageViewHeightAnchor" destination="Lie-OT-DiV" id="8qL-yf-W81"/>
                         <outlet property="hearthImageViewWidthAnchor" destination="kaV-Y4-gdC" id="JFQ-37-Div"/>

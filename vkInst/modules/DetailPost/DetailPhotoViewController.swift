@@ -30,6 +30,7 @@ class DetailPhotoViewController: UIViewController {
     @IBOutlet weak var bigLikeImageView: UIImageView!
     @IBOutlet weak var bigLikeImageWidthAnchor: NSLayoutConstraint!
     @IBOutlet weak var bigLikeImageHeightAnchor: NSLayoutConstraint!
+    @IBOutlet weak var contentWidhtAnchor: NSLayoutConstraint!
     
     @IBOutlet weak var hearthImageView: UIImageView!
     @IBOutlet weak var mediaContentScrollView: UIScrollView!
@@ -309,6 +310,7 @@ private extension DetailPhotoViewController {
         let offset = contentStackView.bounds.size.width * CGFloat(integerLiteral: currentPage)
         mediaContentScrollView.setContentOffset(CGPoint(x: offset, y: 0), animated: false)
         
+        contentWidhtAnchor.constant = UIScreen.main.bounds.width
         
         let pinchGesture = UIPinchGestureRecognizer(target: self, action: #selector(scale(sender:)))
         pinchGesture.delaysTouchesEnded = false
