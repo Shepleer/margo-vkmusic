@@ -178,7 +178,7 @@ extension DetailPhotoViewController: DetailPhotoViewControllerProtocol {
         
         self.comments.append(contentsOf: comments)
         commentsTableView.reloadSections(IndexSet(integer: 0), with: .fade)
-        let scrollViewContentSize = CGSize(width: view.frame.width, height: commentsTableView.contentSize.height + photoContentView.frame.width)
+        let scrollViewContentSize = CGSize(width: view.frame.width, height: commentsTableView.contentSize.height + profileMetadataView.frame.size.height + postMetadataView.frame.size.height + mediaContentScrollView.frame.size.height)
         invisibleScrollView.contentSize = scrollViewContentSize
         presenter?.commentsDownloaded()
     }
