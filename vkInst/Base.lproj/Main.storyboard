@@ -171,16 +171,18 @@
                                             <rect key="frame" x="0.0" y="0.0" width="414" height="56.666666666666664"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Exit from account" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="sgy-S0-EGa">
-                                                    <rect key="frame" x="139.66666666666666" y="18" width="134.99999999999997" height="21"/>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Exit from account" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="sgy-S0-EGa">
+                                                    <rect key="frame" x="20" y="11" width="374" height="35"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <color key="textColor" red="0.90730092009999996" green="0.015557314819999999" blue="0.1131221426" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
                                             </subviews>
                                             <constraints>
+                                                <constraint firstItem="sgy-S0-EGa" firstAttribute="leading" secondItem="gHK-er-V7t" secondAttribute="leadingMargin" id="Gwd-Wt-vx7"/>
+                                                <constraint firstItem="sgy-S0-EGa" firstAttribute="top" secondItem="gHK-er-V7t" secondAttribute="topMargin" id="M1C-8O-0Me"/>
                                                 <constraint firstItem="sgy-S0-EGa" firstAttribute="centerX" secondItem="gHK-er-V7t" secondAttribute="centerX" id="Tn8-4u-YeA"/>
-                                                <constraint firstItem="sgy-S0-EGa" firstAttribute="centerY" secondItem="gHK-er-V7t" secondAttribute="centerY" id="uAR-Fv-BVc"/>
+                                                <constraint firstAttribute="bottomMargin" secondItem="sgy-S0-EGa" secondAttribute="bottom" id="VpJ-C4-bdG"/>
                                             </constraints>
                                         </tableViewCellContentView>
                                     </tableViewCell>
@@ -922,9 +924,8 @@
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="1wE-qf-eXe">
                                 <rect key="frame" x="0.0" y="819" width="414" height="32"/>
                                 <subviews>
-                                    <textField opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Comment field" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="xpm-Ug-IxS">
-                                        <rect key="frame" x="8" y="2" width="349" height="30"/>
-                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                    <textField opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="249" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Comment field" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="xpm-Ug-IxS">
+                                        <rect key="frame" x="15" y="0.0" width="344" height="32"/>
                                         <nil key="textColor"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                         <textInputTraits key="textInputTraits"/>
@@ -932,9 +933,8 @@
                                             <outlet property="delegate" destination="ggj-1e-Lll" id="pI9-Ru-Cz4"/>
                                         </connections>
                                     </textField>
-                                    <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="iBc-YS-98m">
-                                        <rect key="frame" x="365" y="2" width="49" height="30"/>
-                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="iBc-YS-98m">
+                                        <rect key="frame" x="369" y="0.0" width="30" height="32"/>
                                         <state key="normal" image="Airplane"/>
                                         <connections>
                                             <action selector="sendCommentButtonTapped:" destination="ggj-1e-Lll" eventType="touchUpInside" id="jgQ-cO-WcS"/>
@@ -943,7 +943,14 @@
                                 </subviews>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
+                                    <constraint firstItem="iBc-YS-98m" firstAttribute="top" secondItem="1wE-qf-eXe" secondAttribute="top" id="1LR-k5-Cep"/>
                                     <constraint firstAttribute="height" constant="32" id="65K-Dk-Qt9"/>
+                                    <constraint firstItem="xpm-Ug-IxS" firstAttribute="top" secondItem="1wE-qf-eXe" secondAttribute="top" id="68d-Fd-oD1"/>
+                                    <constraint firstItem="xpm-Ug-IxS" firstAttribute="leading" secondItem="1wE-qf-eXe" secondAttribute="leading" constant="15" id="7nI-6a-YTn"/>
+                                    <constraint firstAttribute="bottom" secondItem="xpm-Ug-IxS" secondAttribute="bottom" id="Ic0-78-r5H"/>
+                                    <constraint firstAttribute="bottom" secondItem="iBc-YS-98m" secondAttribute="bottom" id="h8D-OL-czU"/>
+                                    <constraint firstItem="iBc-YS-98m" firstAttribute="leading" secondItem="xpm-Ug-IxS" secondAttribute="trailing" constant="10" id="hPv-et-2ah"/>
+                                    <constraint firstAttribute="trailing" secondItem="iBc-YS-98m" secondAttribute="trailing" constant="15" id="ukU-p8-M0B"/>
                                 </constraints>
                             </view>
                         </subviews>

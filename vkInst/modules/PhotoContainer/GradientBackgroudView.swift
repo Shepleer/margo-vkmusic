@@ -42,7 +42,9 @@ class GradientBackgroundView: UIView {
         self.gradientLayer = gradientLayer
         needReverse = true
     }
-    
+}
+
+extension GradientBackgroundView: CAAnimationDelegate {
     private func setGradientAnimation(toColors: [CGColor]) {
         let fromColors = self.gradientLayer?.colors
         self.gradientLayer?.colors = toColors
@@ -72,3 +74,4 @@ extension GradientBackgroundView {
         }
     }
 }
+

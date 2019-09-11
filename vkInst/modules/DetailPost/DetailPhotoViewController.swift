@@ -327,6 +327,10 @@ private extension DetailPhotoViewController {
         panGesture.cancelsTouchesInView = false
         panGesture.delegate = self
         contentStackView.addGestureRecognizer(panGesture)
+        
+        if !Reachability.isConnectedToNetwork() {
+            showToast(message: "Internet connection are not available")
+        }
     }
     
     func configurePresentation() {
@@ -498,7 +502,7 @@ private extension DetailPhotoViewController {
                        initialSpringVelocity: 0.0,
                        options: .curveEaseOut,
                        animations: {
-            self.bigLikeImageView.alpha = 1.0
+            self.bigLikeImageView.alpha = 0.7
             self.view.layoutIfNeeded()
         }) { (complete) in
             if complete {

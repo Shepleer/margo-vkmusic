@@ -272,10 +272,30 @@ private extension UploadPostViewController {
         keyboardToolbar.sizeToFit()
         textView.inputAccessoryView = keyboardToolbar
         textView.delegate = self
+        
+        let status = PHPhotoLibrary.authorizationStatus()
+        if status == .notDetermined {
+            PHPhotoLibrary.requestAuthorization { [weak self] (status) in
+                guard let self = self else { return }
+                DispatchQueue.main.async {
+                    if status == .authorized {
+                        let allPhotosOptions = PHFetchOptions()
+                        allPhotosOptions.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false)]
+                        self.photosFromGallery = PHAsset.fetchAssets(with: allPhotosOptions)
+                        self.photoPickerCollectionView.reloadData()
+                    }
+                }
+            }
+        }
+        
         let allPhotosOptions = PHFetchOptions()
         allPhotosOptions.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false)]
         photosFromGallery = PHAsset.fetchAssets(with: allPhotosOptions)
         photoPickerCollectionView.reloadData()
+        
+        if !Reachability.isConnectedToNetwork() {
+            showToast(message: "Internet connection are not available")
+        }
     }
     
     func configurePresentation() {

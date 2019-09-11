@@ -403,6 +403,10 @@ private extension ImagesViewController {
         mainScrollView.showsVerticalScrollIndicator = false
         view.addGestureRecognizer(mainScrollView.panGestureRecognizer)
         avatarImageView.layer.cornerRadius = avatarImageView.frame.width / 2
+        
+        if !Reachability.isConnectedToNetwork() {
+            showToast(message: "Internet connection are not available") 
+        }
     }
     
     func configurePresentation() {

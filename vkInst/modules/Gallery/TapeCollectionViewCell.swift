@@ -312,7 +312,7 @@ private extension TapeCollectionViewCell {
                        initialSpringVelocity: 0.0,
                        options: .curveEaseOut,
                        animations: {
-                        self.bigLikeImageView.alpha = 0.5
+                        self.bigLikeImageView.alpha = 0.7
                         self.layoutIfNeeded()
         }) { (complete) in
             if complete {

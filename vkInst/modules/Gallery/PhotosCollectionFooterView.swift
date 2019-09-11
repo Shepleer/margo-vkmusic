@@ -13,7 +13,6 @@ class PhotosCollectionFooterView: UICollectionReusableView {
     @IBOutlet weak var activityIndicator: UIActivityIndicatorView!
     override func awakeFromNib() {
         super.awakeFromNib()
-        self.backgroundColor = UIColor.purple
     }
     
     required init?(coder aDecoder: NSCoder) {

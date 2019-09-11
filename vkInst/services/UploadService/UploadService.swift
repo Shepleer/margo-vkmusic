@@ -34,10 +34,13 @@ class UploadService: NSObject {
         self.requestService = requestService
     }
     
-    private struct RequestConfigurations {
-        static let userId = UserDefaults.standard.string(forKey: "userId") ?? "Token has expired"
-        static let token = UserDefaults.standard.string(forKey: "accessToken") ?? "Token has expired"
-    }
+    private var userId = UserDefaults.standard.string(forKey: "userId") ?? "Token has expired"
+    private var token = UserDefaults.standard.string(forKey: "accessToken") ?? "Token has expired"
+    
+//    private struct RequestConfigurations {
+//        static let userId = UserDefaults.standard.string(forKey: "userId") ?? "Token has expired"
+//        static let token = UserDefaults.standard.string(forKey: "accessToken") ?? "Token has expired"
+//    }
 }
 
 extension UploadService: UploadServiceProtocol {
@@ -59,7 +62,7 @@ extension UploadService: UploadServiceProtocol {
     }
     
     func getWallUploadServer() {
-        let url = "https://api.vk.com/method/photos.getWallUploadServer?access_token=\(RequestConfigurations.token)&v=5.101"
+        let url = "https://api.vk.com/method/photos.getWallUploadServer?access_token=\(token)&v=5.101"
         requestService.getData(urlStr: url, method: .get, completion: { [weak self] (response: UploadServer?, err) in
             guard let strongSelf = self,
                 let response = response else { return }
@@ -109,7 +112,7 @@ private extension UploadService {
             let photo = uploadPhoto.photo,
             let hash = uploadPhoto.hash
             else { return }
-        let url = "https://api.vk.com/method/photos.saveWallPhoto?user_id=\(RequestConfigurations.userId)&photo=\(photo)&server=\(server)&hash=\(hash)&access_token=\(RequestConfigurations.token)&v=5.101"
+        let url = "https://api.vk.com/method/photos.saveWallPhoto?user_id=\(userId)&photo=\(photo)&server=\(server)&hash=\(hash)&access_token=\(token)&v=5.101"
         requestService.getData(urlStr: url, method: .get, completion: { [weak self] (response: [Image]?, err) in
             guard let strongSelf = self,
                 let id = response?.first?.id,

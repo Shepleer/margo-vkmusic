@@ -23,11 +23,13 @@ protocol UserServiceProtocol {
 class UserService {
     private var requestService: APIService
     private var user: User?
-    private struct RequestConfigurations {
-        static let userId = UserDefaults.standard.string(forKey: "userId") ?? "Token has expired"
-        static let token = UserDefaults.standard.string(forKey: "accessToken") ?? "Token has expired"
-        static let userGet = "https://api.vk.com/method/users.get?fields=photo_100,counters,screen_name&access_token=\(token)&v=5.101"
-    }
+    private let userId = UserDefaults.standard.string(forKey: "userId") ?? "Token has expired"
+    private let token = UserDefaults.standard.string(forKey: "accessToken") ?? "Token has expired"
+    //private struct RequestConfigurations {
+//        static let userId = UserDefaults.standard.string(forKey: "userId") ?? "Token has expired"
+//        static let token = UserDefaults.standard.string(forKey: "accessToken") ?? "Token has expired"
+//        static let userGet = "https://api.vk.com/method/users.get?fields=photo_100,counters,screen_name&access_token=\(token)&v=5.101"
+//    }
     
     init(requestService: APIService) {
         self.requestService = requestService
@@ -39,7 +41,8 @@ extension UserService: UserServiceProtocol {
         if let user = user {
             completion(user)
         } else {
-            requestService.getData(urlStr: RequestConfigurations.userGet, method: .get, completion: { (user: [User]?, err) in
+            let url = "https://api.vk.com/method/users.get?fields=photo_100,counters,screen_name&access_token=\(token)&v=5.101"
+            requestService.getData(urlStr: url, method: .get, completion: { (user: [User]?, err) in
                 if let user = user?[0] {
                     self.user = user
                     completion(user)
@@ -49,7 +52,7 @@ extension UserService: UserServiceProtocol {
     }
     
     func fetchPostComments(postId: Int, ownerId: Int, completion: @escaping CommentsCompletion) {
-        let url = "https://api.vk.com/method/wall.getComments?owner_id=\(ownerId)&post_id=\(postId)&need_likes=1&offset=0&count=20&sort=asc&preview_lenght=0&extended=1&access_token=\(RequestConfigurations.token)&v=5.101"
+        let url = "https://api.vk.com/method/wall.getComments?owner_id=\(ownerId)&post_id=\(postId)&need_likes=1&offset=0&count=20&sort=asc&preview_lenght=0&extended=1&access_token=\(token)&v=5.101"
         requestService.getData(urlStr: url, method: .get, completion: { (response: CommentsResponse?, err) in
             if let response = response {
                 completion(response)
@@ -58,12 +61,12 @@ extension UserService: UserServiceProtocol {
     }
     
     func createComment(postId: Int, ownerId: Int, message: String) {
-        let url = "https://api.vk.com/method/wall.createComment?owner_id=\(ownerId)&post_id=\(postId)&message=\(message)&access_token=\(RequestConfigurations.token)&v=5.101"
+        let url = "https://api.vk.com/method/wall.createComment?owner_id=\(ownerId)&post_id=\(postId)&message=\(message)&access_token=\(token)&v=5.101"
         requestService.getData(urlStr: url, method: .get, completion: { (commId: SendCommentResponse?, err) in })
     }
     
     func removeLike(postId: Int, ownerId: Int, completion: @escaping LikesCountCompletion) {
-        let likesDelete_photos = "https://api.vk.com/method/likes.delete?type=post&owner_id=\(ownerId)&item_id=\(postId)&access_token=\(RequestConfigurations.token)&v=5.101"
+        let likesDelete_photos = "https://api.vk.com/method/likes.delete?type=post&owner_id=\(ownerId)&item_id=\(postId)&access_token=\(token)&v=5.101"
         requestService.getData(urlStr: likesDelete_photos, method: .get, body: nil, headers: nil, completion: { (likes: LikesSet?, err) in
             if let likes = likes?.likes {
                 completion(likes)
@@ -72,7 +75,7 @@ extension UserService: UserServiceProtocol {
     }
     
     func setLike(postId: Int, ownerId: Int, completion: @escaping LikesCountCompletion) {
-        let likesAdd_post = "https://api.vk.com/method/likes.add?type=post&owner_id=\(ownerId)&item_id=\(postId)&access_token=\(RequestConfigurations.token)&v=5.101"
+        let likesAdd_post = "https://api.vk.com/method/likes.add?type=post&owner_id=\(ownerId)&item_id=\(postId)&access_token=\(token)&v=5.101"
         requestService.getData(urlStr: likesAdd_post, method: .get, body: nil, headers: nil, completion: { (likes: LikesSet?, err) in
             if let likes = likes?.likes {
                 completion(likes)
@@ -85,7 +88,7 @@ extension UserService: UserServiceProtocol {
     
     func createPost(message: String?, photosIds: [Int], completion: @escaping PostUploadCompletion, createPostCompletion: @escaping CreatePostCompletion) {
         guard message != nil || (photosIds.isEmpty == false) else { return }
-        let ownerId = RequestConfigurations.userId
+        let ownerId = userId
         var attachments = ""
         var userMessage = ""
         if let message = message {
@@ -107,7 +110,7 @@ extension UserService: UserServiceProtocol {
                 }
             }
         }
-        let url = "https://api.vk.com/method/wall.post?\(userMessage)\(attachments)&access_token=\(RequestConfigurations.token)&v=5.101"
+        let url = "https://api.vk.com/method/wall.post?\(userMessage)\(attachments)&access_token=\(token)&v=5.101"
         
         requestService.getData(urlStr: url, method: .get, completion: { (response: CreatePostResponse?, err) in
             if let id = response?.postId {
@@ -117,7 +120,7 @@ extension UserService: UserServiceProtocol {
     }
     
     func getPost(with id: Int, completion: @escaping CreatePostCompletion) {
-        let url = "https://api.vk.com/method/wall.getById?posts=\(RequestConfigurations.userId)_\(id)&access_token=\(RequestConfigurations.token)&v=5.101"
+        let url = "https://api.vk.com/method/wall.getById?posts=\(userId)_\(id)&access_token=\(token)&v=5.101"
         requestService.getData(urlStr: url, method: .get, completion: { (response: [Post]?, err) in
             guard let post = response?.first else { return }
             completion(post)

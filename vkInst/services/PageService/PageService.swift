@@ -20,10 +20,13 @@ class PageService {
     private var isLoading: Bool = false
     private var isAllLoaded: Bool = false
     var requestService: APIService
-    private struct RequestConfigurations {
-        static let userId = UserDefaults.standard.string(forKey: "userId") ?? "Token has expired"
-        static let token = UserDefaults.standard.string(forKey: "accessToken") ?? "Token has expired"
-    }
+    
+    private var userId = UserDefaults.standard.string(forKey: "userId") ?? "Token has expired"
+    private var token = UserDefaults.standard.string(forKey: "accessToken") ?? "Token has expired"
+    //private struct RequestConfigurations {
+        //static let userId = UserDefaults.standard.string(forKey: "userId") ?? "Token has expired"
+        //static let token = UserDefaults.standard.string(forKey: "accessToken") ?? "Token has expired"
+    //}
     
     init(requestService: APIService) {
         self.requestService = requestService
@@ -36,7 +39,7 @@ extension PageService: PageServiceProtocol {
             return
         }
         isLoading = true
-        let url = "https://api.vk.com/method/wall.get?count=60&offset=\(offset)&extended=1&access_token=\(RequestConfigurations.token)&v=5.101"
+        let url = "https://api.vk.com/method/wall.get?count=60&offset=\(offset)&extended=1&access_token=\(token)&v=5.101"
         requestService.getData(urlStr: url, method: .get, body: nil, headers: nil, completion: { [weak self] (response: PostResponse?, err) in
             if let strongSelf = self, let response = response, let count = response.count {
                 strongSelf.offset += 60
