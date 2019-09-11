@@ -29,7 +29,7 @@ class APIParser: APIParserProtocol {
                 }
             } else if let error = dictionary["error"] as? Dictionary<String, Any> {
                 if let model = Mapper<VkApiRequestError>().map(JSON: error) {
-                    //return model
+                    throw RequestError.apiError(error: model)
                 }
             } else {
                 if let model = Mapper<T>().map(JSON: dictionary) {

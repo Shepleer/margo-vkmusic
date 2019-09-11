@@ -20,6 +20,7 @@ enum RequestError: Error {
     case invalidJSON
     case runError
     case parseError
+    case apiError(error: VkApiRequestError)
     case badData
 }
 
@@ -36,6 +37,8 @@ extension RequestError: LocalizedError {
             return NSLocalizedString("Parse error", comment: "Check response data")
         case .badData:
             return NSLocalizedString("Bad data", comment: "Something wrong with request body")
+        case .apiError(let error):
+            return NSLocalizedString("Api error", comment: error.errorMessage ?? "Sorry, your request can't be processed")
         }
     }
 }
