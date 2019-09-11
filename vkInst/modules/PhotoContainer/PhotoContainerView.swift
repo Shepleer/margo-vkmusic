@@ -38,8 +38,6 @@ class PhotoContainerView: UIView {
     override func awakeFromNib() {
         configureView()
         progressView.rotate()
-        imageWidthAnchor.isActive = false
-        photoView.widthAnchor.constraint(equalToConstant: UIScreen.main.bounds.width).isActive = true
     }
 }
 
@@ -98,7 +96,7 @@ extension PhotoContainerView: PhotoContainerViewProtocol {
 
 private extension PhotoContainerView {
     func configureView() {
-        self.autoresizingMask = [.flexibleHeight, .flexibleWidth]
+        //self.autoresizingMask = [.flexibleHeight, .flexibleWidth]
         photoView.image = UIImage(named: "placeholder")
     }
     

@@ -19,7 +19,7 @@
                 <imageView clipsSubviews="YES" userInteractionEnabled="NO" alpha="0.0" contentMode="scaleAspectFill" semanticContentAttribute="spatial" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="osR-UO-Vd4">
                     <rect key="frame" x="0.0" y="0.0" width="414" height="269"/>
                     <constraints>
-                        <constraint firstAttribute="width" constant="414" id="VCg-XN-FX3"/>
+                        <constraint firstAttribute="width" constant="414" id="3Xt-Oh-KOg"/>
                     </constraints>
                 </imageView>
                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="FBp-Bv-wdh" customClass="ProgressIndicatorView" customModule="vkInst" customModuleProvider="target">
@@ -43,7 +43,7 @@
             <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
             <viewLayoutGuide key="safeArea" id="vUN-kp-3ea"/>
             <connections>
-                <outlet property="imageWidthAnchor" destination="VCg-XN-FX3" id="6aW-kb-tuu"/>
+                <outlet property="imageWidthAnchor" destination="3Xt-Oh-KOg" id="VME-vb-mu4"/>
                 <outlet property="photoView" destination="osR-UO-Vd4" id="1lP-Nr-IyW"/>
                 <outlet property="progressView" destination="FBp-Bv-wdh" id="Hth-6D-1BV"/>
             </connections>

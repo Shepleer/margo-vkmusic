@@ -192,6 +192,8 @@ class TapeCollectionViewCell: UICollectionViewCell {
         postMetadataView.backgroundColor = background
         likesCountLabel.textColor        = primary
         bigLikeImageView.tintColor       = UIColor.white
+        
+        updateImagesWidth()
     }
 }
 
@@ -384,5 +386,14 @@ private extension TapeCollectionViewCell {
                 
             })
         }
+    }
+    
+    func updateImagesWidth() {
+        for view in mediaContentStackView.arrangedSubviews {
+            if let photoContainer = view as? PhotoContainerView {
+                photoContainer.imageWidthAnchor.constant = self.frame.size.width
+            }
+        }
+        mediaContentStackView.layoutIfNeeded()
     }
 }

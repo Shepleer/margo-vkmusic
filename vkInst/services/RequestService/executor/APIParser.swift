@@ -21,15 +21,17 @@ class APIParser: APIParserProtocol {
             guard let dictionary = json as? [String: Any] else {
                 throw RequestError.invalidJSON
             }
+            print(json)
             if let schema = dictionary["response"] as? Dictionary<String, Any> {
                 if let model = Mapper<T>().map(JSON: schema) {
                     return model
                 } else {
                     throw RequestError.parseError
                 }
-            } else if let error = dictionary["error"] as? Dictionary<String, Any> {
+            } else if let error = dictionary["error"] as? [String: Any] {
                 if let model = Mapper<VkApiRequestError>().map(JSON: error) {
-                    throw RequestError.apiError(error: model)
+                    let err = RequestError.apiError(error: model)
+                    throw err
                 }
             } else {
                 if let model = Mapper<T>().map(JSON: dictionary) {
@@ -39,7 +41,7 @@ class APIParser: APIParserProtocol {
                 }
             }
         } catch {
-            throw RequestError.invalidJSON
+            throw error
         }
         return nil
     }

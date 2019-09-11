@@ -144,6 +144,11 @@ class DetailPhotoViewController: UIViewController {
             })
         }
     }
+    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        updateImagesWidth()
+    }
 }
 
 extension DetailPhotoViewController: DetailPhotoViewControllerProtocol {
@@ -259,6 +264,15 @@ extension DetailPhotoViewController: DownloadMediaProtocol {
 
 private extension DetailPhotoViewController {
     
+    func updateImagesWidth() {
+        for view in contentStackView.arrangedSubviews {
+            if let photoContainer = view as? PhotoContainerView {
+                photoContainer.imageWidthAnchor.constant = self.view.frame.size.width
+            }
+        }
+        contentStackView.layoutIfNeeded()
+    }
+    
     func loadPhotoAndProfileData() {
         if let photos = postData?.photos {
             for photo in photos {
@@ -310,7 +324,6 @@ private extension DetailPhotoViewController {
         let offset = contentStackView.bounds.size.width * CGFloat(integerLiteral: currentPage)
         mediaContentScrollView.setContentOffset(CGPoint(x: offset, y: 0), animated: false)
         
-        contentWidhtAnchor.constant = UIScreen.main.bounds.width
         
         let pinchGesture = UIPinchGestureRecognizer(target: self, action: #selector(scale(sender:)))
         pinchGesture.delaysTouchesEnded = false
@@ -364,14 +377,14 @@ private extension DetailPhotoViewController {
     
     func fillMediaStackView() {
         for mediaFile in mediaToPresent {
-            guard let PhotoContainerView: PhotoContainerView =  PhotoContainerView.fromNib() else { return }
-            PhotoContainerView.vc = self
+            guard let photoContainerView: PhotoContainerView =  PhotoContainerView.fromNib() else { return }
+            photoContainerView.vc = self
             if let gif = mediaFile as? Gif {
-                PhotoContainerView.setMediaContent(mediaFile: gif)
+                photoContainerView.setMediaContent(mediaFile: gif)
             } else if let image = mediaFile as? Image {
-                PhotoContainerView.setMediaContent(mediaFile: image)
+                photoContainerView.setMediaContent(mediaFile: image)
             }
-            contentStackView.addArrangedSubview(PhotoContainerView)
+            contentStackView.addArrangedSubview(photoContainerView)
         }
     }
     
