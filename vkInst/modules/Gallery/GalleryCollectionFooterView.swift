@@ -8,7 +8,7 @@
 
 import UIKit
 
-class PhotosCollectionFooterView: UICollectionReusableView {
+class GalleryCollectionFooterView: UICollectionReusableView {
 
     @IBOutlet weak var activityIndicator: UIActivityIndicatorView!
     override func awakeFromNib() {

@@ -21,10 +21,9 @@ class CommentsPageService {
     var requestService: APIService
     private var userId = UserDefaults.standard.string(forKey: "userId") ?? "Token has expired"
     private var token = UserDefaults.standard.string(forKey: "accessToken") ?? "Token has expired"
-//    private struct RequestConfigurations {
-//        static let userId = UserDefaults.standard.string(forKey: "userId") ?? "Token has expired"
-//        static let userId = UserDefaults.standard.string(forKey: "userId") ?? "Token has expired"
-//    }
+    private struct RequestConfigurations {
+        static let offsetMultiplier = 20
+    }
     
     init(requestService: APIService) {
         self.requestService = requestService
@@ -39,10 +38,10 @@ extension CommentsPageService: CommentsPageServiceProtocol {
         isLoading = true
         let url = "https://api.vk.com/method/wall.getComments?owner_id=\(ownerId)&post_id=\(postId)&need_likes=1&offset=0&count=20&sort=asc&thread_items_count=10&preview_lenght=0&extended=1&access_token=\(token)&v=5.101"
         requestService.getData(urlStr: url, method: .get, body: nil, headers: nil, completion: { [weak self] (response: CommentsResponse?, err) in
-            if let strongSelf = self, let count = response?.count, let response = response {
-                strongSelf.offset += 20
-                if count <= strongSelf.offset {
-                    strongSelf.isAllLoaded = true
+            if let self = self, let count = response?.count, let response = response {
+                self.offset += RequestConfigurations.offsetMultiplier
+                if count <= self.offset {
+                    self.isAllLoaded = true
                 }
                 guard let comments = response.comments,
                     let profiles = response.profiles,

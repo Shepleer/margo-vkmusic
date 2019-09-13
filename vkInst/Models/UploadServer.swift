@@ -10,9 +10,9 @@ import Foundation
 import ObjectMapper
 
 struct UploadServer {
-    var uploadUrl: String?
     var albumId: Int?
     var userId: Int?
+    var uploadUrl: String?
 }
 
 extension UploadServer: Mappable {

@@ -11,11 +11,11 @@ import Photos
 
 
 struct UploadImage {
+    var id: Int?
     var asset: PHAsset
     var fileName: String
     var progress: Float = 0
     var isUploaded: Bool = false
-    var id: Int?
     
     init(asset: PHAsset) {
         self.asset = asset

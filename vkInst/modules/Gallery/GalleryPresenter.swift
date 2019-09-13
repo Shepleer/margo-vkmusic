@@ -8,7 +8,7 @@
 
 import UIKit
 
-protocol ImagePresenterProtocol {
+protocol GalleryPresenterProtocol {
     func viewDidLoad()
     func postsDownloaded()
     func cancelDownload(image: Image)
@@ -27,16 +27,16 @@ protocol ImagePresenterProtocol {
     func refreshPageService()
 }
 
-class ImagePresenter: NSObject {
-    weak var vc: ImagesViewControllerProtocol?
+class GalleryPresenter: NSObject {
+    weak var vc: GalleryViewControllerProtocol?
     var service: APIServiceProtocol?
     var downloadService: DownloadService?
-    var userService: UserService?
+    var userService: UserServiceProtocol?
     var pageService: PageServiceProtocol?
-    var router: ImagesRouterProtocol?
+    var router: GalleryRouterProtocol?
 }
 
-extension ImagePresenter: ImagePresenterProtocol {
+extension GalleryPresenter: GalleryPresenterProtocol {
     
     func viewDidLoad() {
         getProfile()

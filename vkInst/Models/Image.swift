@@ -25,10 +25,10 @@ extension PhotosResponse: Mappable {
 }
 
 struct Image {
+    var id: Int?
     var img: UIImage?
     var accessKey: String?
     var url: String?
-    var id: Int?
     var albumId: Int?
     var ownerId: Int?
     var caption: String?

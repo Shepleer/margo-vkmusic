@@ -60,22 +60,22 @@ extension APIService: APIServiceProtocol {
                               headers: Dictionary<String, String>? = nil, completion: @escaping (_ outArray: T?, _ error: Error?) -> ()) {
         queue.async { [weak self] in
             var req: URLRequest?
-            guard let strongSelf = self else { return }
+            guard let self = self else { return }
             do {
-                req = try strongSelf.builder.build(url: urlStr, method: method, body, headers)
+                req = try self.builder.build(url: urlStr, method: method, body, headers)
             } catch {
                 completion(nil, error)
                 return
             }
             if let req = req {
-                strongSelf.runner.run(request: req, completion: { (data, error) in
+                self.runner.run(request: req, completion: { (data, error) in
                     if let error = error {
                         completion(nil, error)
                         return
                     }
                     do {
                         guard let data = data else { return }
-                        if let response: T = try (strongSelf.parser.parse(data: data)) {
+                        if let response: T = try (self.parser.parse(data: data)) {
                             DispatchQueue.main.async {
                                 completion(response, nil)
                             }
@@ -96,34 +96,33 @@ extension APIService: APIServiceProtocol {
     func getData<T: Mappable>(urlStr: String, method: requestMethod, body: Data? = nil,
                               headers: Dictionary<String, String>? = nil, completion: @escaping (_ outArray: [T]?, _ error: Error?) -> ()) {
         queue.async { [weak self] in
-            guard let strongSelf = self else { return }
-            var req: URLRequest?
+            guard let self = self else { return }
+            var request: URLRequest?
             do {
-                req = try strongSelf.builder.build(url: urlStr, method: method, body, headers)
+                request = try self.builder.build(url: urlStr, method: method, body, headers)
             } catch {
                 completion(nil, error)
                 return
             }
-            if let req = req {
-                strongSelf.runner.run(request: req, completion: { (data, error) in
-                    if let error = error {
+            guard let req = request else { return }
+            self.runner.run(request: req, completion: { (data, error) in
+                if let error = error {
+                    completion(nil, error)
+                    return
+                }
+                do {
+                    guard let data = data,
+                        let response: [T] = try (self.parser.parse(data: data))
+                        else { return }
+                    DispatchQueue.main.async {
+                        completion(response, nil)
+                    }
+                } catch {
+                    DispatchQueue.main.async {
                         completion(nil, error)
-                        return
                     }
-                    do {
-                        guard let data = data,
-                            let response: [T] = try (strongSelf.parser.parse(data: data))
-                            else { return }
-                        DispatchQueue.main.async {
-                            completion(response, nil)
-                        }
-                    } catch {
-                        DispatchQueue.main.async {
-                            completion(nil, error)
-                        }
-                    }
-                })
-            }
+                }
+            })
         }
     }
 }

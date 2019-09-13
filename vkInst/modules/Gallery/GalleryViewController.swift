@@ -8,7 +8,7 @@
 
 import UIKit
 
-protocol ImagesViewControllerProtocol: class {
+protocol GalleryViewControllerProtocol: class {
     func configureWithPhotos(posts: [Post])
     func loadAvatar(image: UIImage)
     func setProfileData(user: User)
@@ -22,24 +22,52 @@ protocol ImagesViewControllerProtocol: class {
     func updateOffset()
 }
 
-protocol PhotosViewControllerCellDelegate: class {
-    
+protocol GalleryViewControllerCellDelegate: class {
+    func disableScrollView()
+    func enableScrollView()
+    func cellIsLoading(url: String, progress: @escaping (_ progress: Float) -> (), completion: @escaping (_ image: UIImage, _ url: String) -> ())
+    func loadGif(url: String, progress: @escaping (_ progress: Float) -> (), completion: @escaping (_ image: UIImage, _ url: String) -> ())
+    func setLike(postId: Int, ownerId: Int, completion: @escaping LikesCountCompletion)
+    func removeLike(postId: Int, ownerId: Int, completion: @escaping LikesCountCompletion)
+    func moveToDetailPhotoScreen(post: Post, currentPage: Int)
+    func loadProfileInformation(setAvatar: (_ avatar: UIImage) -> (), setName: (_ label: String) -> ())
+    func fetchPostData(postId: Int, ownerId: Int, completion: @escaping CommentsCompletion)
 }
 
-class ImagesViewController: UIViewController {
+class GalleryViewController: UIViewController {
+    private struct Constants {
+        static let animationDuration = 0.1
+        static let gridItemIdentifier = "imgCell"
+        static let tapeItemIdentifier = "bigCell"
+        static let galleryCollectionViewFooterIdentifier = "photosFooter"
+        static let galleryCollectionFooterView = "GalleryCollectionFooterView"
+        static let rotationKeyPath = "transform.rotation"
+        static let rotationAnimationKey = "viewRotation"
+        static let highlightedItemOpacity = Float(0.5)
+        static let normalItemOpacity = Float(1)
+        static let shadowRadius = CGFloat(30)
+        static let recomendetOffsetMultiplier = CGFloat(4)
+        static let footerViewHeight = CGFloat(50)
+        static let changeTapsAnimationDuration = 0.3
+        static let deselectedTapAlpha = CGFloat(0.5)
+        static let addPostViewShadowRadius = CGFloat(2)
+        static let defaultShadowOpacity = Float(0.2)
+        static let shadowOffsetWidth = CGFloat(5)
+        static let shadowOffsetHeightMultiplier = CGFloat(3)
+        static let internetConnectionErrorMessage = "Internet connection are not available"
+    }
     
-    var presenter: ImagePresenterProtocol?
-    var flowLayout: ImagesCollectionViewFlowLayout = ImagesCollectionViewFlowLayout()
+    
+    var presenter: GalleryPresenterProtocol?
+    var flowLayout: GridCollectionViewFlowLayout = GridCollectionViewFlowLayout()
     var tapeFlowLayout: TapeCollectionViewFlowLayout = TapeCollectionViewFlowLayout()
     var posts = [Post]()
     var profile: User? = nil
     var avatarImage: UIImage? = nil
-    var isNeedFetchComments = true
     var offset: Int = 0
     var openedCellIndex: Int = 0
     
     private var proposedContentOffset: CGPoint? = nil
-    private let photosCollectionViewFooterIdentifier = "photosFooter"
     
     private var refreshControl = UIRefreshControl()
     @IBOutlet weak var activityViewTopOffset: NSLayoutConstraint!
@@ -79,7 +107,7 @@ class ImagesViewController: UIViewController {
         presenter?.viewDidLoad()
         configureUI()
         presenter?.nextFetch()
-        imageCollectionView.register(UINib(nibName: "PhotosCollectionFooterView", bundle: nil), forSupplementaryViewOfKind: UICollectionView.elementKindSectionFooter, withReuseIdentifier: photosCollectionViewFooterIdentifier)
+        imageCollectionView.register(UINib(nibName: Constants.galleryCollectionFooterView, bundle: nil), forSupplementaryViewOfKind: UICollectionView.elementKindSectionFooter, withReuseIdentifier: Constants.galleryCollectionViewFooterIdentifier)
         flowLayout.vc = self
         tapeFlowLayout.vc = self
     }
@@ -93,21 +121,21 @@ class ImagesViewController: UIViewController {
     }
     
     @IBAction func curveButtonDidPressed(_ sender: UIButton) {
-        let rotationAnimation = CABasicAnimation(keyPath: "transform.rotation")
+        let rotationAnimation = CABasicAnimation(keyPath: Constants.rotationKeyPath)
         rotationAnimation.fromValue = 0.0
         rotationAnimation.toValue = Float.pi * 2.0
         rotationAnimation.duration = 1.5
         rotationAnimation.repeatCount = Float.infinity
-        self.view.layer.add(rotationAnimation, forKey: "viewRotation")
-        followersCountLabel.layer.add(rotationAnimation, forKey: "viewRotation")
-        friendsCountLabel.layer.add(rotationAnimation, forKey: "viewRotation")
-        avatarImageView.layer.add(rotationAnimation, forKey: "viewRotation")
-        secondHeaderView.layer.add(rotationAnimation, forKey: "viewRotation")
-        headerView.layer.add(rotationAnimation, forKey: "viewRotation")
-        gridModeButton.layer.add(rotationAnimation, forKey: "viewRotation")
-        tapeModeButton.layer.add(rotationAnimation, forKey: "viewRotation")
+        self.view.layer.add(rotationAnimation, forKey: Constants.rotationAnimationKey)
+        followersCountLabel.layer.add(rotationAnimation, forKey: Constants.rotationAnimationKey)
+        friendsCountLabel.layer.add(rotationAnimation, forKey: Constants.rotationAnimationKey)
+        avatarImageView.layer.add(rotationAnimation, forKey: Constants.rotationAnimationKey)
+        secondHeaderView.layer.add(rotationAnimation, forKey: Constants.rotationAnimationKey)
+        headerView.layer.add(rotationAnimation, forKey: Constants.rotationAnimationKey)
+        gridModeButton.layer.add(rotationAnimation, forKey: Constants.rotationAnimationKey)
+        tapeModeButton.layer.add(rotationAnimation, forKey: Constants.rotationAnimationKey)
         for cell in imageCollectionView.visibleCells {
-            cell.layer.add(rotationAnimation, forKey: "viewRotation")
+            cell.layer.add(rotationAnimation, forKey: Constants.rotationAnimationKey)
         }
     }
     
@@ -129,10 +157,57 @@ class ImagesViewController: UIViewController {
     }
 }
 
-extension ImagesViewController: ImagesViewControllerProtocol {
+extension GalleryViewController: GalleryViewControllerCellDelegate {
+    func disableScrollView() {
+        mainScrollView.isScrollEnabled = false
+    }
     
+    func enableScrollView() {
+        mainScrollView.isScrollEnabled = true
+    }
+    
+    func cellIsLoading(url: String, progress: @escaping (_ progress: Float) -> (), completion: @escaping (_ image: UIImage, _ url: String) -> ()) {
+        presenter?.loadImage(url: url, progress: progress, completion: completion)
+    }
+    
+    func loadGif(url: String, progress: @escaping (_ progress: Float) -> (), completion: @escaping (_ image: UIImage, _ url: String) -> ()) {
+        presenter?.loadGif(url: url, progress: progress, completion: completion)
+    }
+    
+    func setLike(postId: Int, ownerId: Int, completion: @escaping LikesCountCompletion) {
+        presenter?.setLike(postId: postId, ownerId: ownerId, completion: completion)
+    }
+    
+    func removeLike(postId: Int, ownerId: Int, completion: @escaping LikesCountCompletion) {
+        presenter?.removeLike(postId: postId, ownerId: ownerId, completion: completion)
+    }
+    
+    func moveToDetailPhotoScreen(post: Post, currentPage: Int) {
+        guard var profile = profile else { return }
+        profile.avatarImage = avatarImage
+        presenter?.moveToDetailScreen(post: post, currentPage: currentPage, profile: profile)
+    }
+    
+    func loadProfileInformation(setAvatar: (_ avatar: UIImage) -> (), setName: (_ label: String) -> ()) {
+        if let img = avatarImageView.image {
+            setAvatar(img)
+        }
+        if let nickname = profile?.screenName {
+            setName(nickname)
+            return
+        }
+        if let firstName = profile?.firstName {
+            setName(firstName)
+        }
+    }
+    
+    func fetchPostData(postId: Int, ownerId: Int, completion: @escaping CommentsCompletion) {
+        presenter?.fetchComments(postId: postId, ownerId: ownerId, completion: completion)
+    }
+}
+
+extension GalleryViewController: GalleryViewControllerProtocol {
     func updatePostData(postId: Int, likesCount: Int, isUserLikes: Bool) {
-        print("\(imageCollectionView.contentOffset.y) ---- \(mainScrollView.contentOffset.y)")
         guard let visibleCells = imageCollectionView.visibleCells as? [TapeCollectionViewCell] else { return }
         for item in visibleCells {
             if postId == item.data?.id && likesCount != item.data?.likesCount && item.data?.isUserLikes != isUserLikes {
@@ -150,13 +225,12 @@ extension ImagesViewController: ImagesViewControllerProtocol {
     func configureWithPhotos(posts: [Post]) {
         self.posts.append(contentsOf: posts)
         let startOffset = offset
-        self.offset = self.posts.count
+        offset = self.posts.count
         var indexPaths = [IndexPath]()
         for i in startOffset...offset - 1 {
             indexPaths.append(IndexPath(item: i, section: 0))
         }
         imageCollectionView.performBatchUpdates({
-            print(offset)
             imageCollectionView.insertItems(at: indexPaths)
         }) { (complete) in
         }
@@ -167,7 +241,7 @@ extension ImagesViewController: ImagesViewControllerProtocol {
     
     func loadAvatar(image: UIImage) {
         avatarImageView.image = image
-        UIView.animate(withDuration: 0.1) {
+        UIView.animate(withDuration: Constants.animationDuration) {
             self.avatarImageView.alpha = 1
         }
         avatarImage = image
@@ -184,53 +258,6 @@ extension ImagesViewController: ImagesViewControllerProtocol {
         if let username = user.screenName ?? user.firstName {
             nicknameLabel.text = username
         }
-    }
-    
-    func fetchPostData(postId: Int, ownerId: Int, completion: @escaping CommentsCompletion) {
-        presenter?.fetchComments(postId: postId, ownerId: ownerId, completion: completion)
-    }
-    
-    func cellIsLoading(url: String, progress: @escaping (_ progress: Float) -> (), completion: @escaping (_ image: UIImage, _ url: String) -> ()) {
-        presenter?.loadImage(url: url, progress: progress, completion: completion)
-    }
-    
-    func loadGif(url: String, progress: @escaping (_ progress: Float) -> (), completion: @escaping (_ image: UIImage, _ url: String) -> ()) {
-        presenter?.loadGif(url: url, progress: progress, completion: completion)
-    }
-    
-    func loadProfileInformation(setAvatar: (_ avatar: UIImage) -> (), setName: (_ label: String) -> ()) {
-        if let img = avatarImageView.image {
-            setAvatar(img)
-        }
-        if let nickname = profile?.screenName {
-            setName(nickname)
-            return
-        }
-        if let firstName = profile?.firstName {
-            setName(firstName)
-        }
-    }
-    
-    func setLike(postId: Int, ownerId: Int, completion: @escaping LikesCountCompletion) {
-        presenter?.setLike(postId: postId, ownerId: ownerId, completion: completion)
-    }
-    
-    func removeLike(postId: Int, ownerId: Int, completion: @escaping LikesCountCompletion) {
-        presenter?.removeLike(postId: postId, ownerId: ownerId, completion: completion)
-    }
-    
-    func moveToDetailPhotoScreen(post: Post, currentPage: Int) {
-        guard var profile = profile else { return }
-        profile.avatarImage = avatarImage
-        presenter?.moveToDetailScreen(post: post, currentPage: currentPage, profile: profile)
-    }
-    
-    func disableScrollView() {
-        mainScrollView.isScrollEnabled = false
-    }
-    
-    func enableScrollView() {
-        mainScrollView.isScrollEnabled = true
     }
     
     func setCurrentContentOffset(offset: CGPoint) {
@@ -250,11 +277,11 @@ extension ImagesViewController: ImagesViewControllerProtocol {
     }
 }
 
-extension ImagesViewController: UIScrollViewDelegate {
+extension GalleryViewController: UIScrollViewDelegate {
     
     var endScrollRecommendedOffset: CGFloat {
         if let layout = imageCollectionView.collectionViewLayout as? UICollectionViewFlowLayout {
-            return layout.itemSize.height * 3
+            return layout.itemSize.height * Constants.recomendetOffsetMultiplier
         }
         return 0
     }
@@ -283,17 +310,9 @@ extension ImagesViewController: UIScrollViewDelegate {
             }
         }
     }
-    
-    func scrollViewWillEndDragging(_ scrollView: UIScrollView, withVelocity velocity: CGPoint, targetContentOffset: UnsafeMutablePointer<CGPoint>) {
-        if scrollView == mainScrollView && (velocity.y >= 6 || velocity.y <= -6) {
-            isNeedFetchComments = false
-        } else {
-            isNeedFetchComments = true
-        }
-    }
 }
 
-extension ImagesViewController: UICollectionViewDataSource {
+extension GalleryViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return posts.count
     }
@@ -303,30 +322,28 @@ extension ImagesViewController: UICollectionViewDataSource {
     }
     
     func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
-        guard let footerView = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: photosCollectionViewFooterIdentifier, for: indexPath) as? PhotosCollectionFooterView else { fatalError() }
+        guard let footerView = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: Constants.galleryCollectionViewFooterIdentifier, for: indexPath) as? GalleryCollectionFooterView else { fatalError() }
         footerView.backgroundColor = UIColor.clear
         return footerView
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForFooterInSection section: Int) -> CGSize {
-        return CGSize(width: collectionView.frame.width, height: 50)
+        return CGSize(width: collectionView.frame.width, height: Constants.footerViewHeight)
     }
 }
 
-extension ImagesViewController: UICollectionViewDelegateFlowLayout {
+extension GalleryViewController: UICollectionViewDelegateFlowLayout {
 }
 
-extension ImagesViewController: UICollectionViewDelegate {
+extension GalleryViewController: UICollectionViewDelegate {
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cellIdentifier = "imgCell"
-        let tapeCellIdentifier = "bigCell"
         if flowLayout.cellType == .Grid {
-            guard let cell = imageCollectionView.dequeueReusableCell(withReuseIdentifier: cellIdentifier, for: indexPath) as? ImageCollectionViewCell else { fatalError() }
+            guard let cell = imageCollectionView.dequeueReusableCell(withReuseIdentifier: Constants.gridItemIdentifier, for: indexPath) as? GridCollectionViewCell else { fatalError() }
             cell.vc = self
             return cell
         } else if flowLayout.cellType == .Tape {
-            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: tapeCellIdentifier, for: indexPath) as? TapeCollectionViewCell else { fatalError() }
+            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: Constants.tapeItemIdentifier, for: indexPath) as? TapeCollectionViewCell else { fatalError() }
             cell.vc = self
             return cell
         }
@@ -336,19 +353,17 @@ extension ImagesViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
         let post = posts[indexPath.row]
         if flowLayout.cellType == .Grid {
-            guard let cell = cell as? ImageCollectionViewCell else { fatalError() }
+            guard let cell = cell as? GridCollectionViewCell else { fatalError() }
             cell.configure(postData: post)
         } else if flowLayout.cellType == .Tape {
             guard let cell = cell as? TapeCollectionViewCell else { fatalError() }
             cell.configure(postData: post)
-            if isNeedFetchComments {
-            }
         }
     }
     
     func collectionView(_ collectionView: UICollectionView, willDisplaySupplementaryView view: UICollectionReusableView, forElementKind elementKind: String, at indexPath: IndexPath) {
         if presenter?.checkIsAllLoaded() == true {
-            if let footer = view as? PhotosCollectionFooterView {
+            if let footer = view as? GalleryCollectionFooterView {
                 footer.allDownloaded()
             }
         }
@@ -370,19 +385,19 @@ extension ImagesViewController: UICollectionViewDelegate {
     }
     
     func collectionView(_ collectionView: UICollectionView, didHighlightItemAt indexPath: IndexPath) {
-        if let cell = imageCollectionView.cellForItem(at: indexPath) as? ImageCollectionViewCell {
-            cell.layer.opacity = 0.5
+        if let cell = imageCollectionView.cellForItem(at: indexPath) as? GridCollectionViewCell {
+            cell.layer.opacity = Constants.highlightedItemOpacity
         }
     }
     
     func collectionView(_ collectionView: UICollectionView, didUnhighlightItemAt indexPath: IndexPath) {
-        if let cell = imageCollectionView.cellForItem(at: indexPath) as? ImageCollectionViewCell {
-            cell.layer.opacity = 1.0
+        if let cell = imageCollectionView.cellForItem(at: indexPath) as? GridCollectionViewCell {
+            cell.layer.opacity = Constants.normalItemOpacity
         }
     }
 }
 
-private extension ImagesViewController {
+private extension GalleryViewController {
     func configureUI() {
         navigationController?.isNavigationBarHidden = true
         refreshControl.addTarget(self, action: #selector(refreshData(_:)), for: .valueChanged)
@@ -390,12 +405,12 @@ private extension ImagesViewController {
         mainScrollView.alwaysBounceVertical = true
         gridModeButton.isSelected = true
         addPostView.layer.cornerRadius = addPostView.bounds.width / 2
-        addPostView.layer.shadowRadius = 2
-        addPostView.layer.shadowOpacity = 0.2
+        addPostView.layer.shadowRadius = Constants.shadowRadius
+        addPostView.layer.shadowOpacity = Constants.defaultShadowOpacity
         addPostView.layer.shadowOffset = CGSize(width: 0, height: 2)
-        secondHeaderView.layer.shadowOpacity = 0.2
-        secondHeaderView.layer.shadowOffset = CGSize(width: 5, height: secondHeaderView.frame.height / 3)
-        secondHeaderView.layer.shadowRadius = 30
+        secondHeaderView.layer.shadowOpacity = Constants.defaultShadowOpacity
+        secondHeaderView.layer.shadowOffset = CGSize(width: Constants.shadowOffsetWidth, height: secondHeaderView.frame.height / Constants.shadowOffsetHeightMultiplier)
+        secondHeaderView.layer.shadowRadius = Constants.shadowRadius
         mainScrollView.frame = view.frame
         let scrollViewContentSize = CGSize(width: view.frame.width, height: headerView.frame.height + headerViewBottom.accessibilityFrame.height + secondHeaderView.frame.height + secondHeaderBottom.accessibilityFrame.height + imageCollectionView.contentSize.height)
         mainScrollView.contentSize = scrollViewContentSize
@@ -405,7 +420,7 @@ private extension ImagesViewController {
         avatarImageView.layer.cornerRadius = avatarImageView.frame.width / 2
         
         if !Reachability.isConnectedToNetwork() {
-            showToast(message: "Internet connection are not available") 
+            showToast(message: Constants.internetConnectionErrorMessage)
         }
     }
     
@@ -457,11 +472,11 @@ private extension ImagesViewController {
     }
     
     func changeFlowLayout() {
-        UIView.animate(withDuration: 0.3) {
+        UIView.animate(withDuration: Constants.changeTapsAnimationDuration) {
             self.tapeStateIndicator.alpha = 1.0
             self.tapeModeButton.alpha = 1.0
-            self.gridStateIndicator.alpha = 0.5
-            self.gridModeButton.alpha = 0.5
+            self.gridStateIndicator.alpha = Constants.deselectedTapAlpha
+            self.gridModeButton.alpha = Constants.deselectedTapAlpha
         }
         imageCollectionView.setCollectionViewLayout(tapeFlowLayout, animated: false) { (finished) in
             if finished {                
@@ -473,9 +488,9 @@ private extension ImagesViewController {
     }
     
     func setGridFlowLayout() {
-        UIView.animate(withDuration: 0.3) {
-            self.tapeStateIndicator.alpha = 0.5
-            self.tapeModeButton.alpha = 0.5
+        UIView.animate(withDuration: Constants.changeTapsAnimationDuration) {
+            self.tapeStateIndicator.alpha = Constants.deselectedTapAlpha
+            self.tapeModeButton.alpha = Constants.deselectedTapAlpha
             self.gridStateIndicator.alpha = 1.0
             self.gridModeButton.alpha = 1.0
         }

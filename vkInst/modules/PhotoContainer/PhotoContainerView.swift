@@ -19,6 +19,11 @@ protocol PhotoContainerViewProtocol: class {
 }
 
 class PhotoContainerView: UIView {
+    private struct Constants {
+        static let mediaApperanceAnimationDuration = 0.1
+        static let mediaDefaultHeight = CGFloat(600)
+        static let progressAnimationKey = "animateProgress"
+    }
     
     @IBOutlet weak var progressView: ProgressIndicatorView!
     @IBOutlet weak var photoView: UIImageView!
@@ -36,7 +41,6 @@ class PhotoContainerView: UIView {
     }
     
     override func awakeFromNib() {
-        configureView()
         progressView.rotate()
     }
 }
@@ -54,8 +58,8 @@ extension PhotoContainerView: PhotoContainerViewProtocol {
             }) { [weak self] (image, url) in
                 guard let self = self else { return }
                 self.photoView.image = image
-                self.progressView.layer.removeAnimation(forKey: "animateProgress")
-                UIView.animate(withDuration: 0.1, animations: {
+                self.progressView.layer.removeAnimation(forKey: Constants.progressAnimationKey)
+                UIView.animate(withDuration: Constants.mediaApperanceAnimationDuration, animations: {
                     self.photoView.alpha = 1
                 })
                 self.photoView.startAnimating()
@@ -77,7 +81,7 @@ extension PhotoContainerView: PhotoContainerViewProtocol {
                 guard let self = self else { return }
                 if self.url == url {
                     self.photoView.image = image
-                    UIView.animate(withDuration: 0.1, animations: {
+                    UIView.animate(withDuration: Constants.mediaApperanceAnimationDuration, animations: {
                         self.photoView.alpha = 1
                     })
                     self.photoView.startAnimating()
@@ -90,16 +94,11 @@ extension PhotoContainerView: PhotoContainerViewProtocol {
         if let image = photoView.image {
             return image.size.height
         }
-        return 400
+        return Constants.mediaDefaultHeight
     }
 }
 
 private extension PhotoContainerView {
-    func configureView() {
-        //self.autoresizingMask = [.flexibleHeight, .flexibleWidth]
-        photoView.image = UIImage(named: "placeholder")
-    }
-    
     func downloadPhoto(withUrl url: String, progress: @escaping DownloadProgress, completion: @escaping PhotoLoadingCompletion) {
         vc?.downloadPhoto(url: url, progress: progress, completion: completion)
     }

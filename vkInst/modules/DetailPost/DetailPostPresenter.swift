@@ -8,7 +8,7 @@
 
 import Foundation
 import Photos
-protocol DetailPhotoPresenterProtocol {
+protocol DetailPostPresenterProtocol {
     func viewDidLoad()
     func fetchComments(postId: Int, ownerId: Int)
     func commentsDownloaded()
@@ -21,15 +21,15 @@ protocol DetailPhotoPresenterProtocol {
     func fetchPostMetadata(postId: Int, completion: @escaping CreatePostCompletion)
 }
 
-class DetailPhotoPresenter {
-    weak var vc: DetailPhotoViewController?
-    var router: DetailPhotoRouterProtocol?
+class DetailPostPresenter {
+    weak var viewController: DetailPostViewControllerProtocol?
+    var router: DetailPostRouterProtocol?
     var pagingService: CommentsPageServiceProtocol?
-    var userService: UserService?
+    var userService: UserServiceProtocol?
     var downloadService: DownloadServiceProtocol?
 }
 
-extension DetailPhotoPresenter: DetailPhotoPresenterProtocol {
+extension DetailPostPresenter: DetailPostPresenterProtocol {
     func viewDidLoad() {
         
     }
@@ -51,8 +51,9 @@ extension DetailPhotoPresenter: DetailPhotoPresenterProtocol {
     }
     
     func fetchComments(postId: Int, ownerId: Int) {
-        pagingService?.nextFetch(postId: postId, ownerId: ownerId, completion: { (comments, profiles, groups) in
-            self.vc?.configureDataSource(comments: comments,profiles: profiles,groups: groups)
+        pagingService?.nextFetch(postId: postId, ownerId: ownerId, completion: { [weak self] (comments, profiles, groups) in
+            guard let self = self else { return }
+            self.viewController?.configureDataSource(comments: comments,profiles: profiles,groups: groups)
         })
     }
     
@@ -77,6 +78,6 @@ extension DetailPhotoPresenter: DetailPhotoPresenterProtocol {
     }
 }
 
-private extension DetailPhotoPresenter {
+private extension DetailPostPresenter {
     
 }

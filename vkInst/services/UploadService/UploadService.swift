@@ -51,12 +51,12 @@ extension UploadService: UploadServiceProtocol {
     
     func transferPhotosToServer(imageData: Data, fileName: String, progress: @escaping UploadProgress, completion: @escaping PostUploadCompletion, cancel: @escaping CancelCompletion) {
         DispatchQueue.global(qos: .background).async { [weak self] in
-            guard let strongSelf = self,
-                let session = strongSelf.session,
-                let req = strongSelf.buildUploadRequest(imageData: imageData, fileName: fileName)
+            guard let self = self,
+                let session = self.session,
+                let req = self.buildUploadRequest(imageData: imageData, fileName: fileName)
                 else { return }
             let uploadTask = session.uploadTask(withStreamedRequest: req)
-            strongSelf.activeUploads[fileName] = (completion, progress, cancel, uploadTask) as (PostUploadCompletion, UploadProgress, CancelCompletion, URLSessionUploadTask)
+            self.activeUploads[fileName] = (completion, progress, cancel, uploadTask) as (PostUploadCompletion, UploadProgress, CancelCompletion, URLSessionUploadTask)
             uploadTask.resume()
         }
     }
@@ -64,9 +64,9 @@ extension UploadService: UploadServiceProtocol {
     func getWallUploadServer() {
         let url = "https://api.vk.com/method/photos.getWallUploadServer?access_token=\(token)&v=5.101"
         requestService.getData(urlStr: url, method: .get, completion: { [weak self] (response: UploadServer?, err) in
-            guard let strongSelf = self,
+            guard let self = self,
                 let response = response else { return }
-            strongSelf.uploadServer = response
+            self.uploadServer = response
         })
     }
     
@@ -114,9 +114,9 @@ private extension UploadService {
             else { return }
         let url = "https://api.vk.com/method/photos.saveWallPhoto?user_id=\(userId)&photo=\(photo)&server=\(server)&hash=\(hash)&access_token=\(token)&v=5.101"
         requestService.getData(urlStr: url, method: .get, completion: { [weak self] (response: [Image]?, err) in
-            guard let strongSelf = self,
+            guard let self = self,
                 let id = response?.first?.id,
-                let completion = strongSelf.activeUploads[fileName]?.completion
+                let completion = self.activeUploads[fileName]?.completion
                 else { return }
             DispatchQueue.main.async {
                 completion(id)
@@ -128,11 +128,11 @@ private extension UploadService {
 extension UploadService: URLSessionTaskDelegate, URLSessionDataDelegate {
     func urlSession(_ session: URLSession, task: URLSessionTask, didSendBodyData bytesSent: Int64, totalBytesSent: Int64, totalBytesExpectedToSend: Int64) {
         DispatchQueue.global(qos: .background).async { [weak self] in
-            guard let strongSelf = self,
+            guard let self = self,
                 let fileName = task.originalRequest?.value(forHTTPHeaderField: "fileName")
                 else { return }
             let progress = Float(totalBytesSent) / Float(totalBytesExpectedToSend)
-            guard let progressCompletion = strongSelf.activeUploads[fileName]?.progress else { return }
+            guard let progressCompletion = self.activeUploads[fileName]?.progress else { return }
             DispatchQueue.main.async {
                 progressCompletion(progress)
             }

@@ -8,21 +8,47 @@
 
 import UIKit
 
-protocol DetailPhotoViewControllerProtocol {
+protocol DetailPostViewControllerProtocol: class {
     func configureDataSource(comments: [Comment], profiles: [User]?, groups: [Group]?)
 }
 
-class DetailPhotoViewController: UIViewController {
+class DetailPostViewController: UIViewController {
 
-    var presenter: DetailPhotoPresenter?
+    private struct Constants {
+        static let activeBigLikeSizeAnchor = CGFloat(70.0)
+        static let activeLikeSizeAnchor = CGFloat(25.0)
+        static let bigLikeAnimationDuration = 0.4
+        static let likeAnimationDuration = 0.15
+        static let animationSpringWithDamping = CGFloat(0.5)
+        static let selectLikeAnimationDelay = 0.1
+        static let animationLikeAlpha = CGFloat(0.5)
+        static let activeBigLikeAlpha = CGFloat(0.7)
+        static let hideBigLikeAnimationDuration = 0.2
+        static let summaryRowHeightMultiplier = CGFloat(5)
+        static let numberOfSections = 1
+        static let scaleEndAnimationDuration = 0.3
+        static let likesCountLabel = "likes"
+        static let commentCellIdentifiet = "commentCell"
+        static let fillHearthImage = UIImage(named: "HearthFill")
+        static let emptyHearthImage = UIImage(named: "HearthDeselected")
+        static let internetConnectionErrorDescribtion = "Internet connection are not available"
+    }
+    
+    
+    var presenter: DetailPostPresenter?
     var postData: Post?
     var profile: User?
     var comments = [Comment]()
     var mediaToPresent = [Any]()
-    let placeholder = UIImage(named: "placeholder")
     private var isZooming = false
     private var originalImageCenter: CGPoint?
     private var currentPage = 0
+    
+    private lazy var mediaItemWidth: CGFloat = {
+        let fullContentWidth = contentStackView.bounds.width
+        let itemWidth = fullContentWidth / CGFloat(integerLiteral: pageControl.numberOfPages)
+        return itemWidth
+    }()
     
     var refreshControll = UIRefreshControl()
     @IBOutlet weak var hearthImageViewWidthAnchor: NSLayoutConstraint!
@@ -40,11 +66,7 @@ class DetailPhotoViewController: UIViewController {
     @IBOutlet weak var viewsCountLabel: UILabel!
     @IBOutlet weak var nicknameLabel: UILabel!
     @IBOutlet weak var avatarImageView: UIImageView!
-    @IBOutlet weak var photoImageView: UIImageView! {
-        didSet {
-            photoImageView.layer.zPosition = -9999
-        }
-    }
+    @IBOutlet weak var photoImageView: UIImageView!
     @IBOutlet weak var likeButton: UIButton!
     @IBOutlet weak var sendCommentButton: UIButton!
     @IBOutlet weak var photoContentView: UIView!
@@ -67,10 +89,6 @@ class DetailPhotoViewController: UIViewController {
     @IBOutlet weak var postMetadataView: UIView!
     @IBOutlet weak var viewsCountImage: UIImageView!
     
-    let fillHearthImage = UIImage(named: "HearthFill")
-    let emptyHearthImage = UIImage(named: "HearthDeselected")
-    
-    
     func configureController(postData: Post, currentPage: Int, profile: User) {
         self.postData = postData
         self.profile = profile
@@ -79,11 +97,10 @@ class DetailPhotoViewController: UIViewController {
     
     override func willMove(toParent parent: UIViewController?) {
         super.willMove(toParent: parent)
-        if parent == nil {
-            guard let galleryViewController = navigationController?.viewControllers.first as? ImagesViewControllerProtocol else { return }
-            galleryViewController.updateOffset()
-            presenter?.invalidateDownloadService()
-        }
+        guard parent == nil,
+            let galleryViewController = navigationController?.viewControllers.first as? GalleryViewControllerProtocol else { return }
+        galleryViewController.updateOffset()
+        presenter?.invalidateDownloadService()
     }
     
     override func viewDidLoad() {
@@ -103,8 +120,6 @@ class DetailPhotoViewController: UIViewController {
         NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillHideNotification, object: nil)
         NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillShowNotification, object: nil)
     }
-    
-    
     
     @IBAction func sendCommentButtonTapped(_ sender: UIButton) {
         guard let comment = commentTextField.text,
@@ -130,7 +145,7 @@ class DetailPhotoViewController: UIViewController {
                 self.postData?.isUserLikes = false
                 self.postData?.likesCount = likesCount
                 self.likeButton.isSelected = false
-                self.likesCountLabel.text = "\(likesCount) likes"
+                self.likesCountLabel.text = "\(likesCount) \(Constants.likesCountLabel)"
                 self.updatePostData()
             })
         } else {
@@ -139,7 +154,7 @@ class DetailPhotoViewController: UIViewController {
                 self.postData?.isUserLikes = true
                 self.postData?.likesCount = likesCount
                 self.likeButton.isSelected = true
-                self.likesCountLabel.text = "\(likesCount) likes"
+                self.likesCountLabel.text = "\(likesCount) \(Constants.likesCountLabel)"
                 self.updatePostData()
             })
         }
@@ -151,7 +166,7 @@ class DetailPhotoViewController: UIViewController {
     }
 }
 
-extension DetailPhotoViewController: DetailPhotoViewControllerProtocol {
+extension DetailPostViewController: DetailPostViewControllerProtocol {
     func configureDataSource(comments: [Comment], profiles: [User]?, groups: [Group]?) {
         var comments = comments
         var k = 0
@@ -184,24 +199,23 @@ extension DetailPhotoViewController: DetailPhotoViewControllerProtocol {
     }
 }
 
-extension DetailPhotoViewController: UITableViewDelegate {
+extension DetailPostViewController: UITableViewDelegate {
     
 }
 
-extension DetailPhotoViewController: UITextFieldDelegate {
+extension DetailPostViewController: UITextFieldDelegate {
     
 }
 
-extension DetailPhotoViewController: UITableViewDataSource {
+extension DetailPostViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cellIdentifier = "commentCell"
-        let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath) as? DetailPhotoTableViewCell
-        cell?.configureCell(data: comments[indexPath.row])
-        return cell!
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: Constants.commentCellIdentifiet, for: indexPath) as? DetailPostTableViewCell else { fatalError() }
+        cell.configureCell(data: comments[indexPath.row])
+        return cell
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        return 1
+        return Constants.numberOfSections
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -209,50 +223,43 @@ extension DetailPhotoViewController: UITableViewDataSource {
     }
 }
 
-extension DetailPhotoViewController: UIScrollViewDelegate {
+extension DetailPostViewController: UIScrollViewDelegate {
     var endScrollRecommendedOffset: CGFloat {
-        return commentsTableView.rowHeight * 5
-    }
-    
-    var mediaItemWidth: CGFloat {
-        let fullContentWidth = contentStackView.bounds.width
-        let itemWidth = fullContentWidth / CGFloat(integerLiteral: pageControl.numberOfPages)
-        return itemWidth
+        return commentsTableView.rowHeight * Constants.summaryRowHeightMultiplier
     }
     
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         view.endEditing(true)
-        if scrollView == invisibleScrollView {
-            let contentOffset = scrollView.contentOffset
-            topOffset.constant = -contentOffset.y
+        guard scrollView == invisibleScrollView else { return }
+        let contentOffset = scrollView.contentOffset
+        topOffset.constant = -contentOffset.y
             
-            let currentOffset = scrollView.contentOffset.y + scrollView.frame.size.height
-            let maximumOffset = scrollView.contentSize.height
-            let deltaOffset = maximumOffset - currentOffset
-            if deltaOffset <= endScrollRecommendedOffset {
-                guard let id = postData?.id else { return }
-                guard let ownerId = postData?.ownerId else { return }
-                presenter?.fetchComments(postId: id, ownerId: ownerId)
-            }
+        let currentOffset = scrollView.contentOffset.y + scrollView.frame.size.height
+        let maximumOffset = scrollView.contentSize.height
+        let deltaOffset = maximumOffset - currentOffset
+        if deltaOffset <= endScrollRecommendedOffset {
+            guard let id = postData?.id else { return }
+            guard let ownerId = postData?.ownerId else { return }
+            presenter?.fetchComments(postId: id, ownerId: ownerId)
         }
     }
     
     func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
-        if scrollView == mediaContentScrollView {
-            let contentOffset = scrollView.contentOffset.x
-            let currentPage = (Int(contentOffset) / Int(mediaItemWidth))
-            pageControl.currentPage = currentPage
-        }
+        view.endEditing(true)
+        guard scrollView == mediaContentScrollView else { return }
+        let contentOffset = scrollView.contentOffset.x
+        let currentPage = (Int(contentOffset) / Int(mediaItemWidth))
+        pageControl.currentPage = currentPage
     }
 }
 
-extension DetailPhotoViewController: UIGestureRecognizerDelegate {
+extension DetailPostViewController: UIGestureRecognizerDelegate {
     func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
         return true
     }
 }
 
-extension DetailPhotoViewController: DownloadMediaProtocol {
+extension DetailPostViewController: DownloadMediaProtocol {
     func downloadPhoto(url: String, progress: @escaping DownloadProgress, completion: @escaping PhotoLoadingCompletion) {
         presenter?.downloadPhoto(url: url, progress: progress, completion: completion)
     }
@@ -262,7 +269,7 @@ extension DetailPhotoViewController: DownloadMediaProtocol {
     }
 }
 
-private extension DetailPhotoViewController {
+private extension DetailPostViewController {
     
     func updateImagesWidth() {
         for view in contentStackView.arrangedSubviews {
@@ -288,7 +295,7 @@ private extension DetailPhotoViewController {
         guard let viewsCount = postData?.viewsCount else { return }
         viewsCountLabel.text = "\(viewsCount)"
         guard let likesCount = postData?.likesCount else { return }
-        likesCountLabel.text = "\(likesCount) likes"
+        likesCountLabel.text = "\(likesCount) \(Constants.likesCountLabel)"
         nicknameLabel.text = profile?.screenName
         avatarImageView.image = profile?.avatarImage
         view.layoutIfNeeded()
@@ -296,7 +303,7 @@ private extension DetailPhotoViewController {
     
     func configureUI() {
         invisibleScrollView.delegate = self
-        let scrollViewContentSize = CGSize(width: view.frame.width, height: commentsTableView.contentSize.height + photoContentView.frame.width - 70)
+        let scrollViewContentSize = CGSize(width: view.frame.width, height: commentsTableView.contentSize.height + photoContentView.frame.height)
         invisibleScrollView.contentSize = scrollViewContentSize
         invisibleScrollView.refreshControl = refreshControll
         refreshControll.addTarget(self, action: #selector(refreshPostMetadata(sender:)), for: .valueChanged)
@@ -307,10 +314,10 @@ private extension DetailPhotoViewController {
         
         if postData?.isUserLikes == true {
             likeButton.isSelected = true
-            hearthImageView.image = fillHearthImage
+            hearthImageView.image = Constants.fillHearthImage
         } else {
             likeButton.isSelected = false
-            hearthImageView.image = emptyHearthImage
+            hearthImageView.image = Constants.emptyHearthImage
         }
         
         let viewsCount = mediaToPresent.count
@@ -324,27 +331,12 @@ private extension DetailPhotoViewController {
         let offset = contentStackView.bounds.size.width * CGFloat(integerLiteral: currentPage)
         mediaContentScrollView.setContentOffset(CGPoint(x: offset, y: 0), animated: false)
         
-        
-        let pinchGesture = UIPinchGestureRecognizer(target: self, action: #selector(scale(sender:)))
-        pinchGesture.delaysTouchesEnded = false
-        pinchGesture.cancelsTouchesInView = false
-        pinchGesture.delaysTouchesBegan = false
-        contentStackView.addGestureRecognizer(pinchGesture)
-        let doubleTapGesture = UITapGestureRecognizer(target: self, action: #selector(doubleTapped(sender:)))
-        doubleTapGesture.numberOfTapsRequired = 2
-        doubleTapGesture.delaysTouchesEnded = false
-        doubleTapGesture.delaysTouchesBegan = false
-        doubleTapGesture.cancelsTouchesInView = false
-        contentStackView.addGestureRecognizer(doubleTapGesture)
-        let panGesture = UIPanGestureRecognizer(target: self, action: #selector(photoScrolled(sender:)))
-        panGesture.delaysTouchesBegan = false
-        panGesture.delaysTouchesEnded = false
-        panGesture.cancelsTouchesInView = false
-        panGesture.delegate = self
-        contentStackView.addGestureRecognizer(panGesture)
+        buildDoubleTapGesture()
+        buildPinchGesture()
+        buildPanGesture()
         
         if !Reachability.isConnectedToNetwork() {
-            showToast(message: "Internet connection are not available")
+            showToast(message: Constants.internetConnectionErrorDescribtion)
         }
     }
     
@@ -377,7 +369,7 @@ private extension DetailPhotoViewController {
     
     func fillMediaStackView() {
         for mediaFile in mediaToPresent {
-            guard let photoContainerView: PhotoContainerView =  PhotoContainerView.fromNib() else { return }
+            let photoContainerView: PhotoContainerView =  PhotoContainerView.fromNib()
             photoContainerView.vc = self
             if let gif = mediaFile as? Gif {
                 photoContainerView.setMediaContent(mediaFile: gif)
@@ -389,11 +381,37 @@ private extension DetailPhotoViewController {
     }
     
     func updatePostData() {
-        guard let galleryViewController = navigationController?.viewControllers.first as? ImagesViewControllerProtocol,
+        guard let galleryViewController = navigationController?.viewControllers.first as? GalleryViewControllerProtocol,
             let id = postData?.id,
             let likesCount = postData?.likesCount,
             let isUserLikes = postData?.isUserLikes else { return }
         galleryViewController.updatePostData(postId: id, likesCount: likesCount, isUserLikes: isUserLikes)
+    }
+    
+    func buildDoubleTapGesture() {
+        let doubleTapGesture = UITapGestureRecognizer(target: self, action: #selector(doubleTapped(sender:)))
+        doubleTapGesture.numberOfTapsRequired = 2
+        doubleTapGesture.delaysTouchesEnded = false
+        doubleTapGesture.delaysTouchesBegan = false
+        doubleTapGesture.cancelsTouchesInView = false
+        contentStackView.addGestureRecognizer(doubleTapGesture)
+    }
+    
+    func buildPinchGesture() {
+        let pinchGesture = UIPinchGestureRecognizer(target: self, action: #selector(scale(sender:)))
+        pinchGesture.delaysTouchesEnded = false
+        pinchGesture.cancelsTouchesInView = false
+        pinchGesture.delaysTouchesBegan = false
+        contentStackView.addGestureRecognizer(pinchGesture)
+    }
+    
+    func buildPanGesture() {
+        let panGesture = UIPanGestureRecognizer(target: self, action: #selector(photoScrolled(sender:)))
+        panGesture.delaysTouchesBegan = false
+        panGesture.delaysTouchesEnded = false
+        panGesture.cancelsTouchesInView = false
+        panGesture.delegate = self
+        contentStackView.addGestureRecognizer(panGesture)
     }
     
     @objc func swiped(sender: UISwipeGestureRecognizer) {
@@ -410,7 +428,6 @@ private extension DetailPhotoViewController {
         }
     }
     
-    
     @objc func doubleTapped(sender: UITapGestureRecognizer) {
         if postData?.isUserLikes == false && sender.state == .ended {
             guard let postId = postData?.id else { return }
@@ -418,12 +435,12 @@ private extension DetailPhotoViewController {
             presenter?.setLike(postId: postId, ownerId: ownerId, completion: { (likesCount) in
                 self.postData?.isUserLikes = true
                 self.postData?.likesCount = likesCount
-                self.likesCountLabel.text = "\(likesCount) likes"
+                self.likesCountLabel.text = "\(likesCount) \(Constants.likesCountLabel)"
                 self.likeButton.isSelected = true
             })
         }
         startSelectLikeAnimation()
-        startDoubleTapAnimation()
+        startBigLikeAppearAnimation()
     }
     
     @objc func scale(sender: UIPinchGestureRecognizer) {
@@ -452,7 +469,7 @@ private extension DetailPhotoViewController {
                 sender.scale = 1
             }
         } else if sender.state == .ended || sender.state == .failed || sender.state == .cancelled {
-            UIView.animate(withDuration: 0.3, animations: {
+            UIView.animate(withDuration: Constants.scaleEndAnimationDuration, animations: {
                 self.contentStackView.transform = CGAffineTransform.identity
                 guard let center = self.originalImageCenter else {return}
                 self.contentStackView.center = center
@@ -508,22 +525,24 @@ private extension DetailPhotoViewController {
         })
     }
     
-    func startDoubleTapAnimation() {
-        bigLikeImageWidthAnchor.constant = 70
-        bigLikeImageHeightAnchor.constant = 70
-        UIView.animate(withDuration: 0.4,
+    func startBigLikeAppearAnimation() {
+        bigLikeImageWidthAnchor.constant = Constants.activeBigLikeSizeAnchor
+        bigLikeImageHeightAnchor.constant = Constants.activeBigLikeSizeAnchor
+        UIView.animate(withDuration: Constants.bigLikeAnimationDuration,
                        delay: 0,
-                       usingSpringWithDamping: 0.5,
+                       usingSpringWithDamping: Constants.animationSpringWithDamping,
                        initialSpringVelocity: 0.0,
                        options: .curveEaseOut,
                        animations: {
-            self.bigLikeImageView.alpha = 0.7
+            self.bigLikeImageView.alpha = Constants.activeBigLikeAlpha
             self.view.layoutIfNeeded()
         }) { (complete) in
             if complete {
                 self.bigLikeImageHeightAnchor.constant = 0
                 self.bigLikeImageWidthAnchor.constant = 0
-                UIView.animateKeyframes(withDuration: 0.2, delay: 0.5, options: .calculationModeLinear, animations: {
+                UIView.animateKeyframes(withDuration: Constants.hideBigLikeAnimationDuration,
+                                        delay: Constants.selectLikeAnimationDelay,
+                                        options: .calculationModeLinear, animations: {
                     self.bigLikeImageView.alpha = 0
                     self.view.layoutIfNeeded()
                 }, completion: { (complete) in
@@ -536,21 +555,21 @@ private extension DetailPhotoViewController {
     func startDeselectLikeAnimation() {
         hearthImageViewWidthAnchor.constant = 0
         hearthImageViewHeightAnchor.constant = 0
-        UIView.animate(withDuration: 0.15,
-                       delay: 0.1,
-                       usingSpringWithDamping: 0.5,
+        UIView.animate(withDuration: Constants.likeAnimationDuration,
+                       delay: Constants.selectLikeAnimationDelay,
+                       usingSpringWithDamping: Constants.animationSpringWithDamping,
                        initialSpringVelocity: 0.0,
                        options: .curveEaseOut,
                        animations: {
                         self.view.layoutIfNeeded()
                         self.hearthImageView.alpha = 0
         }) { (complete) in
-            self.hearthImageView.image = self.emptyHearthImage
-            self.hearthImageViewHeightAnchor.constant = 25
-            self.hearthImageViewWidthAnchor.constant = 25
-            UIView.animate(withDuration: 0.15,
+            self.hearthImageView.image = Constants.emptyHearthImage
+            self.hearthImageViewHeightAnchor.constant = Constants.activeLikeSizeAnchor
+            self.hearthImageViewWidthAnchor.constant = Constants.activeLikeSizeAnchor
+            UIView.animate(withDuration: Constants.likeAnimationDuration,
                            delay: 0.0,
-                           usingSpringWithDamping: 0.5,
+                           usingSpringWithDamping: Constants.animationSpringWithDamping,
                            initialSpringVelocity: 0.0,
                            options: .curveEaseOut,
                            animations: {
@@ -565,21 +584,21 @@ private extension DetailPhotoViewController {
     func startSelectLikeAnimation() {
         hearthImageViewWidthAnchor.constant = 0
         hearthImageViewHeightAnchor.constant = 0
-        UIView.animate(withDuration: 0.15,
-                       delay: 0.1,
-                       usingSpringWithDamping: 0.5,
+        UIView.animate(withDuration: Constants.likeAnimationDuration,
+                       delay: Constants.selectLikeAnimationDelay,
+                       usingSpringWithDamping: Constants.animationSpringWithDamping,
                        initialSpringVelocity: 0.0,
                        options: .curveEaseOut,
                        animations: {
                         self.view.layoutIfNeeded()
-                        self.hearthImageView.alpha = 0.5
+                        self.hearthImageView.alpha = Constants.animationLikeAlpha
         }) { (complete) in
-            self.hearthImageView.image = self.fillHearthImage
-            self.hearthImageViewHeightAnchor.constant = 25
-            self.hearthImageViewWidthAnchor.constant = 25
-            UIView.animate(withDuration: 0.15,
+            self.hearthImageView.image = Constants.fillHearthImage
+            self.hearthImageViewHeightAnchor.constant = Constants.activeLikeSizeAnchor
+            self.hearthImageViewWidthAnchor.constant = Constants.activeLikeSizeAnchor
+            UIView.animate(withDuration: Constants.likeAnimationDuration,
                            delay: 0.0,
-                           usingSpringWithDamping: 0.5,
+                           usingSpringWithDamping: Constants.animationSpringWithDamping,
                            initialSpringVelocity: 0.0,
                            options: .curveEaseOut,
                            animations: {

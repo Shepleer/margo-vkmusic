@@ -21,7 +21,7 @@ class UploadPostRouter {
 extension UploadPostRouter: UploadPostRouterProtocol {
     func moveBackToGalleryScreen(newPost: Post) {
         guard let nav = vc?.navigationController,
-            let imagesViewController = nav.viewControllers.first as? ImagesViewControllerProtocol else { return }
+            let imagesViewController = nav.viewControllers.first as? GalleryViewControllerProtocol else { return }
         imagesViewController.insertNewPost(post: newPost)
         nav.popViewController(animated: true)
     }

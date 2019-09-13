@@ -46,10 +46,16 @@ class UploadPostViewController: UIViewController {
         static let openGalleryCollectionViewCell = "openGalleryCell"
         static let collectionViewInitFatalErrorDescription = "Unexpected cell in collection view"
         static let textViewPlaceholder = "What's new?"
+        static let internetConnectionErrorMessage = "Internet connection are not available"
+        static let creationDateSortDescriptorKey = "creationDate"
+        static let defaultPickerCollectionViewItemsCount = 31
+        static let textViewFontSize = CGFloat(22)
+        static let defaultToolbarHeight = CGFloat(50)
+        static let pickerViewAnimationDuration = 0.3
+        static let pickerViewConstraintMultiplier = CGFloat(150)
     }
     
-    var smallFlowLayout = SmallPhotoPickerFlowLayout()
-    var bigFlowLayout = BigPhotoPickerFlowLayout()
+    var flowLayout = photoPickerFlowLayout()
     var photosFromGallery: PHFetchResult<PHAsset>?
     var presenter: UploadPostPresenterProtocol?
     var selectedAssets = [PHAsset]()
@@ -69,12 +75,6 @@ class UploadPostViewController: UIViewController {
             hidePickerView()
         }
         configurePresentation()
-        subscribeKeyboardObserver()
-    }
-    
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-        removeKeyboardObserver()
     }
     
     override func willMove(toParent parent: UIViewController?) {
@@ -142,10 +142,10 @@ extension UploadPostViewController: UICollectionViewDataSource, UICollectionView
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         if collectionView == pickerCollectionView {
             guard let galleryPhotosCount = photosFromGallery?.count else { return 0 }
-            if galleryPhotosCount < 31 {
+            if galleryPhotosCount < Constants.defaultPickerCollectionViewItemsCount {
                 return galleryPhotosCount + 1
             }
-            return 30 + 1
+            return Constants.defaultPickerCollectionViewItemsCount
         } else if collectionView == selectedImagesCollectionView {
             guard let photosCount = presenter?.getCountOfUploadItems() else { return 0 }
             return photosCount
@@ -166,9 +166,9 @@ extension UploadPostViewController: UICollectionViewDataSource, UICollectionView
                 guard let cell = photoPickerCollectionView.dequeueReusableCell(withReuseIdentifier: cellIdentifier, for: indexPath) as? AlbumUploadCollectionViewCell else { fatalError(Constants.collectionViewInitFatalErrorDescription) }
                 guard let asset = photosFromGallery?.object(at: indexPath.item) else { fatalError() }
                 cell.identifier = asset.localIdentifier
-                cell.configureCell(asset: asset, cellSize: bigFlowLayout.itemSize)
-                if let k = selectedItems.firstIndex(of: indexPath.item) {
-                    cell.setSerialNumber(number: k + 1)
+                cell.configureCell(asset: asset, cellSize: flowLayout.itemSize)
+                if let index = selectedItems.firstIndex(of: indexPath.item) {
+                    cell.setSerialNumber(number: index + 1)
                     collectionView.selectItem(at: indexPath, animated: false, scrollPosition: [])
                 }
                 return cell
@@ -220,7 +220,7 @@ extension UploadPostViewController: UITextViewDelegate {
         if textView.textColor == currentTheme.secondaryColor {
             textView.text = nil
             textView.textColor = currentTheme.primaryColor
-            textView.font = textView.font?.withSize(15)
+            textView.font = textView.font?.withSize(Constants.textViewFontSize)
         }
         updateDoneButtonState()
     }
@@ -232,7 +232,7 @@ extension UploadPostViewController: UITextViewDelegate {
         if textView.text.isEmpty {
             textView.text = Constants.textViewPlaceholder
             textView.textColor = currentTheme.secondaryColor
-            textView.font = textView.font?.withSize(22)
+            textView.font = textView.font?.withSize(Constants.textViewFontSize)
             updateDoneButtonState()
         } else {
             updateDoneButtonState()
@@ -240,32 +240,15 @@ extension UploadPostViewController: UITextViewDelegate {
     }
 }
 
-private extension UploadPostViewController {
-    func updateCollectionViewPresentationIfNeedet() {
-        guard let countOfVisibleItems = photoPickerCollectionView.indexPathsForSelectedItems else { return }
-        if countOfVisibleItems.isEmpty {
-            if photoPickerCollectionView.collectionViewLayout == bigFlowLayout {
-                photoPickerCollectionView.setCollectionViewLayout(smallFlowLayout, animated: true)
-                collectionViewHeightConstraint.constant = 150
-                photoPickerCollectionView.layoutIfNeeded()
-            }
-        } else {
-            if photoPickerCollectionView.collectionViewLayout == smallFlowLayout {
-                photoPickerCollectionView.setCollectionViewLayout(bigFlowLayout, animated: true)
-                collectionViewHeightConstraint.constant = 357
-                photoPickerCollectionView.layoutIfNeeded()
-            }
-        }
-    }
-    
+private extension UploadPostViewController {    
     func configureUI() {
         photoPickerCollectionView.alpha = 0
         endSelectPhotosButton.alpha = 0
         photoPickerCollectionView.allowsMultipleSelection = true
-        photoPickerCollectionView.collectionViewLayout = smallFlowLayout
+        photoPickerCollectionView.collectionViewLayout = flowLayout
         let doneBarButtonItem = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(doneBarButtonItemPressed))
         navigationItem.rightBarButtonItem = doneBarButtonItem
-        let keyboardToolbar = UIToolbar(frame: CGRect(x: 0, y: 0, width: UIScreen.main.bounds.height, height: 50))
+        let keyboardToolbar = UIToolbar(frame: CGRect(x: 0, y: 0, width: UIScreen.main.bounds.height, height: Constants.defaultToolbarHeight))
         keyboardToolbar.barStyle = .default
         let doneBarKeyboardItem = UIBarButtonItem(title: "Done", style: .done, target: self, action: #selector(hideKeyboard))
         keyboardToolbar.items = [doneBarKeyboardItem]
@@ -280,7 +263,7 @@ private extension UploadPostViewController {
                 DispatchQueue.main.async {
                     if status == .authorized {
                         let allPhotosOptions = PHFetchOptions()
-                        allPhotosOptions.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false)]
+                        allPhotosOptions.sortDescriptors = [NSSortDescriptor(key: Constants.creationDateSortDescriptorKey, ascending: false)]
                         self.photosFromGallery = PHAsset.fetchAssets(with: allPhotosOptions)
                         self.photoPickerCollectionView.reloadData()
                     }
@@ -289,12 +272,12 @@ private extension UploadPostViewController {
         }
         
         let allPhotosOptions = PHFetchOptions()
-        allPhotosOptions.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false)]
+        allPhotosOptions.sortDescriptors = [NSSortDescriptor(key: Constants.creationDateSortDescriptorKey, ascending: false)]
         photosFromGallery = PHAsset.fetchAssets(with: allPhotosOptions)
         photoPickerCollectionView.reloadData()
         
         if !Reachability.isConnectedToNetwork() {
-            showToast(message: "Internet connection are not available")
+            showToast(message: Constants.internetConnectionErrorMessage)
         }
     }
     
@@ -310,7 +293,7 @@ private extension UploadPostViewController {
         cancelButton.isEnabled = false
         textView.text = Constants.textViewPlaceholder
         textView.textColor = secondary
-        textView.font = textView.font?.withSize(22)
+        textView.font = textView.font?.withSize(Constants.textViewFontSize)
         textView.backgroundColor = secondaryBackground
         selectedImagesCollectionView.backgroundColor = background
         toolBar.backgroundColor = background
@@ -325,19 +308,9 @@ private extension UploadPostViewController {
         textViewContainer.backgroundColor = secondaryBackground
     }
     
-    func subscribeKeyboardObserver() {
-        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
-    }
-    
-    func removeKeyboardObserver() {
-        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillHideNotification, object: nil)
-        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillShowNotification, object: nil)
-    }
-    
     func hidePickerView() {
-        self.photoPickerViewBottomConstraint.constant -= 150
-        UIView.animate(withDuration: 0.3, animations: {
+        self.photoPickerViewBottomConstraint.constant -= Constants.pickerViewConstraintMultiplier
+        UIView.animate(withDuration: Constants.pickerViewAnimationDuration, animations: {
             self.view.layoutIfNeeded()
             self.pickerCollectionView.alpha = 0
             self.endSelectPhotosButton.alpha = 0
@@ -351,8 +324,8 @@ private extension UploadPostViewController {
     }
     
     func presentPickerView() {
-        self.photoPickerViewBottomConstraint.constant += 150
-        UIView.animate(withDuration: 0.3, animations: {
+        self.photoPickerViewBottomConstraint.constant += Constants.pickerViewConstraintMultiplier
+        UIView.animate(withDuration: Constants.pickerViewAnimationDuration, animations: {
             self.view.layoutIfNeeded()
             self.pickerCollectionView.alpha = 1.0
             self.endSelectPhotosButton.alpha = 1.0
@@ -374,31 +347,15 @@ private extension UploadPostViewController {
     
     @objc func doneBarButtonItemPressed() {
         let message = textView.text
-        presenter?.uploadPost(message: message, completion: { (id) in
-        }, createPostCompletion: { (post) in
+        presenter?.uploadPost(message: message, completion: { [weak self] (id) in
+            guard let self = self else { return }
+        }, createPostCompletion: { [weak self] (post) in
+            guard let self = self else { return }
             self.presenter?.moveBack(newPost: post)
         })
     }
     
-    @objc func keyboardWillShow(notification: NSNotification) {
-        guard let info = notification.userInfo else { return }
-        guard let keyboardFrame: CGRect = (info[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue else { return }
-        //if photoPickerCollectionView.isHidden {
-        //    photoPickerViewBottomConstraint.constant = keyboardFrame.size.height - photoPickerCollectionView.bounds.height - 35
-        //} else {
-        //    photoPickerViewBottomConstraint.constant = keyboardFrame.size.height - 35
-        //}
-    }
-    
     @objc func hideKeyboard() {
         view.endEditing(true)
-    }
-    
-    @objc func keyboardWillHide(notification: NSNotification) {
-        //if photoPickerCollectionView.isHidden {
-        //    photoPickerViewBottomConstraint.constant = -photoPickerCollectionView.bounds.height
-        //} else {
-        //    photoPickerViewBottomConstraint.constant = 0
-        //}
     }
 }

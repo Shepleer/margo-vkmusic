@@ -13,12 +13,12 @@ enum CellType {
     case Tape
 }
 
-class ImagesCollectionViewFlowLayout: UICollectionViewFlowLayout {
+class GridCollectionViewFlowLayout: UICollectionViewFlowLayout {
     var cellType: CellType = .Grid
-    weak var vc: ImagesViewController?
+    weak var vc: GalleryViewController?
 }
 
-extension ImagesCollectionViewFlowLayout {
+extension GridCollectionViewFlowLayout {
     override func prepare() {
         super.prepare()
         guard collectionView != nil else { return }
@@ -39,7 +39,7 @@ extension ImagesCollectionViewFlowLayout {
 }
 
 class TapeCollectionViewFlowLayout: UICollectionViewFlowLayout {
-    weak var vc: ImagesViewController?
+    weak var vc: GalleryViewController?
     var isHeightCalculated = false
     
     override init() {

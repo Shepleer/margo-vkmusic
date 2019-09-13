@@ -48,11 +48,13 @@ extension ConformViewController: WKNavigationDelegate {
         let redirect = logInWebView.url!.relativeString
         let index = redirect.index(redirect.startIndex, offsetBy: 30)
         if redirect[...index] == Constants.redirectURL[...index] {
-            DispatchQueue.global().async {
+            DispatchQueue.global().async { [weak self] in
+                guard let self = self else { return }
                 self.presenter?.parseUserCredentials(redirectString: redirect)
             }
             let cookiesStore = webView.configuration.websiteDataStore.httpCookieStore
-            cookiesStore.getAllCookies { (cookies) in
+            cookiesStore.getAllCookies { [weak self] (cookies) in
+                guard let self = self else { return }
                 for cookie in cookies {
                     webView.configuration.websiteDataStore.httpCookieStore.delete(cookie, completionHandler: nil)
                 }

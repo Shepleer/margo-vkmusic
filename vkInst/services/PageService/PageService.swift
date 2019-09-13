@@ -23,10 +23,9 @@ class PageService {
     
     private var userId = UserDefaults.standard.string(forKey: "userId") ?? "Token has expired"
     private var token = UserDefaults.standard.string(forKey: "accessToken") ?? "Token has expired"
-    //private struct RequestConfigurations {
-        //static let userId = UserDefaults.standard.string(forKey: "userId") ?? "Token has expired"
-        //static let token = UserDefaults.standard.string(forKey: "accessToken") ?? "Token has expired"
-    //}
+    private struct RequestConfigurations {
+        static let offsetMultiplier = 60
+    }
     
     init(requestService: APIService) {
         self.requestService = requestService
@@ -41,10 +40,10 @@ extension PageService: PageServiceProtocol {
         isLoading = true
         let url = "https://api.vk.com/method/wall.get?count=60&offset=\(offset)&extended=1&access_token=\(token)&v=5.101"
         requestService.getData(urlStr: url, method: .get, body: nil, headers: nil, completion: { [weak self] (response: PostResponse?, err) in
-            if let strongSelf = self, let response = response, let count = response.count {
-                strongSelf.offset += 60
-                if count <= strongSelf.offset {
-                    strongSelf.isAllLoaded = true
+            if let self = self, let response = response, let count = response.count {
+                self.offset += RequestConfigurations.offsetMultiplier
+                if count <= self.offset {
+                    self.isAllLoaded = true
                 }
                 guard let posts = response.items?.filter({ $0.photos?.isEmpty == false || $0.gifs?.isEmpty == false }) else { return }
                 completion(posts)

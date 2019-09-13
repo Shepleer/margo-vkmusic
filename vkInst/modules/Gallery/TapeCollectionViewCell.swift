@@ -9,6 +9,24 @@
 import UIKit
 
 class TapeCollectionViewCell: UICollectionViewCell {
+    private struct Constants {
+        static let activeBigLikeSizeAnchor = CGFloat(70.0)
+        static let activeLikeSizeAnchor = CGFloat(25.0)
+        static let bigLikeAnimationDuration = 0.4
+        static let likeAnimationDuration = 0.15
+        static let animationSpringWithDamping = CGFloat(0.5)
+        static let selectLikeAnimationDelay = 0.1
+        static let animationLikeAlpha = CGFloat(0.5)
+        static let activeBigLikeAlpha = CGFloat(0.7)
+        static let hideBigLikeAnimationDuration = 0.2
+        static let summaryRowHeightMultiplier = CGFloat(5)
+        static let numberOfSections = 1
+        static let scaleEndAnimationDuration = 0.3
+        static let likesCountLabel = "likes"
+        static let fillHearthImage = UIImage(named: "HearthFill")
+        static let emptyHearthImage = UIImage(named: "HearthDeselected")
+    }
+    
     @IBOutlet weak var bigLikeWidthAnchor: NSLayoutConstraint!
     @IBOutlet weak var bigLikeHeightAnchor: NSLayoutConstraint!
     @IBOutlet weak var bigLikeImageView: UIImageView!
@@ -37,19 +55,6 @@ class TapeCollectionViewCell: UICollectionViewCell {
     @IBOutlet weak var viewsCountLabel: UILabel!
     @IBOutlet weak var avatarImageView: UIImageView!
     @IBOutlet weak var nicknameLabel: UILabel!
-    @IBOutlet weak var imageView: UIImageView! {
-        didSet {
-            imageView.layer.zPosition = -1
-            let doubleTapGesture = UITapGestureRecognizer(target: self, action: #selector(tapped(sender:)))
-            doubleTapGesture.numberOfTapsRequired = 2
-            self.addGestureRecognizer(doubleTapGesture)
-            let pinchGesture = UIPinchGestureRecognizer(target: self, action: #selector(scaled(sender:)))
-            self.addGestureRecognizer(pinchGesture)
-            let panGesture = UIPanGestureRecognizer(target: self, action: #selector(imageViewScrolled(sender:)))
-            panGesture.delegate = self
-            self.addGestureRecognizer(panGesture)
-        }
-    }
     @IBOutlet weak var likeButton: UIButton!
     @IBOutlet weak var likesCountLabel: UILabel!
     @IBOutlet weak var profileView: TapeCollectionViewCell!
@@ -60,18 +65,19 @@ class TapeCollectionViewCell: UICollectionViewCell {
     @IBOutlet weak var viewsCountImage: UIImageView!
     @IBOutlet weak var postMetadataView: UIView!
     
-    
-    let fillHearthImage = UIImage(named: "HearthFill")
-    let emptyHearthImage = UIImage(named: "HearthDeselected")
-    
-    weak var vc: ImagesViewController?
-    private var progress: DownloadProgress?
+    weak var vc: GalleryViewControllerCellDelegate?
+    private var downloadProgress: DownloadProgress?
     private var completion: LoadingCompletion?
     var data: Post? = nil
     private var isZooming = false
     private var originalImageCenter: CGPoint?
     private var isLoaded = false
     private var isHeightCalculated = false
+    private lazy var mediaItemWidth: CGFloat = {
+        let fullContentWidth = mediaContentStackView.bounds.width
+        let itemWidth = fullContentWidth / CGFloat(integerLiteral: pageControl.numberOfPages)
+        return itemWidth
+    }()
     
     override func awakeFromNib() {
         photoWidthAnchor.constant = UIScreen.main.bounds.width
@@ -90,7 +96,6 @@ class TapeCollectionViewCell: UICollectionViewCell {
         
         vc?.loadProfileInformation(setAvatar: { (img) in
             avatarImageView.image = img
-            avatarImageView.layer.cornerRadius = avatarImageView.frame.width / 2
         }, setName: { (label) in
             nicknameLabel.text = label
         })
@@ -146,7 +151,7 @@ class TapeCollectionViewCell: UICollectionViewCell {
             likeButton.isSelected = false
             vc?.removeLike(postId: postId, ownerId: ownerId, completion: { (likesCount) in
                 self.data?.likesCount = likesCount
-                self.likesCountLabel.text = "\(likesCount) likes"
+                self.likesCountLabel.text = "\(likesCount) \(Constants.likesCountLabel)"
             })
         } else {
             startSelectLikeAnimation()
@@ -154,7 +159,7 @@ class TapeCollectionViewCell: UICollectionViewCell {
             likeButton.isSelected = true
             vc?.setLike(postId: postId, ownerId: ownerId, completion: { (likesCount) in
                 self.data?.likesCount = likesCount
-                self.likesCountLabel.text = "\(likesCount) likes"
+                self.likesCountLabel.text = "\(likesCount) \(Constants.likesCountLabel)"
             })
         }
     }
@@ -166,23 +171,22 @@ class TapeCollectionViewCell: UICollectionViewCell {
             else { return }
         if isUserLikes {
             likeButton.isSelected = true
-            hearthImageView.image = fillHearthImage
+            hearthImageView.image = Constants.fillHearthImage
         } else {
             likeButton.isSelected = false
-            hearthImageView.image = emptyHearthImage
+            hearthImageView.image = Constants.emptyHearthImage
         }
         
-        likesCountLabel.text = "\(likesCount) likes"
+        likesCountLabel.text = "\(likesCount) \(Constants.likesCountLabel)"
         viewsCountLabel.text = "\(viewsCount)"
     }
     
     func configureUI() {
         let currentTheme = ThemeService.currentTheme()
         let primary = currentTheme.primaryColor
-        let secondary = currentTheme.secondaryColor
         let background = currentTheme.backgroundColor
-        let secondaryBackground = currentTheme.secondaryBackgroundColor
         
+        avatarImageView.layer.cornerRadius = avatarImageView.frame.width / 2
         commentButton.tintColor          = primary
         hearthImageView.tintColor        = primary
         viewsCountImage.tintColor        = primary
@@ -198,18 +202,11 @@ class TapeCollectionViewCell: UICollectionViewCell {
 }
 
 extension TapeCollectionViewCell: UIScrollViewDelegate {
-    var mediaItemWidth: CGFloat {
-        let fullContentWidth = mediaContentStackView.bounds.width
-        let itemWidth = fullContentWidth / CGFloat(integerLiteral: pageControl.numberOfPages)
-        return itemWidth
-    }
-    
     func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
-        if scrollView == mediaContentScrollView {
-            let contentOffset = scrollView.contentOffset.x
-            let currentPage = (Int(contentOffset) / Int(mediaItemWidth))
-            pageControl.currentPage = currentPage
-        }
+        guard scrollView == mediaContentScrollView else { return }
+        let contentOffset = scrollView.contentOffset.x
+        let currentPage = (Int(contentOffset) / Int(mediaItemWidth))
+        pageControl.currentPage = currentPage
     }
 }
 
@@ -242,10 +239,10 @@ private extension TapeCollectionViewCell {
                     vc?.setLike(postId: postId, ownerId: ownerId, completion: { (likesCount) in
                         self.data?.isUserLikes = true
                         self.likeButton.isSelected = true
-                        self.likesCountLabel.text = "\(likesCount) likes"
+                        self.likesCountLabel.text = "\(likesCount) \(Constants.likesCountLabel)"
                     })
                 }
-                startDoubleTapAnimation()
+                startBigLikeAppearAnimation()
                 startSelectLikeAnimation()
             }
         }
@@ -278,7 +275,7 @@ private extension TapeCollectionViewCell {
                 }
             } else if sender.state == .ended || sender.state == .failed || sender.state == .cancelled {
                 vc?.enableScrollView()
-                UIView.animate(withDuration: 0.3, animations: {
+                UIView.animate(withDuration: Constants.scaleEndAnimationDuration, animations: {
                     self.mediaContentStackView.transform = CGAffineTransform.identity
                     guard let center = self.originalImageCenter else { return }
                     self.mediaContentStackView.center = center
@@ -303,25 +300,24 @@ private extension TapeCollectionViewCell {
         }
     }
     
-    func startDoubleTapAnimation() {
-        bigLikeWidthAnchor.constant = 70
-        bigLikeHeightAnchor.constant = 70
-        UIView.animate(withDuration: 0.4,
+    func startBigLikeAppearAnimation() {
+        bigLikeWidthAnchor.constant = Constants.activeBigLikeSizeAnchor
+        bigLikeHeightAnchor.constant = Constants.activeBigLikeSizeAnchor
+        UIView.animate(withDuration: Constants.bigLikeAnimationDuration,
                        delay: 0,
-                       usingSpringWithDamping: 0.5,
+                       usingSpringWithDamping: Constants.animationSpringWithDamping,
                        initialSpringVelocity: 0.0,
                        options: .curveEaseOut,
                        animations: {
-                        self.bigLikeImageView.alpha = 0.7
+                        self.bigLikeImageView.alpha = Constants.activeBigLikeAlpha
                         self.layoutIfNeeded()
         }) { (complete) in
             if complete {
                 self.bigLikeHeightAnchor.constant = 0
                 self.bigLikeWidthAnchor.constant = 0
-                UIView.animateKeyframes(withDuration: 0.2,
-                                        delay: 0.5,
-                                        options: .calculationModeLinear,
-                                        animations: {
+                UIView.animateKeyframes(withDuration: Constants.hideBigLikeAnimationDuration,
+                                        delay: Constants.selectLikeAnimationDelay,
+                                        options: .calculationModeLinear, animations: {
                                             self.bigLikeImageView.alpha = 0
                                             self.layoutIfNeeded()
                 }, completion: { (complete) in
@@ -330,24 +326,25 @@ private extension TapeCollectionViewCell {
         }
     }
     
+    
     func startDeselectLikeAnimation() {
         hearthImageViewWidthAnchor.constant = 0
         hearthImageViewHeightAnchor.constant = 0
-        UIView.animate(withDuration: 0.15,
-                       delay: 0.1,
-                       usingSpringWithDamping: 0.5,
+        UIView.animate(withDuration: Constants.likeAnimationDuration,
+                       delay: Constants.selectLikeAnimationDelay,
+                       usingSpringWithDamping: Constants.animationSpringWithDamping,
                        initialSpringVelocity: 0.0,
                        options: .curveEaseOut,
                        animations: {
                         self.layoutIfNeeded()
                         self.hearthImageView.alpha = 0
         }) { (complete) in
-            self.hearthImageView.image = self.emptyHearthImage
-            self.hearthImageViewHeightAnchor.constant = 25
-            self.hearthImageViewWidthAnchor.constant = 25
-            UIView.animate(withDuration: 0.15,
+            self.hearthImageView.image = Constants.emptyHearthImage
+            self.hearthImageViewHeightAnchor.constant = Constants.activeLikeSizeAnchor
+            self.hearthImageViewWidthAnchor.constant = Constants.activeLikeSizeAnchor
+            UIView.animate(withDuration: Constants.likeAnimationDuration,
                            delay: 0.0,
-                           usingSpringWithDamping: 0.5,
+                           usingSpringWithDamping: Constants.animationSpringWithDamping,
                            initialSpringVelocity: 0.0,
                            options: .curveEaseOut,
                            animations: {
@@ -362,21 +359,21 @@ private extension TapeCollectionViewCell {
     func startSelectLikeAnimation() {
         hearthImageViewWidthAnchor.constant = 0
         hearthImageViewHeightAnchor.constant = 0
-        UIView.animate(withDuration: 0.15,
-                       delay: 0.1,
-                       usingSpringWithDamping: 0.5,
+        UIView.animate(withDuration: Constants.likeAnimationDuration,
+                       delay: Constants.selectLikeAnimationDelay,
+                       usingSpringWithDamping: Constants.animationSpringWithDamping,
                        initialSpringVelocity: 0.0,
                        options: .curveEaseOut,
                        animations: {
                         self.layoutIfNeeded()
-                        self.hearthImageView.alpha = 0.5
+                        self.hearthImageView.alpha = Constants.animationLikeAlpha
         }) { (complete) in
-            self.hearthImageView.image = self.fillHearthImage
-            self.hearthImageViewHeightAnchor.constant = 25
-            self.hearthImageViewWidthAnchor.constant = 25
-            UIView.animate(withDuration: 0.15,
+            self.hearthImageView.image = Constants.fillHearthImage
+            self.hearthImageViewHeightAnchor.constant = Constants.activeLikeSizeAnchor
+            self.hearthImageViewWidthAnchor.constant = Constants.activeLikeSizeAnchor
+            UIView.animate(withDuration: Constants.likeAnimationDuration,
                            delay: 0.0,
-                           usingSpringWithDamping: 0.5,
+                           usingSpringWithDamping: Constants.animationSpringWithDamping,
                            initialSpringVelocity: 0.0,
                            options: .curveEaseOut,
                            animations: {

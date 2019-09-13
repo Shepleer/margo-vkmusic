@@ -10,7 +10,10 @@ import UIKit
 import WebKit
 
 class LogInViewController: UIViewController {
-
+    private struct Constants {
+        static let buttonCornerRadius = CGFloat(14)
+        static let buttonBorderWidth = CGFloat(1)
+    }
     
     @IBOutlet var contentGradientView: GradientBackgroundView!
     @IBOutlet weak var logInButton: UIButton!
@@ -19,7 +22,6 @@ class LogInViewController: UIViewController {
     
     var presenter: LogInPresenter?
     let currentTheme = ThemeService.currentTheme()
-    let aperture = UIImage(named: "Aperture")?.withRenderingMode(.alwaysTemplate)
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -30,7 +32,7 @@ class LogInViewController: UIViewController {
         ConfigureUI()
     }
     
-    @IBAction func LogInButtonPressed(_ sender: UIButton) {
+    @IBAction func logInButtonPressed(_ sender: UIButton) {
         presenter?.LogIn()
     }
 }
@@ -43,12 +45,11 @@ private extension LogInViewController {
         let backgroud = currentTheme.backgroundColor
         contentGradientView.setGradientBackground(firstColor: secondary, secondColor: backgroud)
         appNameLabel.textColor = primary
-        logInButton.layer.cornerRadius = 14
-        logInButton.layer.borderWidth = 1
+        logInButton.layer.cornerRadius = Constants.buttonCornerRadius
+        logInButton.layer.borderWidth = Constants.buttonBorderWidth
         logInButton.layer.borderColor = primary.cgColor
         logInButton.setTitleColor(primary, for: .normal)
         iconImageView.tintColor = currentTheme.primaryColor
-        iconImageView.image = aperture
     }
 }
 

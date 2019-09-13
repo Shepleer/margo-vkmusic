@@ -1,5 +1,5 @@
 //
-//  BigPhotoPickerFlowLayout.swift
+//  SmallPhotoPickerFlowLayout.swift
 //  vkInst
 //
 //  Created by Ivan Shpileuski on 8/14/19.
@@ -8,7 +8,13 @@
 
 import UIKit
 
-class BigPhotoPickerFlowLayout: UICollectionViewFlowLayout {
+class photoPickerFlowLayout: UICollectionViewFlowLayout {
+    private struct Constants {
+        static let itemSize = CGSize(width: 120, height: 120)
+        static let itemRightEdgeInset = CGFloat(10)
+    }
+    
+    
     override init() {
         super.init()
         scrollDirection = .horizontal
@@ -22,13 +28,9 @@ class BigPhotoPickerFlowLayout: UICollectionViewFlowLayout {
     override func prepare() {
         super.prepare()
         guard collectionView != nil else { return }
-        let size = CGSize(width: 119 * 1.5, height: 357)
-        guard let width = collectionView?.bounds.width else { return }
-        itemSize = size
-        sectionInset = UIEdgeInsets(top: self.minimumInteritemSpacing, left: 0.0, bottom: 0.0, right: 0.0)
+        itemSize = Constants.itemSize
         sectionInsetReference = .fromSafeArea
-        minimumLineSpacing = 1
-        minimumInteritemSpacing = 1
-        footerReferenceSize = CGSize(width: (collectionView?.frame.width)!, height: 50.0)
+        minimumInteritemSpacing = 0
+        sectionInset = UIEdgeInsets(top: 0.0, left: 10, bottom: 0.0, right: Constants.itemRightEdgeInset)
     }
 }

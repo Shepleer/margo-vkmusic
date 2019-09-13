@@ -33,7 +33,7 @@ class DownloadService: NSObject {
 extension DownloadService: DownloadServiceProtocol {
     func downloadImage(url: String, progress: @escaping DownloadProgress, completion: @escaping PhotoLoadingCompletion) {
         queue.sync { [weak self] in
-            guard let strongSelf = self, let url = URL(string: url) else { return }
+            guard let self = self, let url = URL(string: url) else { return }
             let req = URLRequest(url: url)
             if let res = URLCache.shared.cachedResponse(for: req) {
                 let data = res.data
@@ -41,14 +41,14 @@ extension DownloadService: DownloadServiceProtocol {
                     completion(img, url.absoluteString)
                 } else {
                     let strUrl = url.absoluteString
-                    guard let task = strongSelf.session?.downloadTask(with: url) else { return }
-                    strongSelf.activeDownloads[strUrl] = (completion, progress, task) as (PhotoLoadingCompletion, DownloadProgress, Task)
+                    guard let task = self.session?.downloadTask(with: url) else { return }
+                    self.activeDownloads[strUrl] = (completion, progress, task) as (PhotoLoadingCompletion, DownloadProgress, Task)
                     task.resume()
                 }
             } else {
                 let strUrl = url.absoluteString
-                guard let task = strongSelf.session?.downloadTask(with: url) else { return }
-                strongSelf.activeDownloads[strUrl] = (completion, progress, task) as (PhotoLoadingCompletion, DownloadProgress, Task)
+                guard let task = self.session?.downloadTask(with: url) else { return }
+                self.activeDownloads[strUrl] = (completion, progress, task) as (PhotoLoadingCompletion, DownloadProgress, Task)
                 task.resume()
             }
         }
@@ -56,7 +56,7 @@ extension DownloadService: DownloadServiceProtocol {
     
     func downloadGif(url: String, progress: @escaping DownloadProgress, completion: @escaping PhotoLoadingCompletion) {
         queue.sync { [weak self] in
-            guard let strongSelf = self , let url = URL(string: url) else { return }
+            guard let self = self , let url = URL(string: url) else { return }
             let req = URLRequest(url: url)
             if let res = URLCache.shared.cachedResponse(for: req) {
                 let data = res.data
@@ -64,14 +64,14 @@ extension DownloadService: DownloadServiceProtocol {
                     completion(img, url.absoluteString)
                 } else {
                     let strUrl = url.absoluteString
-                    guard let task = strongSelf.session?.downloadTask(with: url) else { return }
-                    strongSelf.activeDownloads[strUrl] = (completion, progress, task) as (PhotoLoadingCompletion, DownloadProgress, Task)
+                    guard let task = self.session?.downloadTask(with: url) else { return }
+                    self.activeDownloads[strUrl] = (completion, progress, task) as (PhotoLoadingCompletion, DownloadProgress, Task)
                     task.resume()
                 }
             } else {
                 let strUrl = url.absoluteString
-                guard let task = strongSelf.session?.downloadTask(with: url) else { return }
-                strongSelf.activeDownloads[strUrl] = (completion, progress, task) as (PhotoLoadingCompletion, DownloadProgress, Task)
+                guard let task = self.session?.downloadTask(with: url) else { return }
+                self.activeDownloads[strUrl] = (completion, progress, task) as (PhotoLoadingCompletion, DownloadProgress, Task)
                 task.resume()
             }
         }
@@ -79,10 +79,10 @@ extension DownloadService: DownloadServiceProtocol {
     
     func cancelDownload(image: Image) {
         queue.async { [weak self] in
-            guard let strongSelf = self, let url = image.url else { return }
-            if let task = strongSelf.activeDownloads[url]?.task {
+            guard let self = self, let url = image.url else { return }
+            if let task = self.activeDownloads[url]?.task {
                 task.cancel()
-                strongSelf.activeDownloads.removeValue(forKey: url)
+                self.activeDownloads.removeValue(forKey: url)
             }
         }
     }
@@ -100,9 +100,9 @@ extension DownloadService: URLSessionDownloadDelegate {
             guard let img = UIImage(data: data) else { return }
             
             queue.async { [weak self] in
-                guard let strongSelf = self, let req = downloadTask.originalRequest,
+                guard let self = self, let req = downloadTask.originalRequest,
                     let url = downloadTask.originalRequest?.url?.absoluteString else { return }
-                if let comp = strongSelf.activeDownloads[url]?.completion,
+                if let comp = self.activeDownloads[url]?.completion,
                     let response = downloadTask.response {
                     if URLCache.shared.cachedResponse(for: req) == nil {
                         URLCache.shared.storeCachedResponse(CachedURLResponse(response: response, data: data), for: req)
@@ -110,7 +110,7 @@ extension DownloadService: URLSessionDownloadDelegate {
                     DispatchQueue.main.async {
                         comp(img, url)
                     }
-                    strongSelf.activeDownloads.removeValue(forKey: url)
+                    self.activeDownloads.removeValue(forKey: url)
                 }
             }
         } catch {
@@ -122,8 +122,8 @@ extension DownloadService: URLSessionDownloadDelegate {
         queue.async { [weak self] in
         let progress = Float(totalBytesWritten) / Float(totalBytesExpectedToWrite)
         let url = downloadTask.originalRequest?.url
-            guard let strongSelf = self, let absoluteUrl = url?.absoluteString else { return }
-            if let comp = strongSelf.activeDownloads[absoluteUrl]?.progress {
+            guard let self = self, let absoluteUrl = url?.absoluteString else { return }
+            if let comp = self.activeDownloads[absoluteUrl]?.progress {
                 DispatchQueue.main.async {
                     comp(progress)
                 }

@@ -8,14 +8,14 @@
 
 import Foundation
 
-protocol DetailPhotoRouterProtocol {
+protocol DetailPostRouterProtocol {
     
 }
 
-class DetailPhotoRouter {
-    weak var vc: DetailPhotoViewController?
+class DetailPostRouter {
+    weak var vc: DetailPostViewController?
 }
 
-extension DetailPhotoRouter: DetailPhotoRouterProtocol {
+extension DetailPostRouter: DetailPostRouterProtocol {
     
 }

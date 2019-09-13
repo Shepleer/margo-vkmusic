@@ -29,7 +29,7 @@ class UploadPostPresenter {
     weak var vc: UploadPostViewControllerProtocol?
     var uploadService: UploadServiceProtocol?
     var router: UploadPostRouterProtocol?
-    var userService: UserService?
+    var userService: UserServiceProtocol?
     var uploadImages = [UploadImage]()
     var requestManager = PHImageManager()
 }
@@ -87,10 +87,6 @@ extension UploadPostPresenter: UploadPostPresenterProtocol {
         }
     }
     
-    //func cancelUpload(fileName: String, completion: @escaping CancelCompletion) {
-        //uploadService?.cancelUpload(fileName: fileName, completion: completion)
-    //}
-    
     func cancelUpload(index: Int) {
         let fileName = uploadImages[index].fileName
         uploadService?.cancelUpload(fileName: fileName)
@@ -108,28 +104,28 @@ extension UploadPostPresenter: UploadPostPresenterProtocol {
     
     func requestData(uploadImage: UploadImage, options: PHImageRequestOptions) {
         requestManager.requestImageData(for: uploadImage.asset, options: options) { [weak self] (data, str, orientation, nil) in
-            guard let strongSelf = self,
+            guard let self = self,
                 let data = data else { return }
-            strongSelf.uploadRequestedData(data: data, uploadImage: uploadImage)
+            self.uploadRequestedData(data: data, uploadImage: uploadImage)
         }
     }
     
     func uploadRequestedData(data: Data, uploadImage: UploadImage) {
         self.uploadService?.transferPhotosToServer(imageData: data, fileName: uploadImage.fileName, progress: { [weak self] (progress) in
-            guard let strongSelf = self,
-                let i = strongSelf.uploadImages.firstIndex(where: { $0.fileName == uploadImage.fileName }) else { return }
-            strongSelf.uploadImages[i].progress = progress
-            strongSelf.vc?.setProgress(at: i, progress: progress)
+            guard let self = self,
+                let i = self.uploadImages.firstIndex(where: { $0.fileName == uploadImage.fileName }) else { return }
+            self.uploadImages[i].progress = progress
+            self.vc?.setProgress(at: i, progress: progress)
         }, completion: { [weak self] (id) in
             print("\(uploadImage.fileName) ----- \(id)")
-            guard let strongSelf = self,
-                let i = strongSelf.uploadImages.firstIndex(where: { $0.fileName == uploadImage.fileName }) else { return }
-            strongSelf.uploadImages[i].id = id
+            guard let self = self,
+                let i = self.uploadImages.firstIndex(where: { $0.fileName == uploadImage.fileName }) else { return }
+            self.uploadImages[i].id = id
         }, cancel: { [weak self] (isCanceled) in
-            guard let strongSelf = self,
-                let i = strongSelf.uploadImages.firstIndex(where: { $0.fileName == uploadImage.fileName }) else { return }
-            strongSelf.uploadImages.remove(at: i)
-            strongSelf.vc?.deleteCell(at: i)
+            guard let self = self,
+                let i = self.uploadImages.firstIndex(where: { $0.fileName == uploadImage.fileName }) else { return }
+            self.uploadImages.remove(at: i)
+            self.vc?.deleteCell(at: i)
         })
     }
     
@@ -145,8 +141,6 @@ extension UploadPostPresenter: UploadPostPresenterProtocol {
     func pickComplete() {
         
     }
-    
-
 }
 
 private extension UploadPostPresenter {

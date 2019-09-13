@@ -22,7 +22,7 @@ extension SettingsRouter: SettingsRouterProtocol {
         guard let vc = vc,
             let viewController = Builder.shared.buildLogInScreen(),
             let window = UIApplication.shared.keyWindow,
-            let imagesViewController = vc.navigationController?.viewControllers.first as? ImagesViewController,
+            let imagesViewController = vc.navigationController?.viewControllers.first as? GalleryViewController,
             let rootViewController = window.rootViewController else { return }
         imagesViewController.viewControllerWillReleased()
         vc.view.frame = rootViewController.view.frame

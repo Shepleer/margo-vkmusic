@@ -216,10 +216,10 @@
             </objects>
             <point key="canvasLocation" x="1857.9710144927537" y="-625.44642857142856"/>
         </scene>
-        <!--Images View Controller-->
+        <!--Gallery View Controller-->
         <scene sceneID="MnK-T2-HdI">
             <objects>
-                <viewController storyboardIdentifier="ImagesVC" id="KDQ-Ss-10J" customClass="ImagesViewController" customModule="vkInst" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="ImagesVC" id="KDQ-Ss-10J" customClass="GalleryViewController" customModule="vkInst" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="nuv-c8-fii">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -233,7 +233,7 @@
                                     <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleAspectFill" scrollEnabled="NO" pagingEnabled="YES" showsHorizontalScrollIndicator="NO" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="JV8-ag-wqt">
                                         <rect key="frame" x="0.0" y="258" width="414" height="638"/>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                        <collectionViewLayout key="collectionViewLayout" id="TvL-h3-EnD" customClass="ImagesCollectionViewFlowLayout" customModule="vkInst" customModuleProvider="target"/>
+                                        <collectionViewLayout key="collectionViewLayout" id="TvL-h3-EnD" customClass="GridCollectionViewFlowLayout" customModule="vkInst" customModuleProvider="target"/>
                                         <cells>
                                             <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleAspectFill" insetsLayoutMarginsFromSafeArea="NO" reuseIdentifier="bigCell" id="0FY-K8-3SC" customClass="TapeCollectionViewCell" customModule="vkInst" customModuleProvider="target">
                                                 <rect key="frame" x="0.0" y="0.0" width="414" height="500"/>
@@ -258,7 +258,7 @@
                                                                     </userDefinedRuntimeAttributes>
                                                                 </imageView>
                                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Superlong label bla bla bla" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Y3a-Bi-qNf">
-                                                                    <rect key="frame" x="75.000000000000014" y="26" width="180.33333333333337" height="18"/>
+                                                                    <rect key="frame" x="74.999999999999986" y="26" width="180.66666666666663" height="18"/>
                                                                     <fontDescription key="fontDescription" type="system" pointSize="15"/>
                                                                     <nil key="textColor"/>
                                                                     <nil key="highlightedColor"/>
@@ -430,7 +430,7 @@
                                                     <outlet property="viewsCountLabel" destination="XB0-dv-AO3" id="XJq-Lk-RK8"/>
                                                 </connections>
                                             </collectionViewCell>
-                                            <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="imgCell" id="q7d-uU-lCg" customClass="ImageCollectionViewCell" customModule="vkInst" customModuleProvider="target">
+                                            <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="imgCell" id="q7d-uU-lCg" customClass="GridCollectionViewCell" customModule="vkInst" customModuleProvider="target">
                                                 <rect key="frame" x="131" y="510" width="152" height="149"/>
                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                                 <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO">
@@ -460,7 +460,7 @@
                                                 </constraints>
                                                 <size key="customSize" width="152" height="149"/>
                                                 <connections>
-                                                    <outlet property="DeckImageView" destination="Pq4-xB-bLN" id="cJH-5U-Cea"/>
+                                                    <outlet property="deckImageView" destination="Pq4-xB-bLN" id="cJH-5U-Cea"/>
                                                     <outlet property="imageView" destination="iXt-74-wwa" id="UKp-QT-gTy"/>
                                                 </connections>
                                             </collectionViewCell>
@@ -714,10 +714,10 @@
             </objects>
             <point key="canvasLocation" x="1855.072463768116" y="94.419642857142847"/>
         </scene>
-        <!--Detail Photo View Controller-->
+        <!--Detail Post View Controller-->
         <scene sceneID="yy6-Gg-nv1">
             <objects>
-                <viewController storyboardIdentifier="detailVC" id="ggj-1e-Lll" customClass="DetailPhotoViewController" customModule="vkInst" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="detailVC" id="ggj-1e-Lll" customClass="DetailPostViewController" customModule="vkInst" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="tmL-i4-icJ">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -821,7 +821,7 @@
                                                 <nil key="highlightedColor"/>
                                             </label>
                                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="Eye" translatesAutoresizingMaskIntoConstraints="NO" id="wfJ-UB-7s8">
-                                                <rect key="frame" x="354" y="35" width="16" height="16"/>
+                                                <rect key="frame" x="349" y="40" width="21" height="11"/>
                                             </imageView>
                                         </subviews>
                                         <color key="backgroundColor" red="0.12941176470588234" green="0.17254901960784313" blue="0.21568627450980393" alpha="1" colorSpace="calibratedRGB"/>
@@ -878,7 +878,7 @@
                                         <rect key="frame" x="0.0" y="520" width="414" height="211"/>
                                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <prototypes>
-                                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="commentCell" rowHeight="69" id="RWB-pL-1ht" customClass="DetailPhotoTableViewCell" customModule="vkInst" customModuleProvider="target">
+                                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="commentCell" rowHeight="69" id="RWB-pL-1ht" customClass="DetailPostTableViewCell" customModule="vkInst" customModuleProvider="target">
                                                 <rect key="frame" x="0.0" y="28" width="414" height="69"/>
                                                 <autoresizingMask key="autoresizingMask"/>
                                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="RWB-pL-1ht" id="OKa-Gu-NKY">
@@ -934,7 +934,7 @@
                                 <rect key="frame" x="0.0" y="819" width="414" height="32"/>
                                 <subviews>
                                     <textField opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="249" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Comment field" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="xpm-Ug-IxS">
-                                        <rect key="frame" x="15" y="0.0" width="358" height="32"/>
+                                        <rect key="frame" x="15" y="0.0" width="344" height="32"/>
                                         <nil key="textColor"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                         <textInputTraits key="textInputTraits"/>
@@ -943,7 +943,7 @@
                                         </connections>
                                     </textField>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="iBc-YS-98m">
-                                        <rect key="frame" x="383" y="0.0" width="16" height="32"/>
+                                        <rect key="frame" x="369" y="0.0" width="30" height="32"/>
                                         <state key="normal" image="Airplane"/>
                                         <connections>
                                             <action selector="sendCommentButtonTapped:" destination="ggj-1e-Lll" eventType="touchUpInside" id="jgQ-cO-WcS"/>
@@ -1348,7 +1348,7 @@
                                             <rect key="frame" x="42" y="8" width="30" height="30"/>
                                             <subviews>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="10" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ac7-RE-sy3">
-                                                    <rect key="frame" x="6" y="5" width="18" height="20.333333333333332"/>
+                                                    <rect key="frame" x="6" y="5" width="18" height="20"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     <nil key="highlightedColor"/>
@@ -1411,7 +1411,7 @@
                                     <color key="titleColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 </state>
                                 <connections>
-                                    <action selector="LogInButtonPressed:" destination="mGO-2e-ym0" eventType="touchUpInside" id="vzk-sY-iFN"/>
+                                    <action selector="logInButtonPressed:" destination="mGO-2e-ym0" eventType="touchUpInside" id="s3a-BK-Vz8"/>
                                 </connections>
                             </button>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Photos" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="muo-r6-l4f">

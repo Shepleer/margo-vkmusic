@@ -8,12 +8,16 @@
 
 import UIKit
 
-class ImageCollectionViewCell: UICollectionViewCell {
+class GridCollectionViewCell: UICollectionViewCell {
+    private struct Constants {
+        static let photoAppearAnimationDuration = 0.1
+    }
+    
     
     @IBOutlet weak var imageView: UIImageView!
-    @IBOutlet weak var DeckImageView: UIImageView!
+    @IBOutlet weak var deckImageView: UIImageView!
     
-    weak var vc: ImagesViewController?
+    weak var vc: GalleryViewControllerCellDelegate?
     var progress: DownloadProgress?
     var completion: LoadingCompletion?
     var data: Post? = nil
@@ -26,21 +30,21 @@ class ImageCollectionViewCell: UICollectionViewCell {
         if let photosCount = postData.photos?.count,
             let gifsCount = postData.gifs?.count {
             if (photosCount + gifsCount) > 1 {
-                DeckImageView.isHidden = false
+                deckImageView.isHidden = false
             } else {
-                DeckImageView.isHidden = true
+                deckImageView.isHidden = true
             }
         }
         data = postData
         imageView.alpha = 0
-        DeckImageView.tintColor = UIColor.white
+        deckImageView.tintColor = UIColor.white
 
         if let url = postData.gifs?.first?.url {
             loadGif(url: url, progress: { (progress) in
             }) { (gif, url) in
                 if url == self.data?.gifs?.first?.url {
                     self.imageView.image = gif
-                    UIView.animate(withDuration: 0.1, animations: {
+                    UIView.animate(withDuration: Constants.photoAppearAnimationDuration, animations: {
                         self.imageView.alpha = 1
                     })
                     self.imageView.startAnimating()
@@ -51,7 +55,7 @@ class ImageCollectionViewCell: UICollectionViewCell {
             }) { (img, url) in
                 if url == self.data?.photos?.first?.url {
                     self.imageView.image = img
-                    UIView.animate(withDuration: 0.1, animations: {
+                    UIView.animate(withDuration: Constants.photoAppearAnimationDuration, animations: {
                         self.imageView.alpha = 1
                     })
                 }

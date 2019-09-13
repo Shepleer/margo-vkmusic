@@ -12,6 +12,11 @@ import Photos
 
 class UploadPostSelectedCell: UICollectionViewCell {
     
+    private struct Constants {
+        static let targetSize = CGSize(width: 120, height: 120)
+        static let itemCornerRadius = CGFloat(10)
+    }
+    
     @IBOutlet weak var crossImageView: UIImageView!
     @IBOutlet weak var cancelView: ProgressIndicatorView!
     @IBOutlet weak var imageToUpload: UIImageView!
@@ -26,36 +31,18 @@ class UploadPostSelectedCell: UICollectionViewCell {
     
     override func awakeFromNib() {
         super.awakeFromNib()
-        imageToUpload.layer.cornerRadius = 10
+        imageToUpload.layer.cornerRadius = Constants.itemCornerRadius
         cancelView.rotate()
         crossImageView.tintColor = ThemeService.currentTheme().primaryColor
     }
     
     func configureCell() {
-        //guard id == nil else { return }
         guard let asset = asset else { fatalError() }
-        requestManager.requestImage(for: asset, targetSize: CGSize(width: 120, height: 120), contentMode: .aspectFill, options: nil) { (image, nil) in
+        requestManager.requestImage(for: asset, targetSize: Constants.targetSize, contentMode: .aspectFill, options: nil) { (image, nil) in
             if self.identifier == asset.localIdentifier {
                 self.imageToUpload.image = image
             }
         }
-        
-        //MARK: BUG FIX COMMENT
-        
-        //let deliveryMode = PHImageRequestOptionsDeliveryMode.highQualityFormat
-        //let requestOptions = PHImageRequestOptions()
-        //requestOptions.deliveryMode = deliveryMode
-//        requestManager.requestImageData(for: asset, options: requestOptions) { (data, str, orientation, nil) in
-//            guard let data = data else { return }
-//            let fileName = UUID().uuidString
-//            self.fileName = fileName
-//            self.vc?.startUploadPhoto(data: data, fileName: fileName, progress: { (progress) in
-//                self.cancelView.setProgressWithAnimation(value: progress)
-//            }, completion: { (id) in
-//                self.id = id
-//                self.vc?.photoDidUpload(id: id)
-//            })
-//        }
     }
     
     func updateProgress(progress: Float) {
@@ -65,9 +52,4 @@ class UploadPostSelectedCell: UICollectionViewCell {
     func uploadComplete() {
         cancelView.isHidden = true
     }
-    
-    //func removeItem(completion: @escaping CancelCompletion) {
-    //    guard let fileName = fileName else { return }
-    //    vc?.cancelUpload(id: id, fileName: fileName)
-    //}
 }

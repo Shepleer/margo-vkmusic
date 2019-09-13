@@ -8,7 +8,7 @@
 
 import UIKit
 
-class DetailPhotoTableViewCell: UITableViewCell {
+class DetailPostTableViewCell: UITableViewCell {
 
     @IBOutlet weak var commentLabel: UILabel!
     

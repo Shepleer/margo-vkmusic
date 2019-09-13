@@ -39,9 +39,9 @@ class Builder {
     
     func createGalleryVC() -> UIViewController? {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
-        guard let vc = storyboard.instantiateViewController(withIdentifier: "ImagesVC") as? ImagesViewController else { return nil }
+        guard let vc = storyboard.instantiateViewController(withIdentifier: "ImagesVC") as? GalleryViewController else { return nil }
         let nav = UINavigationController(rootViewController: vc)
-        let presenter = ImagePresenter()
+        let presenter = GalleryPresenter()
         let router = ImagesRouter()
         let downloadService = buildDownloadService()
         let userService = UserService(requestService: buildAPIService())
@@ -59,14 +59,14 @@ class Builder {
     
     func buildDetailPhotoScreen(data: Post, currentPage: Int, profile: User) -> UIViewController? {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
-        guard let vc = storyboard.instantiateViewController(withIdentifier: "detailVC") as? DetailPhotoViewController else { return nil }
+        guard let vc = storyboard.instantiateViewController(withIdentifier: "detailVC") as? DetailPostViewController else { return nil }
         vc.configureController(postData: data, currentPage: currentPage, profile: profile)
-        let presenter = DetailPhotoPresenter()
-        let router = DetailPhotoRouter()
+        let presenter = DetailPostPresenter()
+        let router = DetailPostRouter()
         let pagingService = CommentsPageService(requestService: buildAPIService())
         let userService = UserService(requestService: buildAPIService())
         vc.presenter = presenter
-        presenter.vc = vc
+        presenter.viewController = vc
         presenter.userService = userService
         presenter.pagingService = pagingService
         presenter.downloadService = buildDownloadService()

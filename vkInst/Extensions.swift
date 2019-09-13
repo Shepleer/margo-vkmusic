@@ -9,10 +9,6 @@
 import UIKit
 import ImageIO
 
-extension UIView {
-    
-}
-
 extension UIViewController {
     func showToast(message: String) {
         let toastLabel = UILabel(frame: CGRect(x: view.center.x, y: view.center.y, width: 200, height: 50))
