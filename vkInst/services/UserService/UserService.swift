@@ -23,6 +23,16 @@ protocol UserServiceProtocol {
 }
 
 class UserService {
+    private struct RequestConfigurations {
+        static let getUserProfileUrlTemplate = "https://api.vk.com/method/users.get?fields=photo_100,counters,screen_name&access_token=[token]&v=5.101"
+        static let fetchPhotoCommentsUrlTemplate = "https://api.vk.com/method/wall.getComments?owner_id=[ownerId]&post_id=[postId]&need_likes=1&offset=0&count=20&sort=asc&preview_lenght=0&extended=1&access_token=[token]&v=5.101"
+        static let createCommentUrlTemplate = "https://api.vk.com/method/wall.createComment?owner_id=[ownerId]&post_id=[postId]&message=[message]&access_token=[token]&v=5.101"
+        static let removeLikeUrlTemplate = "https://api.vk.com/method/likes.delete?type=post&owner_id=[ownerId]&item_id=[postId]&access_token=[token]&v=5.101"
+        static let setLikeUrlTemplate = "https://api.vk.com/method/likes.add?type=post&owner_id=[ownerId]&item_id=[postId]&access_token=[token]&v=5.101"
+        static let getPostUrlTemplate = "https://api.vk.com/method/wall.getById?posts=[userId]_[id]&access_token=[token]&v=5.101"
+        static let createPostUrlTemplate = "https://api.vk.com/method/wall.post?[userMessage][attachments]&access_token=[token]&v=5.101"
+    }
+    
     private var requestService: APIService
     private var user: User?
     private let userId = UserDefaults.standard.string(forKey: "userId") ?? "Token has expired"
@@ -38,7 +48,8 @@ extension UserService: UserServiceProtocol {
         if let user = user {
             completion(user)
         } else {
-            let url = "https://api.vk.com/method/users.get?fields=photo_100,counters,screen_name&access_token=\(token)&v=5.101"
+            let url = RequestConfigurations.getUserProfileUrlTemplate
+                        .replacingOccurrences(of: "[token]", with: token)
             requestService.getData(urlStr: url, method: .get, completion: { [weak self] (user: [User]?, err) in
                 guard let self = self,
                     let user = user?.first else { return }
@@ -49,7 +60,10 @@ extension UserService: UserServiceProtocol {
     }
     
     func fetchPostComments(postId: Int, ownerId: Int, completion: @escaping CommentsCompletion) {
-        let url = "https://api.vk.com/method/wall.getComments?owner_id=\(ownerId)&post_id=\(postId)&need_likes=1&offset=0&count=20&sort=asc&preview_lenght=0&extended=1&access_token=\(token)&v=5.101"
+        let url = RequestConfigurations.fetchPhotoCommentsUrlTemplate
+                    .replacingOccurrences(of: "[ownerId]", with: "\(ownerId)")
+                    .replacingOccurrences(of: "[postId]", with: "\(postId)")
+                    .replacingOccurrences(of: "[token]", with: token)
         requestService.getData(urlStr: url, method: .get, completion: { [weak self] (response: CommentsResponse?, err) in
             guard let self = self,
                 let response = response else { return }
@@ -58,13 +72,20 @@ extension UserService: UserServiceProtocol {
     }
     
     func createComment(postId: Int, ownerId: Int, message: String) {
-        let url = "https://api.vk.com/method/wall.createComment?owner_id=\(ownerId)&post_id=\(postId)&message=\(message)&access_token=\(token)&v=5.101"
+        let url = RequestConfigurations.createCommentUrlTemplate
+                    .replacingOccurrences(of: "[ownerId]", with: "\(ownerId)")
+                    .replacingOccurrences(of: "[postId]", with: "\(postId)")
+                    .replacingOccurrences(of: "[message]", with: "\(message)")
+                    .replacingOccurrences(of: "[token]", with: token)
         requestService.getData(urlStr: url, method: .get, completion: { [weak self] (commId: SendCommentResponse?, err) in })
     }
     
     func removeLike(postId: Int, ownerId: Int, completion: @escaping LikesCountCompletion) {
-        let likesDelete_photos = "https://api.vk.com/method/likes.delete?type=post&owner_id=\(ownerId)&item_id=\(postId)&access_token=\(token)&v=5.101"
-        requestService.getData(urlStr: likesDelete_photos, method: .get, body: nil, headers: nil, completion: { [weak self] (likes: LikesSet?, err) in
+        let url = RequestConfigurations.removeLikeUrlTemplate
+            .replacingOccurrences(of: "[ownerId]", with: "\(ownerId)")
+            .replacingOccurrences(of: "[postId]", with: "\(postId)")
+            .replacingOccurrences(of: "[token]", with: token)
+        requestService.getData(urlStr: url, method: .get, body: nil, headers: nil, completion: { [weak self] (likes: LikesSet?, err) in
             guard let self = self,
                 let likes = likes?.likes else { return }
             completion(likes)
@@ -72,8 +93,11 @@ extension UserService: UserServiceProtocol {
     }
     
     func setLike(postId: Int, ownerId: Int, completion: @escaping LikesCountCompletion) {
-        let likesAdd_post = "https://api.vk.com/method/likes.add?type=post&owner_id=\(ownerId)&item_id=\(postId)&access_token=\(token)&v=5.101"
-        requestService.getData(urlStr: likesAdd_post, method: .get, body: nil, headers: nil, completion: { [weak self] (likes: LikesSet?, err) in
+        let url = RequestConfigurations.setLikeUrlTemplate
+            .replacingOccurrences(of: "[ownerId]", with: "\(ownerId)")
+            .replacingOccurrences(of: "[postId]", with: "\(postId)")
+            .replacingOccurrences(of: "[token]", with: token)
+        requestService.getData(urlStr: url, method: .get, body: nil, headers: nil, completion: { [weak self] (likes: LikesSet?, err) in
             guard let self = self else { return }
             if let likes = likes?.likes {
                 completion(likes)
@@ -85,11 +109,35 @@ extension UserService: UserServiceProtocol {
     }
     
     func createPost(message: String?, photosIds: [Int], completion: @escaping PostUploadCompletion, createPostCompletion: @escaping CreatePostCompletion) {
-        guard message != nil || (photosIds.isEmpty == false) else { return }
+        guard let url = buildCreatePostUrl(message: message, photosIds: photosIds) else { return }
+        requestService.getData(urlStr: url, method: .get, completion: { [weak self] (response: CreatePostResponse?, err) in
+            guard let self = self else { return }
+            if let id = response?.postId {
+                self.getPost(with: id, completion: createPostCompletion)
+            }
+        })
+    }
+    
+    func getPost(with id: Int, completion: @escaping CreatePostCompletion) {
+        let url = RequestConfigurations.getPostUrlTemplate
+                .replacingOccurrences(of: "[userId]", with: "\(userId)")
+                .replacingOccurrences(of: "[id]", with: "\(id)")
+                .replacingOccurrences(of: "[token]", with: token)
+        requestService.getData(urlStr: url, method: .get, completion: { [weak self] (response: [Post]?, err) in
+            guard let self = self,
+                let post = response?.first else { return }
+            completion(post)
+        })
+    }
+}
+
+private extension UserService {
+    func buildCreatePostUrl(message: String?, photosIds: [Int]) -> String? {
+        guard message != nil || (photosIds.isEmpty == false) else { return nil }
         let ownerId = userId
         var attachments = ""
         var userMessage = ""
-        if let message = message {
+        if let message = message, message.isEmpty == false {
             userMessage = "message=\(message)"
             if photosIds.isEmpty == false {
                 userMessage.append("&")
@@ -108,22 +156,10 @@ extension UserService: UserServiceProtocol {
                 }
             }
         }
-        let url = "https://api.vk.com/method/wall.post?\(userMessage)\(attachments)&access_token=\(token)&v=5.101"
-        
-        requestService.getData(urlStr: url, method: .get, completion: { [weak self] (response: CreatePostResponse?, err) in
-            guard let self = self else { return }
-            if let id = response?.postId {
-                self.getPost(with: id, completion: createPostCompletion)
-            }
-        })
-    }
-    
-    func getPost(with id: Int, completion: @escaping CreatePostCompletion) {
-        let url = "https://api.vk.com/method/wall.getById?posts=\(userId)_\(id)&access_token=\(token)&v=5.101"
-        requestService.getData(urlStr: url, method: .get, completion: { [weak self] (response: [Post]?, err) in
-            guard let self = self,
-                let post = response?.first else { return }
-            completion(post)
-        })
+        let url = RequestConfigurations.createPostUrlTemplate
+                    .replacingOccurrences(of: "[userMessage]", with: "\(userMessage)")
+                    .replacingOccurrences(of: "[attachments]", with: attachments)
+                    .replacingOccurrences(of: "[token]", with: token)
+        return url
     }
 }

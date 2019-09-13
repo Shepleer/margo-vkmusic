@@ -23,6 +23,7 @@ class CommentsPageService {
     private var token = UserDefaults.standard.string(forKey: "accessToken") ?? "Token has expired"
     private struct RequestConfigurations {
         static let offsetMultiplier = 20
+        static let fetchCommentsTemplateUrl = "https://api.vk.com/method/wall.getComments?owner_id=[ownerId]&post_id=[postId]&need_likes=1&offset=[offset]&count=20&sort=asc&thread_items_count=10&preview_lenght=0&extended=1&access_token=[token]&v=5.101"
     }
     
     init(requestService: APIService) {
@@ -36,7 +37,11 @@ extension CommentsPageService: CommentsPageServiceProtocol {
             return
         }
         isLoading = true
-        let url = "https://api.vk.com/method/wall.getComments?owner_id=\(ownerId)&post_id=\(postId)&need_likes=1&offset=0&count=20&sort=asc&thread_items_count=10&preview_lenght=0&extended=1&access_token=\(token)&v=5.101"
+        let url = RequestConfigurations.fetchCommentsTemplateUrl
+                    .replacingOccurrences(of: "[ownerId]", with: "\(ownerId)")
+                    .replacingOccurrences(of: "[postId]", with: "\(postId)")
+                    .replacingOccurrences(of: "[offset]", with: "\(offset)")
+                    .replacingOccurrences(of: "[token]", with: token)
         requestService.getData(urlStr: url, method: .get, body: nil, headers: nil, completion: { [weak self] (response: CommentsResponse?, err) in
             if let self = self, let count = response?.count, let response = response {
                 self.offset += RequestConfigurations.offsetMultiplier

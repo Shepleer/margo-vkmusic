@@ -17,6 +17,11 @@ struct User {
     var screenName: String?
     var counters: Counters?
     var avatarImage: UIImage?
+    var fullName: String {
+        guard let first = firstName,
+            let last = lastName else { return "" }
+        return "\(first) \(last)"
+    }
 }
 
 extension User: Mappable {
@@ -30,12 +35,6 @@ extension User: Mappable {
         avatarPhotoUrl <- (map["photo_100"])
         screenName <- (map["screen_name"])
         counters <- (map["counters"])
-        
-        if screenName == nil {
-            guard let first = firstName,
-                let last = lastName else { return }
-            screenName = "\(first) \(last)"
-        }
     }
 }
 

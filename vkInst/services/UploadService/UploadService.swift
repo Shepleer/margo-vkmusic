@@ -24,6 +24,15 @@ protocol UploadServiceProtocol {
 }
 
 class UploadService: NSObject {
+    
+    private struct RequestConfigurations {
+        static let fileNameHeader = "fileName"
+        static let contentTypeHeader = "Content-Type"
+        static let contentLenghtHeader = "Content-Length"
+        static let getUploadServerUrlTemplate = "https://api.vk.com/method/photos.getWallUploadServer?access_token=[token]&v=5.101"
+        static let saveChangesUrlTemplate = "https://api.vk.com/method/photos.saveWallPhoto?user_id=[userId]&photo=[photo]&server=[server]&hash=[hash]&access_token=[token]&v=5.101"
+    }
+    
     private var requestService: APIService
     var uploadServer: UploadServer?
     weak var session: URLSession?
@@ -36,11 +45,6 @@ class UploadService: NSObject {
     
     private var userId = UserDefaults.standard.string(forKey: "userId") ?? "Token has expired"
     private var token = UserDefaults.standard.string(forKey: "accessToken") ?? "Token has expired"
-    
-//    private struct RequestConfigurations {
-//        static let userId = UserDefaults.standard.string(forKey: "userId") ?? "Token has expired"
-//        static let token = UserDefaults.standard.string(forKey: "accessToken") ?? "Token has expired"
-//    }
 }
 
 extension UploadService: UploadServiceProtocol {
@@ -62,7 +66,8 @@ extension UploadService: UploadServiceProtocol {
     }
     
     func getWallUploadServer() {
-        let url = "https://api.vk.com/method/photos.getWallUploadServer?access_token=\(token)&v=5.101"
+        let url = RequestConfigurations.getUploadServerUrlTemplate
+                    .replacingOccurrences(of: "[token]", with: token)
         requestService.getData(urlStr: url, method: .get, completion: { [weak self] (response: UploadServer?, err) in
             guard let self = self,
                 let response = response else { return }
@@ -88,9 +93,9 @@ private extension UploadService {
         guard let url = URL(string: urlString) else { return nil }
         var req = URLRequest(url: url)
         req.httpMethod = "POST"
-        req.addValue("\(fileName)", forHTTPHeaderField: "fileName")
-        req.addValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
-        req.addValue(contentLenght, forHTTPHeaderField: "Content-Length")
+        req.addValue("\(fileName)", forHTTPHeaderField: RequestConfigurations.fileNameHeader)
+        req.addValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: RequestConfigurations.contentTypeHeader)
+        req.addValue(contentLenght, forHTTPHeaderField: RequestConfigurations.contentLenghtHeader)
         req.httpBody = data
         return req
     }
@@ -112,7 +117,12 @@ private extension UploadService {
             let photo = uploadPhoto.photo,
             let hash = uploadPhoto.hash
             else { return }
-        let url = "https://api.vk.com/method/photos.saveWallPhoto?user_id=\(userId)&photo=\(photo)&server=\(server)&hash=\(hash)&access_token=\(token)&v=5.101"
+        let url = RequestConfigurations.saveChangesUrlTemplate
+                    .replacingOccurrences(of: "[userId]", with: "\(userId)")
+                    .replacingOccurrences(of: "[photo]", with: "\(photo)")
+                    .replacingOccurrences(of: "[server]", with: "\(server)")
+                    .replacingOccurrences(of: "[hash]", with: "\(hash)")
+                    .replacingOccurrences(of: "[token]", with: token)
         requestService.getData(urlStr: url, method: .get, completion: { [weak self] (response: [Image]?, err) in
             guard let self = self,
                 let id = response?.first?.id,
@@ -129,7 +139,7 @@ extension UploadService: URLSessionTaskDelegate, URLSessionDataDelegate {
     func urlSession(_ session: URLSession, task: URLSessionTask, didSendBodyData bytesSent: Int64, totalBytesSent: Int64, totalBytesExpectedToSend: Int64) {
         DispatchQueue.global(qos: .background).async { [weak self] in
             guard let self = self,
-                let fileName = task.originalRequest?.value(forHTTPHeaderField: "fileName")
+                let fileName = task.originalRequest?.value(forHTTPHeaderField: RequestConfigurations.fileNameHeader)
                 else { return }
             let progress = Float(totalBytesSent) / Float(totalBytesExpectedToSend)
             guard let progressCompletion = self.activeUploads[fileName]?.progress else { return }
@@ -143,7 +153,7 @@ extension UploadService: URLSessionTaskDelegate, URLSessionDataDelegate {
         do {
             guard let json = try JSONSerialization.jsonObject(with: data, options: .allowFragments) as? [String: Any] else { return }
             guard let model = Mapper<UploadServerPhotoResponse>().map(JSON: json) else { return }
-            guard let fileName = dataTask.originalRequest?.value(forHTTPHeaderField: "fileName") else { return }
+            guard let fileName = dataTask.originalRequest?.value(forHTTPHeaderField: RequestConfigurations.fileNameHeader) else { return }
             saveChanges(uploadPhoto: model, fileName: fileName)
         } catch {
             fatalError()

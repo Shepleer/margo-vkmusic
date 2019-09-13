@@ -22,13 +22,11 @@ protocol DownloadServiceProtocol: class {
     func invalidateSession()
 }
 
-
 class DownloadService: NSObject {
     private var activeDownloads: Downloads = [:]
     var session: URLSession? = nil
     let queue = DispatchQueue(label: "download_queue")
 }
-
 
 extension DownloadService: DownloadServiceProtocol {
     func downloadImage(url: String, progress: @escaping DownloadProgress, completion: @escaping PhotoLoadingCompletion) {

@@ -22,9 +22,6 @@ class GridCollectionViewCell: UICollectionViewCell {
     var completion: LoadingCompletion?
     var data: Post? = nil
     
-    override func awakeFromNib() {
-    }
-    
     func configure(postData: Post) {
         guard postData.photos?.first?.url != data?.photos?.first?.url || postData.gifs?.first?.url != data?.gifs?.first?.url else { return }
         if let photosCount = postData.photos?.count,
