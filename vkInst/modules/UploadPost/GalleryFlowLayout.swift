@@ -8,7 +8,7 @@
 
 import UIKit
 
-class photoPickerFlowLayout: UICollectionViewFlowLayout {
+class GalleryFlowLayout: UICollectionViewFlowLayout {
     private struct Constants {
         static let itemSize = CGSize(width: 120, height: 120)
         static let itemRightEdgeInset = CGFloat(10)

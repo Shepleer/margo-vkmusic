@@ -55,7 +55,7 @@ class UploadPostViewController: UIViewController {
         static let pickerViewConstraintMultiplier = CGFloat(150)
     }
     
-    var flowLayout = photoPickerFlowLayout()
+    var flowLayout = GalleryFlowLayout()
     var photosFromGallery: PHFetchResult<PHAsset>?
     var presenter: UploadPostPresenterProtocol?
     var selectedAssets = [PHAsset]()
@@ -181,7 +181,7 @@ extension UploadPostViewController: UICollectionViewDataSource, UICollectionView
             cell.asset = uploadPhoto.asset
             cell.identifier = uploadPhoto.asset.localIdentifier
             cell.vc = self
-            cell.configureCell()
+            cell.configureCell(asset: uploadPhoto.asset)
             return cell
         }
         return UICollectionViewCell(frame: .null)

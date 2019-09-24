@@ -35,7 +35,7 @@ extension DownloadService: DownloadServiceProtocol {
             let req = URLRequest(url: url)
             if let res = URLCache.shared.cachedResponse(for: req) {
                 let data = res.data
-                if let img = UIImage(data: data) {
+                if let img = UIImage.gif(data: data) {
                     completion(img, url.absoluteString)
                 } else {
                     let strUrl = url.absoluteString
@@ -95,7 +95,7 @@ extension DownloadService: URLSessionDownloadDelegate {
     func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didFinishDownloadingTo location: URL) {
         do {
             let data = try Data(contentsOf: location)
-            guard let img = UIImage(data: data) else { return }
+            guard let img = UIImage.gif(data: data) else { return }
             
             queue.async { [weak self] in
                 guard let self = self, let req = downloadTask.originalRequest,

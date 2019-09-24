@@ -89,7 +89,6 @@ class TapeCollectionViewCell: UICollectionViewCell {
     }
     
     func configure(postData: Post) {
-
         self.data = postData
         setPostMetadata()
         var mediaFiles = [Any]()

@@ -105,7 +105,6 @@ private extension SettingsTableViewController {
     }
     
     func updateUIRepresentation() {
-        print(ThemeService.currentTheme())
         let currentTheme = ThemeService.currentTheme()
         navigationController?.navigationBar.barTintColor = currentTheme.secondaryBackgroundColor
         navigationController?.navigationBar.tintColor = currentTheme.primaryColor

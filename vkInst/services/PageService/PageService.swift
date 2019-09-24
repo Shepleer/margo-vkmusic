@@ -24,7 +24,7 @@ class PageService {
     private var userId = UserDefaults.standard.string(forKey: "userId") ?? "Token has expired"
     private var token = UserDefaults.standard.string(forKey: "accessToken") ?? "Token has expired"
     private struct RequestConfigurations {
-        static let offsetMultiplier = 60
+        static let offsetMultiplier = 30
         static var fetchPostUrlTemplate = "https://api.vk.com/method/wall.get?count=60&offset=[offset]&extended=1&access_token=[token]&v=5.101"
     }
     

@@ -121,6 +121,7 @@ extension UploadPostPresenter: UploadPostPresenterProtocol {
             guard let self = self,
                 let i = self.uploadImages.firstIndex(where: { $0.fileName == uploadImage.fileName }) else { return }
             self.uploadImages[i].id = id
+            self.vc?.uploadComplete(at: i, id: id)
         }, cancel: { [weak self] (isCanceled) in
             guard let self = self,
                 let i = self.uploadImages.firstIndex(where: { $0.fileName == uploadImage.fileName }) else { return }

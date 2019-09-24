@@ -14,7 +14,6 @@ class UploadPostSelectedCell: UICollectionViewCell {
     
     private struct Constants {
         static let targetSize = CGSize(width: 120, height: 120)
-        static let itemCornerRadius = CGFloat(10)
     }
     
     @IBOutlet weak var crossImageView: UIImageView!
@@ -31,14 +30,14 @@ class UploadPostSelectedCell: UICollectionViewCell {
     
     override func awakeFromNib() {
         super.awakeFromNib()
-        imageToUpload.layer.cornerRadius = Constants.itemCornerRadius
+        imageToUpload.layer.cornerRadius = 10
         cancelView.rotate()
         crossImageView.tintColor = ThemeService.currentTheme().primaryColor
     }
     
-    func configureCell() {
-        guard let asset = asset else { fatalError() }
-        requestManager.requestImage(for: asset, targetSize: Constants.targetSize, contentMode: .aspectFill, options: nil) { (image, nil) in
+    func configureCell(asset: PHAsset) {
+        let size = CGSize(width: asset.pixelWidth, height: asset.pixelHeight)
+        requestManager.requestImage(for: asset, targetSize: size, contentMode: .aspectFill, options: nil) { image, _ in
             if self.identifier == asset.localIdentifier {
                 self.imageToUpload.image = image
             }
@@ -46,10 +45,19 @@ class UploadPostSelectedCell: UICollectionViewCell {
     }
     
     func updateProgress(progress: Float) {
+        print("PROGRESS: \(progress)")
         cancelView.setProgressWithAnimation(value: progress)
     }
     
     func uploadComplete() {
         cancelView.isHidden = true
+        cancelView.setDefaultProgress()
+        cancelView.rotate()
+    }
+    
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        imageToUpload.image = nil
+        cancelView.setDefaultProgress()
     }
 }

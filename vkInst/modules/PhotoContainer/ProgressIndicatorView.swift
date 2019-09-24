@@ -69,6 +69,7 @@ import UIKit
     func setProgressWithAnimation(value: Float) {
         if isAnimating == false {
             isAnimating = true
+            rotate()
             let animation = createProgressAnimation()
             animation.fromValue = basic
             animation.toValue = value
@@ -77,6 +78,9 @@ import UIKit
             DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + Constants.animationDuration) { [weak self] in
                 guard let self = self else { return }
                 self.isAnimating = false
+                if value == 1.0 {
+                    self.setDefaultProgress()
+                }
                 if let nextValue = self.nextValue {
                     let value = nextValue
                     self.nextValue = nil
@@ -86,6 +90,13 @@ import UIKit
         } else {
             nextValue = value
         }
+    }
+    
+    func setDefaultProgress() {
+        nextValue = nil
+        basic = 0
+        progressLayer.strokeEnd = 0.0
+        self.isHidden = false
     }
     
     private func createProgressAnimation() -> CABasicAnimation {

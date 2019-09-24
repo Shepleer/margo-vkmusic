@@ -57,6 +57,7 @@ class AlbumUploadCollectionViewCell: UICollectionViewCell {
     }
     
     override func prepareForReuse() {
+        super.prepareForReuse()
         serialNumberLabel.isHidden = true
         serialNumberLabel.text = nil
     }
