@@ -116,9 +116,9 @@ extension UploadPostPresenter: UploadPostPresenterProtocol {
                 let i = self.uploadImages.firstIndex(where: { $0.fileName == uploadImage.fileName }) else { return }
             self.uploadImages[i].progress = progress
             self.vc?.setProgress(at: i, progress: progress)
-        }, completion: { [weak self] (id) in
-            print("\(uploadImage.fileName) ----- \(id)")
+        }, completion: { [weak self] (id, err, url) in
             guard let self = self,
+                let id = id,
                 let i = self.uploadImages.firstIndex(where: { $0.fileName == uploadImage.fileName }) else { return }
             self.uploadImages[i].id = id
             self.vc?.uploadComplete(at: i, id: id)

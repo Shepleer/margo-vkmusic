@@ -11,7 +11,7 @@ import UIKit
 protocol GalleryViewControllerProtocol: class {
     func configureWithPhotos(posts: [Post])
     func loadAvatar(image: UIImage)
-    func setProfileData(user: User)
+    func setProfileData(user: User?, error: RequestError?)
     func setLike(postId: Int, ownerId: Int, completion: @escaping LikesCountCompletion)
     func removeLike(postId: Int, ownerId: Int, completion: @escaping LikesCountCompletion)
     func fetchPostData(postId: Int, ownerId: Int, completion: @escaping CommentsCompletion)
@@ -32,6 +32,7 @@ protocol GalleryViewControllerCellDelegate: class {
     func moveToDetailPhotoScreen(post: Post, currentPage: Int)
     func loadProfileInformation(setAvatar: (_ avatar: UIImage) -> (), setName: (_ label: String) -> ())
     func fetchPostData(postId: Int, ownerId: Int, completion: @escaping CommentsCompletion)
+    func showError(error: Error)
 }
 
 class GalleryViewController: UIViewController {
@@ -59,13 +60,14 @@ class GalleryViewController: UIViewController {
     
     
     var presenter: GalleryPresenterProtocol?
-    var flowLayout: GridCollectionViewFlowLayout = GridCollectionViewFlowLayout()
-    var tapeFlowLayout: TapeCollectionViewFlowLayout = TapeCollectionViewFlowLayout()
-    var posts = [Post]()
-    var profile: User? = nil
-    var avatarImage: UIImage? = nil
-    var offset: Int = 0
-    var openedCellIndex: Int = 0
+    private var flowLayout: GridCollectionViewFlowLayout = GridCollectionViewFlowLayout()
+    private var tapeFlowLayout: TapeCollectionViewFlowLayout = TapeCollectionViewFlowLayout()
+    private var posts = [Post]()
+    private var profile: User? = nil
+    private var avatarImage: UIImage? = nil
+    private var offset: Int = 0
+    private var openedCellIndex: Int = 0
+    private var isErrorPresenting = false
     
     private var proposedContentOffset: CGPoint? = nil
     
@@ -204,6 +206,17 @@ extension GalleryViewController: GalleryViewControllerCellDelegate {
     func fetchPostData(postId: Int, ownerId: Int, completion: @escaping CommentsCompletion) {
         presenter?.fetchComments(postId: postId, ownerId: ownerId, completion: completion)
     }
+    
+    func showError(error: Error) {
+        if let error = error as? RequestError {
+            guard let errorMessage = error.errorDescription else { return }
+            isErrorPresenting = true
+            showToast(message: errorMessage, completion: { [weak self] in
+                guard let self = self else { return }
+                self.isErrorPresenting = false
+            })
+        }
+    }
 }
 
 extension GalleryViewController: GalleryViewControllerProtocol {
@@ -240,23 +253,30 @@ extension GalleryViewController: GalleryViewControllerProtocol {
     }
     
     func loadAvatar(image: UIImage) {
-        avatarImageView.image = image
-        UIView.animate(withDuration: Constants.animationDuration) {
-            self.avatarImageView.alpha = 1
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            self.avatarImageView.image = image
+            UIView.animate(withDuration: Constants.animationDuration) {
+                self.avatarImageView.alpha = 1
+            }
+            self.avatarImage = image
         }
-        avatarImage = image
     }
     
-    func setProfileData(user: User) {
-        profile = user
-        if let friends = user.counters?.friends {
-            friendsCountLabel.text = "\(friends)"
-        }
-        if let followers = user.counters?.followers {
-            followersCountLabel.text = "\(followers)"
-        }
-        if let username = user.screenName ?? user.firstName {
-            nicknameLabel.text = username
+    func setProfileData(user: User?, error: RequestError?) {
+        if let user = user {
+            profile = user
+            if let friends = user.counters?.friends {
+                friendsCountLabel.text = "\(friends)"
+            }
+            if let followers = user.counters?.followers {
+                followersCountLabel.text = "\(followers)"
+            }
+            if let username = user.screenName ?? user.firstName {
+                nicknameLabel.text = username
+            }
+        } else if let error = error {
+            handleError(error: error)
         }
     }
     
@@ -324,6 +344,7 @@ extension GalleryViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
         guard let footerView = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: Constants.galleryCollectionViewFooterIdentifier, for: indexPath) as? GalleryCollectionFooterView else { fatalError() }
         footerView.backgroundColor = UIColor.clear
+        footerView.activityIndicator.color = ThemeService.currentTheme().primaryColor
         return footerView
     }
     
@@ -420,7 +441,11 @@ private extension GalleryViewController {
         avatarImageView.layer.cornerRadius = avatarImageView.frame.width / 2
         
         if !Reachability.isConnectedToNetwork() {
-            showToast(message: Constants.internetConnectionErrorMessage)
+            isErrorPresenting = true
+            showToast(message: Constants.internetConnectionErrorMessage, completion: { [weak self] in
+                guard let self = self else { return }
+                self.isErrorPresenting = false
+            })
         }
     }
     
@@ -499,6 +524,24 @@ private extension GalleryViewController {
                 self.mainScrollView.contentOffset = self.proposedContentOffset ?? CGPoint(x: 0, y: 0)
                 let scrollViewContentSize = CGSize(width: self.view.frame.width, height: self.headerView.frame.height + self.headerViewBottom.accessibilityFrame.height + self.secondHeaderView.frame.height + self.secondHeaderBottom.accessibilityFrame.height + self.imageCollectionView.collectionViewLayout.collectionViewContentSize.height)
                 self.mainScrollView.contentSize = scrollViewContentSize
+            }
+        }
+    }
+    
+    func moveToLogInScreen() {
+        presenter?.moveToLogInScreen()
+    }
+    
+    func handleError(error: RequestError) {
+        if let apiError = error.apiError {
+            switch apiError.errorCode {
+            case ErrorCode.captchaError.rawValue:
+                //TODO: Capthca
+                break
+            case ErrorCode.authorizationError.rawValue:
+                moveToLogInScreen()
+            default:
+                showError(error: error)
             }
         }
     }

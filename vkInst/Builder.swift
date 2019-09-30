@@ -141,4 +141,14 @@ class Builder {
         uploadService.session = session
         return uploadService
     }
+    
+    func buildCaptchaView() -> CaptchaView {
+        let requestService = buildAPIService()
+        let captchaView: CaptchaView = .fromNib()
+        let presenter = CaptchaPresenter()
+        presenter.requestService = requestService
+        presenter.view = captchaView
+        captchaView.presenter = presenter
+        return captchaView
+    }
 }

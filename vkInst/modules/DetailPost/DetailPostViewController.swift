@@ -10,6 +10,7 @@ import UIKit
 
 protocol DetailPostViewControllerProtocol: class {
     func configureDataSource(comments: [Comment], profiles: [User]?, groups: [Group]?)
+    func showError(error: Error)
 }
 
 class DetailPostViewController: UIViewController {
@@ -43,6 +44,7 @@ class DetailPostViewController: UIViewController {
     private var isZooming = false
     private var originalImageCenter: CGPoint?
     private var currentPage = 0
+    private var isErrorPresenting = false
     
     private lazy var mediaItemWidth: CGFloat = {
         let fullContentWidth = contentStackView.bounds.width
@@ -139,23 +141,33 @@ class DetailPostViewController: UIViewController {
     @IBAction func likeButtonTapped(_ sender: UIButton) {
         guard let postId = postData?.id else { return }
         guard let ownerId = postData?.ownerId else { return }
+        
         if likeButton.isSelected {
-            startDeselectLikeAnimation()
-            presenter?.removeLike(postId: postId, ownerId: ownerId, completion: { (likesCount) in
-                self.postData?.isUserLikes = false
-                self.postData?.likesCount = likesCount
-                self.likeButton.isSelected = false
-                self.likesCountLabel.text = "\(likesCount) \(Constants.likesCountLabel)"
-                self.updatePostData()
+            startLikeAnimation(setLike: false)
+            presenter?.removeLike(postId: postId, ownerId: ownerId, completion: { [weak self] (likesCount, error, url) in
+                guard let self = self else { return }
+                if let likesCount = likesCount {
+                    self.postData?.isUserLikes = false
+                    self.postData?.likesCount = likesCount
+                    self.likeButton.isSelected = false
+                    self.likesCountLabel.text = "\(likesCount) \(Constants.likesCountLabel)"
+                    self.updatePostData()
+                } else if let error = error {
+                    self.showError(error: error)
+                }
             })
         } else {
-            startSelectLikeAnimation()
-            presenter?.setLike(postId: postId, ownerId: ownerId, completion: { (likesCount) in
-                self.postData?.isUserLikes = true
-                self.postData?.likesCount = likesCount
-                self.likeButton.isSelected = true
-                self.likesCountLabel.text = "\(likesCount) \(Constants.likesCountLabel)"
-                self.updatePostData()
+            startLikeAnimation(setLike: true)
+            presenter?.setLike(postId: postId, ownerId: ownerId, completion: { (likesCount, error, url) in
+                if let likesCount = likesCount {
+                    self.postData?.isUserLikes = true
+                    self.postData?.likesCount = likesCount
+                    self.likeButton.isSelected = true
+                    self.likesCountLabel.text = "\(likesCount) \(Constants.likesCountLabel)"
+                    self.updatePostData()
+                } else if let error = error {
+                    self.showError(error: error)
+                }
             })
         }
     }
@@ -196,6 +208,21 @@ extension DetailPostViewController: DetailPostViewControllerProtocol {
         let scrollViewContentSize = CGSize(width: view.frame.width, height: commentsTableView.contentSize.height + profileMetadataView.frame.size.height + postMetadataView.frame.size.height + mediaContentScrollView.frame.size.height)
         invisibleScrollView.contentSize = scrollViewContentSize
         presenter?.commentsDownloaded()
+    }
+    
+    func showError(error: Error) {
+        if let error = error as? RequestError {
+            isErrorPresenting = true
+            if error.apiError?.errorCode == 14 {
+                let captchaView: CaptchaView = .fromNib()
+                view.addSubview(captchaView)
+            } else if let errorDescription = error.errorDescription {
+                showToast(message: errorDescription, completion: { [weak self] in
+                    guard let self = self else { return }
+                    self.isErrorPresenting = false
+                })
+            }
+        }
     }
 }
 
@@ -260,11 +287,11 @@ extension DetailPostViewController: UIGestureRecognizerDelegate {
 }
 
 extension DetailPostViewController: DownloadMediaProtocol {
-    func downloadPhoto(url: String, progress: @escaping DownloadProgress, completion: @escaping PhotoLoadingCompletion) {
+    func downloadPhoto(url: String, progress: @escaping DownloadProgress, completion: @escaping MediaLoadingCompletion) {
         presenter?.downloadPhoto(url: url, progress: progress, completion: completion)
     }
     
-    func downloadGif(url: String, progress: @escaping DownloadProgress, completion: @escaping PhotoLoadingCompletion) {
+    func downloadGif(url: String, progress: @escaping DownloadProgress, completion: @escaping MediaLoadingCompletion) {
         presenter?.downloadGif(url: url, progress: progress, completion: completion)
     }
 }
@@ -336,7 +363,11 @@ private extension DetailPostViewController {
         buildPanGesture()
         
         if !Reachability.isConnectedToNetwork() {
-            showToast(message: Constants.internetConnectionErrorDescribtion)
+            isErrorPresenting = true
+            showToast(message: Constants.internetConnectionErrorDescribtion, completion: { [weak self] in
+                guard let self = self else { return }
+                self.isErrorPresenting = false
+            })
         }
     }
     
@@ -370,7 +401,7 @@ private extension DetailPostViewController {
     func fillMediaStackView() {
         for mediaFile in mediaToPresent {
             let photoContainerView: PhotoContainerView =  PhotoContainerView.fromNib()
-            photoContainerView.vc = self
+            photoContainerView.cell = self
             if let gif = mediaFile as? Gif {
                 photoContainerView.setMediaContent(mediaFile: gif)
             } else if let image = mediaFile as? Image {
@@ -432,14 +463,19 @@ private extension DetailPostViewController {
         if postData?.isUserLikes == false && sender.state == .ended {
             guard let postId = postData?.id else { return }
             guard let ownerId = postData?.ownerId else { return }
-            presenter?.setLike(postId: postId, ownerId: ownerId, completion: { (likesCount) in
-                self.postData?.isUserLikes = true
-                self.postData?.likesCount = likesCount
-                self.likesCountLabel.text = "\(likesCount) \(Constants.likesCountLabel)"
-                self.likeButton.isSelected = true
+            presenter?.setLike(postId: postId, ownerId: ownerId, completion: { [weak self] (likesCount, error, url) in
+                guard let self = self else { return }
+                if let likesCount = likesCount {
+                    self.postData?.isUserLikes = true
+                    self.postData?.likesCount = likesCount
+                    self.likesCountLabel.text = "\(likesCount) \(Constants.likesCountLabel)"
+                    self.likeButton.isSelected = true
+                } else if let error = error {
+                    self.showError(error: error)
+                }
             })
         }
-        startSelectLikeAnimation()
+        startLikeAnimation(setLike: true)
         startBigLikeAppearAnimation()
     }
     
@@ -516,7 +552,7 @@ private extension DetailPostViewController {
         guard let postId = postData?.id,
             let ownerId = profile?.id else { return }
         presenter?.fetchComments(postId: postId, ownerId: ownerId)
-        presenter?.fetchPostMetadata(postId: postId, completion: { [weak self] (post) in
+        presenter?.fetchPostMetadata(postId: postId, completion: { [weak self] (post, error, url) in
             guard let self = self else { return }
             self.postData = post
             self.fillMediaStackView()
@@ -551,8 +587,7 @@ private extension DetailPostViewController {
         }
     }
     
-    
-    func startDeselectLikeAnimation() {
+    func startLikeAnimation(setLike: Bool) {
         hearthImageViewWidthAnchor.constant = 0
         hearthImageViewHeightAnchor.constant = 0
         UIView.animate(withDuration: Constants.likeAnimationDuration,
@@ -562,38 +597,17 @@ private extension DetailPostViewController {
                        options: .curveEaseOut,
                        animations: {
                         self.view.layoutIfNeeded()
-                        self.hearthImageView.alpha = 0
+                        if setLike {
+                            self.hearthImageView.alpha = Constants.animationLikeAlpha
+                        } else {
+                            self.hearthImageView.alpha = 0
+                        }
         }) { (complete) in
-            self.hearthImageView.image = Constants.emptyHearthImage
-            self.hearthImageViewHeightAnchor.constant = Constants.activeLikeSizeAnchor
-            self.hearthImageViewWidthAnchor.constant = Constants.activeLikeSizeAnchor
-            UIView.animate(withDuration: Constants.likeAnimationDuration,
-                           delay: 0.0,
-                           usingSpringWithDamping: Constants.animationSpringWithDamping,
-                           initialSpringVelocity: 0.0,
-                           options: .curveEaseOut,
-                           animations: {
-                            self.view.layoutIfNeeded()
-                            self.hearthImageView.alpha = 1.0
-            }, completion: { (complete) in
-                
-            })
-        }
-    }
-    
-    func startSelectLikeAnimation() {
-        hearthImageViewWidthAnchor.constant = 0
-        hearthImageViewHeightAnchor.constant = 0
-        UIView.animate(withDuration: Constants.likeAnimationDuration,
-                       delay: Constants.selectLikeAnimationDelay,
-                       usingSpringWithDamping: Constants.animationSpringWithDamping,
-                       initialSpringVelocity: 0.0,
-                       options: .curveEaseOut,
-                       animations: {
-                        self.view.layoutIfNeeded()
-                        self.hearthImageView.alpha = Constants.animationLikeAlpha
-        }) { (complete) in
-            self.hearthImageView.image = Constants.fillHearthImage
+            if setLike {
+                self.hearthImageView.image = Constants.fillHearthImage
+            } else {
+                self.hearthImageView.image = Constants.emptyHearthImage
+            }
             self.hearthImageViewHeightAnchor.constant = Constants.activeLikeSizeAnchor
             self.hearthImageViewWidthAnchor.constant = Constants.activeLikeSizeAnchor
             UIView.animate(withDuration: Constants.likeAnimationDuration,

@@ -11,9 +11,6 @@ import Photos
 
 protocol UploadPostViewControllerProtocol: class {
     func pickComplete(assets: [PHAsset])
-    //func startUploadPhoto(data: Data, fileName: String, progress: @escaping Update, completion: @escaping PostUploadCompletion)
-    //func photoDidUpload(id: Int)
-    //func cancelUpload(id: Int?, fileName: String, completion: @escaping CancelCompletion)
     func uploadComplete(at index: Int, id: Int)
     func setProgress(at index: Int, progress: Float)
     func deleteCell(at index: Int)
@@ -61,6 +58,8 @@ class UploadPostViewController: UIViewController {
     var selectedAssets = [PHAsset]()
     var itemToUploadCount = 0
     var selectedItems = [Int]()
+    private var isErrorPresenting = false
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         presenter?.viewDidLoad()
@@ -277,7 +276,11 @@ private extension UploadPostViewController {
         photoPickerCollectionView.reloadData()
         
         if !Reachability.isConnectedToNetwork() {
-            showToast(message: Constants.internetConnectionErrorMessage)
+            isErrorPresenting = true
+            showToast(message: Constants.internetConnectionErrorMessage, completion: { [weak self] in
+                guard let self = self else { return }
+                self.isErrorPresenting = false
+            })
         }
     }
     
@@ -345,13 +348,28 @@ private extension UploadPostViewController {
         }
     }
     
+    func showError(error: Error) {
+        if let error = error as? RequestError {
+            guard let errorMessage = error.errorDescription else { return }
+            isErrorPresenting = true
+            showToast(message: errorMessage, completion: { [weak self] in
+                guard let self = self else { return }
+                self.isErrorPresenting = false
+            })
+        }
+    }
+    
     @objc func doneBarButtonItemPressed() {
         let message = textView.text
-        presenter?.uploadPost(message: message, completion: { [weak self] (id) in
+        presenter?.uploadPost(message: message, completion: { [weak self] (id, error, url) in
             guard let self = self else { return }
-        }, createPostCompletion: { [weak self] (post) in
+        }, createPostCompletion: { [weak self] (post, error, url) in
             guard let self = self else { return }
-            self.presenter?.moveBack(newPost: post)
+            if let post = post {
+                self.presenter?.moveBack(newPost: post)
+            } else if let error = error {
+                self.showError(error: error)
+            }
         })
     }
     

@@ -284,24 +284,22 @@
                                                                         <constraint firstAttribute="height" constant="364" id="t7p-jR-ljw"/>
                                                                     </constraints>
                                                                 </stackView>
-                                                                <imageView clipsSubviews="YES" userInteractionEnabled="NO" alpha="0.0" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="HearthBig" translatesAutoresizingMaskIntoConstraints="NO" id="ZHB-oL-eMf">
-                                                                    <rect key="frame" x="207" y="173" width="0.0" height="0.0"/>
-                                                                    <constraints>
-                                                                        <constraint firstAttribute="height" id="TBe-lX-r1T" userLabel="Big Like Height Anchor"/>
-                                                                        <constraint firstAttribute="width" id="tzl-NE-kmw"/>
-                                                                    </constraints>
-                                                                </imageView>
                                                             </subviews>
                                                             <constraints>
                                                                 <constraint firstAttribute="trailing" secondItem="BwY-RY-Zj6" secondAttribute="trailing" id="8ox-7I-6if"/>
                                                                 <constraint firstAttribute="height" constant="364" id="9iS-Ig-4MF"/>
-                                                                <constraint firstItem="ZHB-oL-eMf" firstAttribute="centerY" secondItem="K0S-eH-hj6" secondAttribute="centerY" constant="-9" id="PBn-Rw-log"/>
-                                                                <constraint firstAttribute="bottom" secondItem="ZHB-oL-eMf" secondAttribute="bottom" constant="191" id="bW9-nn-N4x"/>
+                                                                <constraint firstAttribute="bottom" secondItem="BwY-RY-Zj6" secondAttribute="bottom" id="UbV-Vr-QqA"/>
                                                                 <constraint firstItem="BwY-RY-Zj6" firstAttribute="top" secondItem="K0S-eH-hj6" secondAttribute="top" id="hS7-eb-V16"/>
                                                                 <constraint firstItem="BwY-RY-Zj6" firstAttribute="leading" secondItem="K0S-eH-hj6" secondAttribute="leading" id="n8F-Wi-yR2"/>
-                                                                <constraint firstItem="ZHB-oL-eMf" firstAttribute="centerX" secondItem="K0S-eH-hj6" secondAttribute="centerX" id="sFT-L2-brO"/>
                                                             </constraints>
                                                         </scrollView>
+                                                        <imageView clipsSubviews="YES" userInteractionEnabled="NO" alpha="0.0" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="HearthBig" translatesAutoresizingMaskIntoConstraints="NO" id="ZHB-oL-eMf">
+                                                            <rect key="frame" x="207" y="252" width="0.0" height="0.0"/>
+                                                            <constraints>
+                                                                <constraint firstAttribute="height" id="TBe-lX-r1T" userLabel="Big Like Height Anchor"/>
+                                                                <constraint firstAttribute="width" id="tzl-NE-kmw"/>
+                                                            </constraints>
+                                                        </imageView>
                                                         <pageControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" hidesForSinglePage="YES" numberOfPages="3" translatesAutoresizingMaskIntoConstraints="NO" id="yjG-3f-CAo">
                                                             <rect key="frame" x="187.66666666666666" y="378" width="39" height="37"/>
                                                         </pageControl>
@@ -394,9 +392,11 @@
                                                 <constraints>
                                                     <constraint firstItem="Ia1-pY-pxK" firstAttribute="top" secondItem="0FY-K8-3SC" secondAttribute="top" id="0Ii-zd-Ufc"/>
                                                     <constraint firstAttribute="trailing" secondItem="K0S-eH-hj6" secondAttribute="trailing" id="0g3-td-eOE"/>
+                                                    <constraint firstItem="ZHB-oL-eMf" firstAttribute="centerY" secondItem="K0S-eH-hj6" secondAttribute="centerY" id="2da-ze-CG8"/>
                                                     <constraint firstItem="Ia1-pY-pxK" firstAttribute="trailing" secondItem="K0S-eH-hj6" secondAttribute="trailing" id="3Wu-VR-PwD"/>
                                                     <constraint firstItem="Ia1-pY-pxK" firstAttribute="leading" secondItem="lFc-VE-AfY" secondAttribute="leading" id="4hD-In-cZb"/>
                                                     <constraint firstItem="yjG-3f-CAo" firstAttribute="centerX" secondItem="K0S-eH-hj6" secondAttribute="centerX" id="9QJ-1d-WKL"/>
+                                                    <constraint firstItem="ZHB-oL-eMf" firstAttribute="centerX" secondItem="K0S-eH-hj6" secondAttribute="centerX" id="Boi-5O-eXO"/>
                                                     <constraint firstItem="Ia1-pY-pxK" firstAttribute="leading" secondItem="K0S-eH-hj6" secondAttribute="leading" id="HYF-Xu-vkH"/>
                                                     <constraint firstItem="K0S-eH-hj6" firstAttribute="leading" secondItem="0FY-K8-3SC" secondAttribute="leading" id="lv6-V7-m6Z"/>
                                                     <constraint firstItem="K0S-eH-hj6" firstAttribute="top" secondItem="Ia1-pY-pxK" secondAttribute="bottom" id="mFV-3k-5tz"/>
@@ -861,19 +861,10 @@
                                                     <constraint firstAttribute="width" priority="250" constant="414" id="pkv-To-hzg"/>
                                                 </constraints>
                                             </stackView>
-                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" alpha="0.0" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="HearthBig" translatesAutoresizingMaskIntoConstraints="NO" id="Nae-V1-aks">
-                                                <rect key="frame" x="207" y="182" width="0.0" height="0.0"/>
-                                                <constraints>
-                                                    <constraint firstAttribute="width" id="E9P-7v-zSZ"/>
-                                                    <constraint firstAttribute="height" id="sIg-fG-zrh"/>
-                                                </constraints>
-                                            </imageView>
                                         </subviews>
                                         <constraints>
                                             <constraint firstAttribute="trailing" secondItem="DIQ-re-XID" secondAttribute="trailing" id="Fqd-ME-pMF"/>
                                             <constraint firstAttribute="height" constant="364" id="FtK-Dt-fgU"/>
-                                            <constraint firstItem="Nae-V1-aks" firstAttribute="centerY" secondItem="DbG-PT-ULE" secondAttribute="centerY" id="OYv-Pc-p63"/>
-                                            <constraint firstItem="Nae-V1-aks" firstAttribute="centerX" secondItem="DbG-PT-ULE" secondAttribute="centerX" id="TdN-S1-ig8"/>
                                             <constraint firstAttribute="bottom" secondItem="DIQ-re-XID" secondAttribute="bottom" id="U2n-DB-Ley"/>
                                             <constraint firstItem="DIQ-re-XID" firstAttribute="leading" secondItem="DbG-PT-ULE" secondAttribute="leading" id="VGd-1z-9gB"/>
                                             <constraint firstItem="DIQ-re-XID" firstAttribute="top" secondItem="DbG-PT-ULE" secondAttribute="top" id="y5Y-wa-n8N"/>
@@ -882,6 +873,13 @@
                                             <outlet property="delegate" destination="ggj-1e-Lll" id="QjF-UO-ynA"/>
                                         </connections>
                                     </scrollView>
+                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" alpha="0.0" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="HearthBig" translatesAutoresizingMaskIntoConstraints="NO" id="Nae-V1-aks">
+                                        <rect key="frame" x="207" y="273" width="0.0" height="0.0"/>
+                                        <constraints>
+                                            <constraint firstAttribute="width" id="E9P-7v-zSZ"/>
+                                            <constraint firstAttribute="height" id="sIg-fG-zrh"/>
+                                        </constraints>
+                                    </imageView>
                                     <pageControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" hidesForSinglePage="YES" numberOfPages="3" translatesAutoresizingMaskIntoConstraints="NO" id="DEl-61-nvt">
                                         <rect key="frame" x="187.66666666666666" y="398" width="39" height="37"/>
                                     </pageControl>
@@ -926,12 +924,14 @@
                                     <constraint firstAttribute="bottom" secondItem="dfe-wk-1bY" secondAttribute="bottom" id="1rM-gw-KTa"/>
                                     <constraint firstItem="yXR-og-bJN" firstAttribute="leading" secondItem="ZhD-Z4-rRi" secondAttribute="leading" id="1rY-9Q-3s1"/>
                                     <constraint firstAttribute="width" constant="414" id="5VY-i6-uLd"/>
+                                    <constraint firstItem="Nae-V1-aks" firstAttribute="centerY" secondItem="DbG-PT-ULE" secondAttribute="centerY" id="868-uC-cn6"/>
                                     <constraint firstAttribute="trailing" secondItem="yXR-og-bJN" secondAttribute="trailing" id="90T-yu-x2q"/>
                                     <constraint firstItem="DbG-PT-ULE" firstAttribute="leading" secondItem="ZhD-Z4-rRi" secondAttribute="leading" id="DpY-uz-PWM"/>
                                     <constraint firstAttribute="trailing" secondItem="dfe-wk-1bY" secondAttribute="trailing" id="EfP-fn-D0I"/>
                                     <constraint firstItem="yXR-og-bJN" firstAttribute="top" secondItem="DEl-61-nvt" secondAttribute="bottom" constant="20" id="Kc9-s0-m45"/>
                                     <constraint firstItem="DbA-n8-eZR" firstAttribute="top" secondItem="ZhD-Z4-rRi" secondAttribute="top" id="Lss-HQ-QXm"/>
                                     <constraint firstItem="DbA-n8-eZR" firstAttribute="leading" secondItem="ZhD-Z4-rRi" secondAttribute="leading" id="ST2-ni-1sU"/>
+                                    <constraint firstItem="Nae-V1-aks" firstAttribute="centerX" secondItem="DbG-PT-ULE" secondAttribute="centerX" id="biT-iR-dkI"/>
                                     <constraint firstAttribute="trailing" secondItem="DbA-n8-eZR" secondAttribute="trailing" id="g3i-78-An9"/>
                                     <constraint firstItem="DbG-PT-ULE" firstAttribute="top" secondItem="DbA-n8-eZR" secondAttribute="bottom" id="hyU-j5-l2T"/>
                                     <constraint firstItem="dfe-wk-1bY" firstAttribute="top" secondItem="yXR-og-bJN" secondAttribute="bottom" id="iFm-Li-QFx"/>

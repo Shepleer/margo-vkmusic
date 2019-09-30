@@ -10,11 +10,11 @@ import UIKit
 import ImageIO
 
 extension UIViewController {
-    func showToast(message: String) {
-        let toastLabel = UILabel(frame: CGRect(x: view.center.x, y: view.center.y, width: 200, height: 50))
+    func showToast(message: String, completion: @escaping () -> ()) {
+        let toastLabel = UILabel(frame: CGRect(x: view.center.x, y: view.center.y + 400, width: 200, height: 100))
         toastLabel.backgroundColor = ThemeService.currentTheme().secondaryColor.withAlphaComponent(0.6)
         toastLabel.textColor = ThemeService.currentTheme().primaryColor
-        
+        toastLabel.numberOfLines = 0
         toastLabel.textAlignment = .center
         toastLabel.text = message
         toastLabel.alpha = 1.0
@@ -25,22 +25,22 @@ extension UIViewController {
         
 
         toastLabel.translatesAutoresizingMaskIntoConstraints = false
-        toastLabel.heightAnchor.constraint(equalToConstant: 50).isActive = true
+        toastLabel.heightAnchor.constraint(equalToConstant: 100).isActive = true
         toastLabel.widthAnchor.constraint(equalToConstant: 300).isActive = true
         
         toastLabel.centerXAnchor.constraint(equalToSystemSpacingAfter: view.centerXAnchor, multiplier: 1).isActive = true
         toastLabel.centerYAnchor.constraint(equalToSystemSpacingBelow: view.centerYAnchor, multiplier: 1).isActive = true
         
-        //toastLabel.addConstraints([c1, c2, c3])
-        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 6) {
+        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 3) {
             UIView.animate(withDuration: 2,
                            delay: 0.1,
-                           options: .curveEaseOut,
+                           options: .curveLinear,
                            animations: {
                             toastLabel.alpha = 0.0
             }) { (completed) in
                 if completed {
                     toastLabel.removeFromSuperview()
+                    completion()
                 }
             }
         }
@@ -219,7 +219,6 @@ extension UIImage {
             }
         }
         
-        // Heyhey
         let animation = UIImage.animatedImage(with: frames,
                                               duration: Double(duration) / 1000.0)
         

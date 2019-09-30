@@ -9,8 +9,8 @@
 import UIKit
 
 protocol DownloadMediaProtocol: class {
-    func downloadGif(url: String, progress: @escaping DownloadProgress, completion: @escaping PhotoLoadingCompletion)
-    func downloadPhoto(url: String, progress: @escaping DownloadProgress, completion: @escaping PhotoLoadingCompletion)
+    func downloadGif(url: String, progress: @escaping DownloadProgress, completion: @escaping MediaLoadingCompletion)
+    func downloadPhoto(url: String, progress: @escaping DownloadProgress, completion: @escaping MediaLoadingCompletion)
 }
 
 protocol PhotoContainerViewProtocol: class {
@@ -30,7 +30,7 @@ class PhotoContainerView: UIView {
     @IBOutlet weak var imageWidthAnchor: NSLayoutConstraint!
     
     var url: String?
-    weak var vc: DownloadMediaProtocol?
+    weak var cell: DownloadMediaProtocol?
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -56,14 +56,16 @@ extension PhotoContainerView: PhotoContainerViewProtocol {
                 guard let self = self else { return }
                 self.progressView.setProgressWithAnimation(value: progress)
             }) { [weak self] (image, url) in
-                guard let self = self else { return }
-                self.photoView.image = image
-                self.progressView.layer.removeAnimation(forKey: Constants.progressAnimationKey)
-                UIView.animate(withDuration: Constants.mediaApperanceAnimationDuration, animations: {
-                    self.photoView.alpha = 1
-                })
-                self.photoView.startAnimating()
-                self.progressView.isHidden = true
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    self.photoView.image = image
+                    self.progressView.layer.removeAnimation(forKey: Constants.progressAnimationKey)
+                    UIView.animate(withDuration: Constants.mediaApperanceAnimationDuration, animations: {
+                        self.photoView.alpha = 1
+                    })
+                    self.photoView.startAnimating()
+                    self.progressView.isHidden = true
+                }
             }
         }
     }
@@ -78,13 +80,15 @@ extension PhotoContainerView: PhotoContainerViewProtocol {
                 guard let self = self else { return }
                 self.progressView.setProgressWithAnimation(value: progress)
             }) { [weak self] (image, url) in
-                guard let self = self else { return }
-                if self.url == url {
-                    self.photoView.image = image
-                    UIView.animate(withDuration: Constants.mediaApperanceAnimationDuration, animations: {
-                        self.photoView.alpha = 1
-                    })
-                    self.photoView.startAnimating()
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    if self.url == url {
+                        self.photoView.image = image
+                        UIView.animate(withDuration: Constants.mediaApperanceAnimationDuration, animations: {
+                            self.photoView.alpha = 1
+                        })
+                        self.photoView.startAnimating()
+                    }
                 }
             }
         }
@@ -99,11 +103,11 @@ extension PhotoContainerView: PhotoContainerViewProtocol {
 }
 
 private extension PhotoContainerView {
-    func downloadPhoto(withUrl url: String, progress: @escaping DownloadProgress, completion: @escaping PhotoLoadingCompletion) {
-        vc?.downloadPhoto(url: url, progress: progress, completion: completion)
+    func downloadPhoto(withUrl url: String, progress: @escaping DownloadProgress, completion: @escaping MediaLoadingCompletion) {
+        cell?.downloadPhoto(url: url, progress: progress, completion: completion)
     }
     
-    func downloadGif(withUrl url: String, progress: @escaping DownloadProgress, completion: @escaping PhotoLoadingCompletion) {
-        vc?.downloadGif(url: url, progress: progress, completion: completion)
+    func downloadGif(withUrl url: String, progress: @escaping DownloadProgress, completion: @escaping MediaLoadingCompletion) {
+        cell?.downloadGif(url: url, progress: progress, completion: completion)
     }
 }

@@ -45,7 +45,6 @@ class UploadPostSelectedCell: UICollectionViewCell {
     }
     
     func updateProgress(progress: Float) {
-        print("PROGRESS: \(progress)")
         cancelView.setProgressWithAnimation(value: progress)
     }
     

@@ -38,7 +38,18 @@ extension RequestError: LocalizedError {
         case .badData:
             return NSLocalizedString("Bad data", comment: "Something wrong with request body")
         case .apiError(let error):
-            return NSLocalizedString("Api error", comment: error.errorMessage ?? "Sorry, your request can't be processed")
+            return NSLocalizedString("Api error: \(error.errorMessage ?? "something wrong")", comment: error.errorMessage ?? "Sorry, your request can't be processed")
+        }
+    }
+}
+
+extension RequestError {
+    public var apiError: VkApiRequestError? {
+        switch self {
+        case .apiError(let error):
+            return error
+        default:
+            return nil
         }
     }
 }
@@ -82,10 +93,9 @@ extension APIService: APIServiceProtocol {
                         }
                     } catch {
                         DispatchQueue.main.async {
-                            print(error as? VkApiRequestError)
-                            //if let error = error {
+                            if let error = error as? RequestError {
                                 completion(nil, error)
-                            //}
+                            }
                         }
                     }
                 })
@@ -118,8 +128,10 @@ extension APIService: APIServiceProtocol {
                         completion(response, nil)
                     }
                 } catch {
-                    DispatchQueue.main.async {
-                        completion(nil, error)
+                    if let error = error as? RequestError {
+                        DispatchQueue.main.async {
+                            completion(nil, error)
+                        }
                     }
                 }
             })

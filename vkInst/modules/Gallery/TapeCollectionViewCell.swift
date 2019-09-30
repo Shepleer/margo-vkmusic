@@ -112,7 +112,7 @@ class TapeCollectionViewCell: UICollectionViewCell {
         pageControl.numberOfPages = mediaFiles.count
         for mediaFile in mediaFiles {
             let PhotoContainerView: PhotoContainerView = .fromNib()
-            PhotoContainerView.vc = self
+            PhotoContainerView.cell = self
             if let gif = mediaFile as? Gif {
                 PhotoContainerView.setMediaContent(mediaFile: gif)
             } else if let image = mediaFile as? Image {
@@ -145,20 +145,30 @@ class TapeCollectionViewCell: UICollectionViewCell {
         guard let postId = data?.id else { return }
         guard let ownerId = data?.ownerId else { return }
         if data?.isUserLikes == true {
-            startDeselectLikeAnimation()
+            startLikeAnimation(setLike: false)
             data?.isUserLikes = false
             likeButton.isSelected = false
-            vc?.removeLike(postId: postId, ownerId: ownerId, completion: { (likesCount) in
-                self.data?.likesCount = likesCount
-                self.likesCountLabel.text = "\(likesCount) \(Constants.likesCountLabel)"
+            vc?.removeLike(postId: postId, ownerId: ownerId, completion: { [weak self] (likesCount, error, url) in
+                guard let self = self else { return }
+                if let likesCount = likesCount {
+                    self.data?.likesCount = likesCount
+                    self.likesCountLabel.text = "\(likesCount) \(Constants.likesCountLabel)"
+                } else if let error = error {
+                    self.vc?.showError(error: error)
+                }
             })
         } else {
-            startSelectLikeAnimation()
+            startLikeAnimation(setLike: true)
             data?.isUserLikes = true
             likeButton.isSelected = true
-            vc?.setLike(postId: postId, ownerId: ownerId, completion: { (likesCount) in
-                self.data?.likesCount = likesCount
-                self.likesCountLabel.text = "\(likesCount) \(Constants.likesCountLabel)"
+            vc?.setLike(postId: postId, ownerId: ownerId, completion: { [weak self] (likesCount, error, url) in
+                guard let self = self else { return }
+                if let likesCount = likesCount {
+                    self.data?.likesCount = likesCount
+                    self.likesCountLabel.text = "\(likesCount) \(Constants.likesCountLabel)"
+                } else if let error = error {
+                    self.vc?.showError(error: error)
+                }
             })
         }
     }
@@ -216,12 +226,12 @@ extension TapeCollectionViewCell: UIGestureRecognizerDelegate {
 }
 
 extension TapeCollectionViewCell: DownloadMediaProtocol {
-    func downloadPhoto(url: String, progress: @escaping DownloadProgress, completion: @escaping PhotoLoadingCompletion) {
+    func downloadPhoto(url: String, progress: @escaping DownloadProgress, completion: @escaping MediaLoadingCompletion) {
         isLoaded = false
         vc?.cellIsLoading(url: url, progress: progress, completion: completion)
     }
     
-    func downloadGif(url: String, progress: @escaping DownloadProgress, completion: @escaping PhotoLoadingCompletion) {
+    func downloadGif(url: String, progress: @escaping DownloadProgress, completion: @escaping MediaLoadingCompletion) {
         isLoaded = false
         vc?.loadGif(url: url, progress: progress, completion: completion)
     }
@@ -235,14 +245,19 @@ private extension TapeCollectionViewCell {
                 if data?.isUserLikes == false {
                     guard let postId = data?.id else { return }
                     guard let ownerId = data?.ownerId else { return }
-                    vc?.setLike(postId: postId, ownerId: ownerId, completion: { (likesCount) in
-                        self.data?.isUserLikes = true
-                        self.likeButton.isSelected = true
-                        self.likesCountLabel.text = "\(likesCount) \(Constants.likesCountLabel)"
+                    vc?.setLike(postId: postId, ownerId: ownerId, completion: { [weak self] (likesCount, error, url) in
+                        guard let self = self else { return }
+                        if let likesCount = likesCount {
+                            self.data?.isUserLikes = true
+                            self.likeButton.isSelected = true
+                            self.likesCountLabel.text = "\(likesCount) \(Constants.likesCountLabel)"
+                        } else if let error = error {
+                            self.vc?.showError(error: error)
+                        }
                     })
                 }
                 startBigLikeAppearAnimation()
-                startSelectLikeAnimation()
+                startLikeAnimation(setLike: true)
             }
         }
     }
@@ -326,7 +341,7 @@ private extension TapeCollectionViewCell {
     }
     
     
-    func startDeselectLikeAnimation() {
+    func startLikeAnimation(setLike: Bool) {
         hearthImageViewWidthAnchor.constant = 0
         hearthImageViewHeightAnchor.constant = 0
         UIView.animate(withDuration: Constants.likeAnimationDuration,
@@ -336,38 +351,17 @@ private extension TapeCollectionViewCell {
                        options: .curveEaseOut,
                        animations: {
                         self.layoutIfNeeded()
-                        self.hearthImageView.alpha = 0
+                        if setLike {
+                            self.hearthImageView.alpha = Constants.animationLikeAlpha
+                        } else {
+                            self.hearthImageView.alpha = 0
+                        }
         }) { (complete) in
-            self.hearthImageView.image = Constants.emptyHearthImage
-            self.hearthImageViewHeightAnchor.constant = Constants.activeLikeSizeAnchor
-            self.hearthImageViewWidthAnchor.constant = Constants.activeLikeSizeAnchor
-            UIView.animate(withDuration: Constants.likeAnimationDuration,
-                           delay: 0.0,
-                           usingSpringWithDamping: Constants.animationSpringWithDamping,
-                           initialSpringVelocity: 0.0,
-                           options: .curveEaseOut,
-                           animations: {
-                            self.layoutIfNeeded()
-                            self.hearthImageView.alpha = 1.0
-            }, completion: { (complete) in
-                
-            })
-        }
-    }
-    
-    func startSelectLikeAnimation() {
-        hearthImageViewWidthAnchor.constant = 0
-        hearthImageViewHeightAnchor.constant = 0
-        UIView.animate(withDuration: Constants.likeAnimationDuration,
-                       delay: Constants.selectLikeAnimationDelay,
-                       usingSpringWithDamping: Constants.animationSpringWithDamping,
-                       initialSpringVelocity: 0.0,
-                       options: .curveEaseOut,
-                       animations: {
-                        self.layoutIfNeeded()
-                        self.hearthImageView.alpha = Constants.animationLikeAlpha
-        }) { (complete) in
-            self.hearthImageView.image = Constants.fillHearthImage
+            if setLike {
+                self.hearthImageView.image = Constants.fillHearthImage
+            } else {
+                self.hearthImageView.image = Constants.emptyHearthImage
+            }
             self.hearthImageViewHeightAnchor.constant = Constants.activeLikeSizeAnchor
             self.hearthImageViewWidthAnchor.constant = Constants.activeLikeSizeAnchor
             UIView.animate(withDuration: Constants.likeAnimationDuration,

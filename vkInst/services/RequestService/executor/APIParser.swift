@@ -18,6 +18,7 @@ class APIParser: APIParserProtocol {
     func parse<T: Mappable>(data: Data) throws -> T? {
         do {
             let json = try JSONSerialization.jsonObject(with: data, options: .allowFragments)
+            print(json)
             guard let dictionary = json as? [String: Any] else {
                 throw RequestError.invalidJSON
             }
@@ -45,16 +46,20 @@ class APIParser: APIParserProtocol {
         return nil
     }
     
-    
     func parse<T: Mappable>(data: Data) throws -> Array<T> {
         do {
             guard let json = try JSONSerialization.jsonObject(with: data, options: .allowFragments) as? [String: Any] else { fatalError() }
-            guard let response = json["response"] as? [[String: Any]] else {
-                throw RequestError.invalidJSON
+            if let response = json["response"] as? [[String: Any]] {
+                return Mapper<T>().mapArray(JSONArray: response)
+            } else if let error = json["error"] as? [String: Any] {
+                if let model = Mapper<VkApiRequestError>().map(JSON: error) {
+                    let err = RequestError.apiError(error: model)
+                    throw err
+                }
             }
-            return Mapper<T>().mapArray(JSONArray: response)
         } catch {
-            throw RequestError.parseError
+            throw error
         }
+        return Array<T>()
     }
 }

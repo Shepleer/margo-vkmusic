@@ -9,68 +9,58 @@
 import UIKit
 
 typealias LoadingCompletion = ((_ image: UIImage) -> ())
-typealias PhotoLoadingCompletion = ((_ download: UIImage, _ url: String) -> ())
+typealias MediaLoadingCompletion = ((_ download: UIImage, _ url: String) -> ())
 typealias DownloadProgress = ((_ progress: Float) -> ())
 typealias Task = URLSessionDownloadTask
-typealias TaskCompletion = (completion: PhotoLoadingCompletion, progress: DownloadProgress, task: Task)
+typealias TaskCompletion = (completion: MediaLoadingCompletion, progress: DownloadProgress, task: Task, type: MediaType)
 typealias Downloads = [String: TaskCompletion]
 
 protocol DownloadServiceProtocol: class {
-    func downloadImage(url: String, progress: @escaping DownloadProgress, completion: @escaping PhotoLoadingCompletion)
-    func downloadGif(url: String, progress: @escaping DownloadProgress, completion: @escaping PhotoLoadingCompletion)
     func cancelDownload(image: Image)
     func invalidateSession()
+    func downloadMedia(url: String, type: MediaType, progress: @escaping DownloadProgress, completion: @escaping MediaLoadingCompletion)
+}
+
+enum MediaType {
+    case image
+    case gif
 }
 
 class DownloadService: NSObject {
     private var activeDownloads: Downloads = [:]
     var session: URLSession? = nil
-    let queue = DispatchQueue(label: "download_queue")
+    let queue = DispatchQueue.global(qos: .utility)
 }
 
 extension DownloadService: DownloadServiceProtocol {
-    func downloadImage(url: String, progress: @escaping DownloadProgress, completion: @escaping PhotoLoadingCompletion) {
-        queue.sync { [weak self] in
-            guard let self = self, let url = URL(string: url) else { return }
-            let req = URLRequest(url: url)
-            if let res = URLCache.shared.cachedResponse(for: req) {
-                let data = res.data
-                if let img = UIImage.gif(data: data) {
-                    completion(img, url.absoluteString)
-                } else {
-                    let strUrl = url.absoluteString
-                    guard let task = self.session?.downloadTask(with: url) else { return }
-                    self.activeDownloads[strUrl] = (completion, progress, task) as (PhotoLoadingCompletion, DownloadProgress, Task)
-                    task.resume()
-                }
-            } else {
-                let strUrl = url.absoluteString
-                guard let task = self.session?.downloadTask(with: url) else { return }
-                self.activeDownloads[strUrl] = (completion, progress, task) as (PhotoLoadingCompletion, DownloadProgress, Task)
-                task.resume()
-            }
-        }
-    }
-    
-    func downloadGif(url: String, progress: @escaping DownloadProgress, completion: @escaping PhotoLoadingCompletion) {
-        queue.sync { [weak self] in
+    func downloadMedia(url: String, type: MediaType, progress: @escaping DownloadProgress, completion: @escaping MediaLoadingCompletion) {
+        queue.async { [weak self] in
             guard let self = self , let url = URL(string: url) else { return }
             let req = URLRequest(url: url)
             if let res = URLCache.shared.cachedResponse(for: req) {
                 let data = res.data
-                if let img = UIImage.gif(data: data) {
+                var img: UIImage? = nil
+                if type == .image {
+                    img = UIImage(data: data)
+                } else if type == .gif {
+                    img = UIImage.gif(data: data)
+                }
+                if let img = img {
                     completion(img, url.absoluteString)
                 } else {
                     let strUrl = url.absoluteString
                     guard let task = self.session?.downloadTask(with: url) else { return }
-                    self.activeDownloads[strUrl] = (completion, progress, task) as (PhotoLoadingCompletion, DownloadProgress, Task)
+                    self.activeDownloads[strUrl] = (completion, progress, task, type) as (MediaLoadingCompletion, DownloadProgress, Task, MediaType)
                     task.resume()
                 }
             } else {
-                let strUrl = url.absoluteString
-                guard let task = self.session?.downloadTask(with: url) else { return }
-                self.activeDownloads[strUrl] = (completion, progress, task) as (PhotoLoadingCompletion, DownloadProgress, Task)
-                task.resume()
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    let strUrl = url.absoluteString
+                    guard let task = self.session?.downloadTask(with: url) else { return }
+                    self.activeDownloads[strUrl] = (completion, progress, task, type) as (MediaLoadingCompletion, DownloadProgress, Task, MediaType)
+                    task.resume()
+                }
             }
         }
     }
@@ -94,21 +84,28 @@ extension DownloadService: DownloadServiceProtocol {
 extension DownloadService: URLSessionDownloadDelegate {
     func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didFinishDownloadingTo location: URL) {
         do {
+            guard let absoluteUrl = downloadTask.originalRequest?.url?.absoluteString,
+                let type = activeDownloads[absoluteUrl]?.type else { return }
             let data = try Data(contentsOf: location)
-            guard let img = UIImage.gif(data: data) else { return }
-            
-            queue.async { [weak self] in
+            var img: UIImage? = nil
+            if type == .gif {
+                img = UIImage.gif(data: data)
+            } else if type == .image {
+                img = UIImage(data: data)
+            }
+            DispatchQueue.main.async { [weak self] in
                 guard let self = self, let req = downloadTask.originalRequest,
-                    let url = downloadTask.originalRequest?.url?.absoluteString else { return }
-                if let comp = self.activeDownloads[url]?.completion,
+                       let img = img else { return }
+                if let comp = self.activeDownloads[absoluteUrl]?.completion,
                     let response = downloadTask.response {
-                    if URLCache.shared.cachedResponse(for: req) == nil {
-                        URLCache.shared.storeCachedResponse(CachedURLResponse(response: response, data: data), for: req)
-                    }
-                    DispatchQueue.main.async {
-                        comp(img, url)
-                    }
-                    self.activeDownloads.removeValue(forKey: url)
+                   
+                        //guard let self = self else { return }
+                        if URLCache.shared.cachedResponse(for: req) == nil {
+                            URLCache.shared.storeCachedResponse(CachedURLResponse(response: response, data: data), for: req)
+                        }
+                        comp(img, absoluteUrl)
+                        self.activeDownloads.removeValue(forKey: absoluteUrl)
+                    
                 }
             }
         } catch {
@@ -118,11 +115,11 @@ extension DownloadService: URLSessionDownloadDelegate {
     
     func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didWriteData bytesWritten: Int64, totalBytesWritten: Int64, totalBytesExpectedToWrite: Int64) {
         queue.async { [weak self] in
-        let progress = Float(totalBytesWritten) / Float(totalBytesExpectedToWrite)
-        let url = downloadTask.originalRequest?.url
-            guard let self = self, let absoluteUrl = url?.absoluteString else { return }
-            if let comp = self.activeDownloads[absoluteUrl]?.progress {
-                DispatchQueue.main.async {
+            let progress = Float(totalBytesWritten) / Float(totalBytesExpectedToWrite)
+            let url = downloadTask.originalRequest?.url
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self, let absoluteUrl = url?.absoluteString else { return }
+                if let comp = self.activeDownloads[absoluteUrl]?.progress {
                     comp(progress)
                 }
             }

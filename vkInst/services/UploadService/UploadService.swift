@@ -10,7 +10,7 @@ import Foundation
 import ObjectMapper
 
 
-typealias PostUploadCompletion = (_ id: Int) -> ()
+typealias PostUploadCompletion = (_ id: Int?, _ error: RequestError?, _ url: String) -> ()
 typealias UploadProgress = ((_ progress: Float) -> ())
 typealias UploadTaskComletions = (completion: PostUploadCompletion, progress: UploadProgress, cancel: CancelCompletion, task: URLSessionUploadTask)
 typealias ActiveUploads = [String: UploadTaskComletions]
@@ -124,12 +124,15 @@ private extension UploadService {
                     .replacingOccurrences(of: "[hash]", with: "\(hash)")
                     .replacingOccurrences(of: "[token]", with: token)
         requestService.getData(urlStr: url, method: .get, completion: { [weak self] (response: [Image]?, err) in
-            guard let self = self,
-                let id = response?.first?.id,
-                let completion = self.activeUploads[fileName]?.completion
-                else { return }
-            DispatchQueue.main.async {
-                completion(id)
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self,
+                    let completion = self.activeUploads[fileName]?.completion
+                    else { return }
+                if let id = response?.first?.id {
+                    completion(id, nil, url)
+                } else if let err = err as? RequestError {
+                    completion(nil, err, url)
+                }
             }
         })
     }

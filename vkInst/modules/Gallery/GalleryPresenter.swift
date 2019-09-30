@@ -25,6 +25,7 @@ protocol GalleryPresenterProtocol {
     func releaseDownloadSession()
     func getProfile()
     func refreshPageService()
+    func moveToLogInScreen()
 }
 
 class GalleryPresenter: NSObject {
@@ -51,11 +52,11 @@ extension GalleryPresenter: GalleryPresenterProtocol {
     }
     
     func loadImage(url: String, progress: @escaping (_ progress: Float) -> (), completion: @escaping (_ image: UIImage, _ url: String) -> ()) {
-        downloadService?.downloadImage(url: url, progress: progress, completion: completion)
+        downloadService?.downloadMedia(url: url, type: .image, progress: progress, completion: completion)
     }
     
     func loadGif(url: String, progress: @escaping (_ progress: Float) -> (), completion: @escaping (_ image: UIImage, _ url: String) -> ()) {
-        downloadService?.downloadGif(url: url, progress: progress, completion: completion)
+        downloadService?.downloadMedia(url: url, type: .gif, progress: progress, completion: completion)
     }
     
     func fetchComments(postId: Int, ownerId: Int, completion: @escaping CommentsCompletion) {
@@ -97,16 +98,28 @@ extension GalleryPresenter: GalleryPresenterProtocol {
     }
     
     func getProfile() {
-        userService?.getUserProfileInfo(completion: { (user) in
-            self.downloadService?.downloadImage(url: user.avatarPhotoUrl!, progress: { (progress) in
-            }, completion: { (img, err) in
-                self.vc?.loadAvatar(image: img)
-            })
-            self.vc?.setProfileData(user: user)
+        userService?.getUserProfileInfo(completion: { [weak self] (user, err, url) in
+            guard let self = self else { return }
+            if let avatarUrl = user?.avatarPhotoUrl {
+                self.downloadService?.downloadMedia(url: avatarUrl, type: .image, progress: { (progress) in
+                }, completion: { [weak self] (img, err) in
+                    guard let self = self else { return }
+                    self.vc?.loadAvatar(image: img)
+                })
+            }
+            if let user = user {
+                self.vc?.setProfileData(user: user, error: nil)
+            } else if let error = err {
+                self.vc?.setProfileData(user: nil, error: error)
+            }
         })
     }
     
     func refreshPageService() {
         pageService?.refreshPageService()
+    }
+    
+    func moveToLogInScreen() {
+        router?.moveToLogInScreen()
     }
 }

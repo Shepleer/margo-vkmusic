@@ -12,6 +12,7 @@ protocol GalleryRouterProtocol {
     func moveToDetailScreen(post: Post, currentPage: Int, profile: User)
     func moveToUploadPostScreen()
     func moveToSettingsScreen()
+    func moveToLogInScreen()
 }
 
 class ImagesRouter {
@@ -32,5 +33,19 @@ extension ImagesRouter: GalleryRouterProtocol {
     func moveToSettingsScreen() {
         guard let viewController = Builder.shared.buildSettingsScreen() else { return }
         vc?.navigationController?.pushViewController(viewController, animated: true)
+    }
+    
+    func moveToLogInScreen() {
+        guard let galleryViewController = vc as? GalleryViewController,
+            let viewController = Builder.shared.buildLogInScreen(),
+            let window = UIApplication.shared.keyWindow,
+            let rootViewController = window.rootViewController else { return }
+        viewController.view.frame = rootViewController.view.frame
+        viewController.view.layoutIfNeeded()
+        UIView.animate(withDuration: 0.3, animations: {
+            window.rootViewController = viewController
+        }) { (complete) in
+            galleryViewController.viewControllerWillReleased()
+        }
     }
 }
