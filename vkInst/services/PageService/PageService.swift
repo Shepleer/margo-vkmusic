@@ -25,7 +25,8 @@ class PageService {
     private var token = UserDefaults.standard.string(forKey: "accessToken") ?? "Token has expired"
     private struct RequestConfigurations {
         static let offsetMultiplier = 30
-        static var fetchPostUrlTemplate = "https://api.vk.com/method/wall.get?count=60&offset=[offset]&extended=1&access_token=[token]&v=5.101"
+        static let postsCount = 30
+        static var fetchPostUrlTemplate = "https://api.vk.com/method/wall.get?count=[count]&offset=[offset]&extended=1&access_token=[token]&v=5.101"
     }
     
     init(requestService: APIService) {
@@ -40,9 +41,10 @@ extension PageService: PageServiceProtocol {
         }
         isLoading = true
         let url = RequestConfigurations.fetchPostUrlTemplate
+            .replacingOccurrences(of: "[count]", with: "\(RequestConfigurations.postsCount)")
             .replacingOccurrences(of: "[offset]", with: "\(offset)")
             .replacingOccurrences(of: "[token]", with: token)
-        
+        print(url)
         requestService.getData(urlStr: url, method: .get, body: nil, headers: nil, completion: { [weak self] (response: PostResponse?, err) in
             if let self = self, let response = response, let count = response.count {
                 self.offset += RequestConfigurations.offsetMultiplier

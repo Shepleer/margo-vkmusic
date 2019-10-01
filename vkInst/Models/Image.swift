@@ -55,7 +55,7 @@ fileprivate struct UrlTransform: TransformType {
     
     func transformFromJSON(_ value: Any?) -> String? {
         if let items = value as? [[String: Any]] {
-            let needTypes = ["z", "w", "y", "r"]
+            let needTypes = ["z", "w", "y", "x", "r"]
             for needType in needTypes {
                 for item in items {
                     if let type = item["type"] as? String {
