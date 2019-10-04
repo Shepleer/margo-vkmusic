@@ -11,7 +11,7 @@ import UIKit
 protocol GalleryPresenterProtocol {
     func viewDidLoad()
     func postsDownloaded()
-    func cancelDownload(image: Image)
+    func cancelDownload(url: String)
     func loadImage(url: String, progress: @escaping (_ progress: Float) -> (), completion: @escaping (_ image: UIImage, _ url: String) -> ())
     func loadGif(url: String, progress: @escaping (_ progress: Float) -> (), completion: @escaping (_ image: UIImage, _ url: String) -> ())
     func setLike(postId: Int, ownerId: Int, completion: @escaping LikesCountCompletion)
@@ -31,9 +31,7 @@ protocol GalleryPresenterProtocol {
 class GalleryPresenter: NSObject {
     weak var vc: GalleryViewControllerProtocol?
     var service: APIServiceProtocol?
-    //REMOVE
-    //var downloadService: DownloadService?
-    var downloadService: TestDownloadServiceProtocol?
+    var downloadService: DownloadService?
     var userService: UserServiceProtocol?
     var pageService: PageServiceProtocol?
     var router: GalleryRouterProtocol?
@@ -45,8 +43,8 @@ extension GalleryPresenter: GalleryPresenterProtocol {
         getProfile()
     }
     
-    func cancelDownload(image: Image) {
-        downloadService?.cancelDownload(image: image)
+    func cancelDownload(url: String) {
+        downloadService?.cancelDownload(url: url)
     }
     
     func postsDownloaded() {
@@ -54,17 +52,11 @@ extension GalleryPresenter: GalleryPresenterProtocol {
     }
     
     func loadImage(url: String, progress: @escaping (_ progress: Float) -> (), completion: @escaping (_ image: UIImage, _ url: String) -> ()) {
-        var photoFile = MediaFile(url: url)
-        photoFile.type = .image
-        downloadService?.downloadMedia(with: photoFile, progress: progress, completion: completion)
-        //downloadService?.downloadMedia(url: url, type: .image, progress: progress, completion: completion)
+        downloadService?.downloadMedia(url: url, type: .image, progress: progress, completion: completion)
     }
     
     func loadGif(url: String, progress: @escaping (_ progress: Float) -> (), completion: @escaping (_ image: UIImage, _ url: String) -> ()) {
-        var gifFile = MediaFile(url: url)
-        gifFile.type = .gif
-        downloadService?.downloadMedia(with: gifFile, progress: progress, completion: completion)
-        //downloadService?.downloadMedia(url: url, type: .gif, progress: progress, completion: completion)
+        downloadService?.downloadMedia(url: url, type: .gif, progress: progress, completion: completion)
     }
     
     func fetchComments(postId: Int, ownerId: Int, completion: @escaping CommentsCompletion) {
@@ -109,10 +101,7 @@ extension GalleryPresenter: GalleryPresenterProtocol {
         userService?.getUserProfileInfo(completion: { [weak self] (user, err, url) in
             guard let self = self else { return }
             if let avatarUrl = user?.avatarPhotoUrl {
-                var photoFile = MediaFile.init(url: avatarUrl)
-                photoFile.type = .image
-                //self.downloadService?.downloadMedia(url: avatarUrl, type: .image, progress: { (progress) in
-                self.downloadService?.downloadMedia(with: photoFile, progress: { (progress) in
+                self.downloadService?.downloadMedia(url: avatarUrl, type: .image, progress: { (progress) in
                 }, completion: { [weak self] (img, err) in
                     guard let self = self else { return }
                     self.vc?.loadAvatar(image: img)

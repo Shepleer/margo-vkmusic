@@ -118,8 +118,8 @@ class GalleryViewController: UIViewController {
         configurePresentation()
     }
     
-    func cancellingDownload(image: Image) {
-        presenter?.cancelDownload(image: image)
+    func cancellingDownload(url: String) {
+        presenter?.cancelDownload(url: url)
     }
     
     @IBAction func curveButtonDidPressed(_ sender: UIButton) {

@@ -26,9 +26,7 @@ class DetailPostPresenter {
     var router: DetailPostRouterProtocol?
     var pagingService: CommentsPageServiceProtocol?
     var userService: UserServiceProtocol?
-    //REMOVE IF NOT WORK
-    //var downloadService: DownloadServiceProtocol?
-    var downloadService: TestDownloadServiceProtocol?
+    var downloadService: DownloadServiceProtocol?
 }
 
 extension DetailPostPresenter: DetailPostPresenterProtocol {
@@ -65,17 +63,11 @@ extension DetailPostPresenter: DetailPostPresenterProtocol {
     }
     
     func downloadPhoto(url: String, progress: @escaping DownloadProgress, completion: @escaping MediaLoadingCompletion) {
-        var photoFile = MediaFile(url: url)
-        photoFile.type = .image
-        downloadService?.downloadMedia(with: photoFile, progress: progress, completion: completion)
-        //downloadService?.downloadMedia(url: url, type: .image, progress: progress, completion: completion)
+        downloadService?.downloadMedia(url: url, type: .image, progress: progress, completion: completion)
     }
     
     func downloadGif(url: String, progress: @escaping DownloadProgress, completion: @escaping MediaLoadingCompletion) {
-        var gifFile = MediaFile(url: url)
-        gifFile.type = .gif
-        downloadService?.downloadMedia(with: gifFile, progress: progress, completion: completion)
-        //downloadService?.downloadMedia(url: url, type: .gif, progress: progress, completion: completion)
+        downloadService?.downloadMedia(url: url, type: .gif, progress: progress, completion: completion)
     }
     
     func invalidateDownloadService() {

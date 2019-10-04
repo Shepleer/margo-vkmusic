@@ -92,7 +92,7 @@ extension Post: Mappable {
             photos <- (map["copy_history"], CopyHistoryTransform())
             gifs <- (map["copy_history"], CopyHistoryGifTransform())
         }
-        if let gifUrl = gifs?.first?.url {
+        if let gifUrl = gifs?.first?.previewUrl {
             previewUrl = gifUrl
         } else if let photoUrl = photos?.first?.url {
             previewUrl = photoUrl

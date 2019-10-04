@@ -77,7 +77,6 @@
 		2C9C8B7023216E6A005F2A83 /* ThemePresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C9C8B6F23216E6A005F2A83 /* ThemePresentation.swift */; };
 		2CB3C36C22DE06B700D58C9D /* DownloadService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CB3C36B22DE06B700D58C9D /* DownloadService.swift */; };
 		2CB721EF22F1B8920041D624 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CB721EE22F1B8920041D624 /* User.swift */; };
-		2CD9289523466C7A0001494D /* TestDownloadService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CD9289423466C7A0001494D /* TestDownloadService.swift */; };
 		2CDE9128232AACCD009D4EAF /* GalleryFlowLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CDE9127232AACCD009D4EAF /* GalleryFlowLayout.swift */; };
 		2CEFEBE62328DA6400F70F2C /* Reachability.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CEFEBE52328DA6400F70F2C /* Reachability.swift */; };
 		B1F3A2572CB1FC2B1E31F4C9 /* libPods-vkInst.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8B53930506ACE031703D8175 /* libPods-vkInst.a */; };
@@ -157,7 +156,6 @@
 		2C9C8B6F23216E6A005F2A83 /* ThemePresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemePresentation.swift; sourceTree = "<group>"; };
 		2CB3C36B22DE06B700D58C9D /* DownloadService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadService.swift; sourceTree = "<group>"; };
 		2CB721EE22F1B8920041D624 /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
-		2CD9289423466C7A0001494D /* TestDownloadService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestDownloadService.swift; sourceTree = "<group>"; };
 		2CDE9127232AACCD009D4EAF /* GalleryFlowLayout.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GalleryFlowLayout.swift; sourceTree = "<group>"; };
 		2CEFEBE52328DA6400F70F2C /* Reachability.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Reachability.swift; sourceTree = "<group>"; };
 		4ADDE932BACA19C1B0EA7D08 /* Pods-margo-vkmusic.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-margo-vkmusic.debug.xcconfig"; path = "Target Support Files/Pods-margo-vkmusic/Pods-margo-vkmusic.debug.xcconfig"; sourceTree = "<group>"; };
@@ -413,7 +411,6 @@
 			isa = PBXGroup;
 			children = (
 				2CB3C36B22DE06B700D58C9D /* DownloadService.swift */,
-				2CD9289423466C7A0001494D /* TestDownloadService.swift */,
 			);
 			path = DownloadService;
 			sourceTree = "<group>";
@@ -616,7 +613,6 @@
 				2C221A0922F840F9003F9214 /* DetailPostTableViewCell.swift in Sources */,
 				2C14B21B23018F080097D4A1 /* Gif.swift in Sources */,
 				2C2AC3D322F9D3270032247E /* GalleryCollectionFooterView.swift in Sources */,
-				2CD9289523466C7A0001494D /* TestDownloadService.swift in Sources */,
 				2C4690F422CA47F50026C508 /* APIRunner.swift in Sources */,
 				2C6B23CF22FC1AD4001EDE14 /* Post.swift in Sources */,
 				2CDE9128232AACCD009D4EAF /* GalleryFlowLayout.swift in Sources */,

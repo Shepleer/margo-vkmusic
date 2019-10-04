@@ -123,10 +123,8 @@ class Builder {
         return manager
     }
     
-    //func buildDownloadService() -> DownloadService {
-    func buildDownloadService() -> TestDownloadService {
-        //let downloadService = DownloadService()
-        let downloadService = TestDownloadService()
+    func buildDownloadService() -> DownloadService {
+        let downloadService = DownloadService()
         let configuration = URLSessionConfiguration.default
         configuration.urlCache = URLCache.shared
         configuration.requestCachePolicy = .useProtocolCachePolicy

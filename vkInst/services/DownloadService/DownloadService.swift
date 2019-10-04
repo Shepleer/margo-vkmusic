@@ -16,7 +16,7 @@ typealias TaskCompletion = (completion: MediaLoadingCompletion, progress: Downlo
 typealias Downloads = [String: TaskCompletion]
 
 protocol DownloadServiceProtocol: class {
-    func cancelDownload(image: Image)
+    func cancelDownload(url: String)
     func invalidateSession()
     func downloadMedia(url: String, type: MediaType, progress: @escaping DownloadProgress, completion: @escaping MediaLoadingCompletion)
 }
@@ -29,54 +29,37 @@ enum MediaType {
 class DownloadService: NSObject {
     private var activeDownloads: Downloads = [:]
     var session: URLSession? = nil
-    let queue = DispatchQueue.global(qos: .default)
+    let queue = DispatchQueue.global(qos: .background)
 }
 
 extension DownloadService: DownloadServiceProtocol {
     func downloadMedia(url: String, type: MediaType, progress: @escaping DownloadProgress, completion: @escaping MediaLoadingCompletion) {
         queue.async { [weak self] in
             guard let self = self,
-                let url = URL(string: url) else { return }
-            let req = URLRequest(url: url)
-            if let res = URLCache.shared.cachedResponse(for: req) {
-                let data = res.data
-                var img: UIImage? = nil
-                if type == .image {
-                    img = UIImage(data: data)
-                } else if type == .gif {
-                    img = UIImage.gif(data: data)
-                }
-                if let img = img {
-                    completion(img, url.absoluteString)
-                } else {
-                    let strUrl = url.absoluteString
-                    guard let task = self.session?.downloadTask(with: url) else { return }
-                    self.activeDownloads[strUrl] = (completion, progress, task, type) as (MediaLoadingCompletion, DownloadProgress, Task, MediaType)
-                    task.resume()
-                }
-            } else {
-                DispatchQueue.main.async { [weak self] in
-                    guard let self = self else { return }
-                    let strUrl = url.absoluteString
-                    guard let task = self.session?.downloadTask(with: url) else { return }
-                    self.activeDownloads[strUrl] = (completion, progress, task, type) as (MediaLoadingCompletion, DownloadProgress, Task, MediaType)
-                    task.resume()
+                let request = self.buildRequest(with: url)
+                else { return }
+            
+            if let image = self.getCachedResponse(for: request, type: type) {
+                DispatchQueue.main.async {
+                    completion(image, url)
+                    return
                 }
             }
+            guard let task = self.session?.downloadTask(with: request) else { return }
+            DispatchQueue.main.async {
+                self.activeDownloads[url] = (completion, progress, task, type) as TaskCompletion
+            }
+            task.resume()
         }
     }
     
-    func cancelDownload(image: Image) {
+    func cancelDownload(url: String) {
         queue.async { [weak self] in
             guard let self = self,
-                let url = image.url else { return }
-            if let task = self.activeDownloads[url]?.task {
-                task.cancel()
-                DispatchQueue.main.async { [weak self] in
-                    guard let self = self else { return }
-                    self.activeDownloads.removeValue(forKey: url)
-                }
-            }
+                let task = self.activeDownloads[url]?.task
+                else { return }
+            task.cancel()
+            self.activeDownloads.removeValue(forKey: url)
         }
     }
     
@@ -88,43 +71,76 @@ extension DownloadService: DownloadServiceProtocol {
 
 extension DownloadService: URLSessionDownloadDelegate {
     func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didFinishDownloadingTo location: URL) {
-        do {
-            guard let absoluteUrl = downloadTask.originalRequest?.url?.absoluteString,
-                let type = activeDownloads[absoluteUrl]?.type else { return }
-            let data = try Data(contentsOf: location)
-            var img: UIImage? = nil
-            if type == .gif {
-                img = UIImage.gif(data: data)
-            } else if type == .image {
-                img = UIImage(data: data)
-            }
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self, let req = downloadTask.originalRequest,
-                       let img = img else { return }
-                if let comp = self.activeDownloads[absoluteUrl]?.completion,
-                    let response = downloadTask.response {
-                        if URLCache.shared.cachedResponse(for: req) == nil {
-                            URLCache.shared.storeCachedResponse(CachedURLResponse(response: response, data: data), for: req)
-                        }
-                        comp(img, absoluteUrl)
-                        self.activeDownloads.removeValue(forKey: absoluteUrl)
-                    
+        queue.sync { [weak self] in
+            do {
+                guard let self = self,
+                    let urlLiteral = downloadTask.originalRequest?.url?.absoluteString,
+                    let request = downloadTask.originalRequest,
+                    let type = self.activeDownloads[urlLiteral]?.type
+                    else { return }
+                let data = try Data(contentsOf: location)
+                guard let image = self.createMediaFile(with: type, data: data),
+                    let completion = self.activeDownloads[urlLiteral]?.completion,
+                    let response = downloadTask.response
+                    else { return }
+                completion(image, urlLiteral)
+                self.storeMediaFile(with: request, response: response, data: data)
+                DispatchQueue.main.async {
+                    self.activeDownloads.removeValue(forKey: urlLiteral)
                 }
+            } catch {
+                print(error.localizedDescription)
             }
-        } catch {
-            print(error.localizedDescription)
         }
     }
     
     func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didWriteData bytesWritten: Int64, totalBytesWritten: Int64, totalBytesExpectedToWrite: Int64) {
         queue.async { [weak self] in
+            guard let self = self,
+                let urlLiteral = downloadTask.originalRequest?.url?.absoluteString
+                else { return }
             let progress = Float(totalBytesWritten) / Float(totalBytesExpectedToWrite)
-            let url = downloadTask.originalRequest?.url
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self, let absoluteUrl = url?.absoluteString else { return }
-                if let comp = self.activeDownloads[absoluteUrl]?.progress {
-                    comp(progress)
-                }
+            self.sendProgress(on: urlLiteral, progress: progress)
+        }
+    }
+}
+
+private extension DownloadService {
+    func buildRequest(with urlLiteral: String) -> URLRequest? {
+        guard let url = URL(string: urlLiteral) else { return nil }
+        let request = URLRequest(url: url)
+        return request
+    }
+    
+    func getCachedResponse(for request: URLRequest, type: MediaType) -> UIImage? {
+            guard let response = URLCache.shared.cachedResponse(for: request) else { return nil }
+            let data = response.data
+            return createMediaFile(with: type, data: data)
+    }
+    
+    func createMediaFile(with type: MediaType, data: Data) -> UIImage? {
+        switch type {
+        case .gif:
+            return UIImage(data: data)
+        case .image:
+            return UIImage.gif(data: data)
+        }
+    }
+    
+    func sendProgress(on urlLiteral: String, progress: Float) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self,
+                let progressCompletion = self.activeDownloads[urlLiteral]?.progress
+                else { return }
+            progressCompletion(progress)
+        }
+    }
+    
+    func storeMediaFile(with request: URLRequest, response: URLResponse, data: Data) {
+        queue.sync {
+            if URLCache.shared.cachedResponse(for: request) == nil {
+                let cachedUrlResponse = CachedURLResponse(response: response, data: data)
+                URLCache.shared.storeCachedResponse(cachedUrlResponse, for: request)
             }
         }
     }
