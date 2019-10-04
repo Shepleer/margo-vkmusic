@@ -10,7 +10,7 @@ import UIKit
 
 class GridCollectionViewCell: UICollectionViewCell {
     private struct Constants {
-        static let photoAppearAnimationDuration = 0.1
+        static let photoAppearAnimationDuration = 0.3
     }
     
     
@@ -24,7 +24,10 @@ class GridCollectionViewCell: UICollectionViewCell {
     var data: Post? = nil
     
     func configure(postData: Post) {
-        guard postData.photos?.first?.url != data?.photos?.first?.url || postData.gifs?.first?.url != data?.gifs?.first?.url else { return }
+        //guard postData.photos?.first?.url != data?.photos?.first?.url || postData.gifs?.first?.url != data?.gifs?.first?.url else { return }
+        guard postData.previewUrl != data?.previewUrl,
+            let url = postData.previewUrl else { return }
+        
         configureUI()
         if let photosCount = postData.photos?.count,
             let gifsCount = postData.gifs?.count {
@@ -41,8 +44,6 @@ class GridCollectionViewCell: UICollectionViewCell {
         }
         data = postData
         
-        guard let url = postData.gifs?.first?.previewUrl ?? postData.photos?.first?.url else { return }
-        
         vc?.cellIsLoading(url: url, progress: { (progress) in
             
         }, completion: { [weak self] (image, localUrl) in
@@ -57,6 +58,11 @@ class GridCollectionViewCell: UICollectionViewCell {
                 }
             }
         })
+    }
+    
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        imageView.alpha = 0
     }
         
     func loadImage(url: String, progress: @escaping DownloadProgress, completion: @escaping MediaLoadingCompletion) {

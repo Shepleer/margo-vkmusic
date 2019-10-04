@@ -12,11 +12,9 @@ import Photos
 
 protocol UploadPostPresenterProtocol {
     func viewDidLoad()
-    func uploadPhoto(data: Data, fileName: String, progress: @escaping UploadProgress, completion: @escaping PostUploadCompletion)
     func uploadPost(message: String?, completion: @escaping PostUploadCompletion, createPostCompletion: @escaping CreatePostCompletion)
     func moveBack(newPost: Post)
     func presentGallery()
-    //func cancelUpload(fileName: String, completion: @escaping CancelCompletion)
     func cancelUpload(index: Int)
     func updateDataSource(assets: [PHAsset])
     func getCountOfUploadItems() -> Int
@@ -65,10 +63,6 @@ extension UploadPostPresenter: UploadPostPresenterProtocol {
     
     func presentGallery() {
         router?.presentExternalGalleryViewController()
-    }
-    
-    func uploadPhoto(data: Data, fileName: String, progress: @escaping UploadProgress, completion: @escaping PostUploadCompletion) {
-        //uploadService?.transferPhotosToServer(imageData: data, fileName: fileName, progress: progress, completion: completion)
     }
     
     func updateDataSource(assets: [PHAsset]) {
@@ -137,10 +131,6 @@ extension UploadPostPresenter: UploadPostPresenterProtocol {
     func getUploadImage(at indexPath: IndexPath) -> UploadImage {
         let item = indexPath.item
         return uploadImages[item]
-    }
-    
-    func pickComplete() {
-        
     }
 }
 

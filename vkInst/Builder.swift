@@ -43,13 +43,12 @@ class Builder {
         let nav = UINavigationController(rootViewController: vc)
         let presenter = GalleryPresenter()
         let router = ImagesRouter()
-        let downloadService = buildDownloadService()
         let userService = UserService(requestService: buildAPIService())
         let pageService = PageService(requestService: buildAPIService())
         router.vc = vc
         presenter.userService = userService
         presenter.pageService = pageService
-        presenter.downloadService = downloadService
+        presenter.downloadService = buildDownloadService()
         presenter.service = buildAPIService()
         presenter.vc = vc
         vc.presenter = presenter
@@ -124,12 +123,15 @@ class Builder {
         return manager
     }
     
-    func buildDownloadService() -> DownloadService {
-        let downloadService = DownloadService()
+    //func buildDownloadService() -> DownloadService {
+    func buildDownloadService() -> TestDownloadService {
+        //let downloadService = DownloadService()
+        let downloadService = TestDownloadService()
         let configuration = URLSessionConfiguration.default
         configuration.urlCache = URLCache.shared
         configuration.requestCachePolicy = .useProtocolCachePolicy
-        downloadService.session = URLSession(configuration: .default, delegate: downloadService, delegateQueue: nil)
+        let session = URLSession(configuration: .default, delegate: downloadService, delegateQueue: nil)
+        downloadService.session = session
         return downloadService
     }
     

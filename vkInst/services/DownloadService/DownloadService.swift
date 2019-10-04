@@ -29,13 +29,14 @@ enum MediaType {
 class DownloadService: NSObject {
     private var activeDownloads: Downloads = [:]
     var session: URLSession? = nil
-    let queue = DispatchQueue.global(qos: .utility)
+    let queue = DispatchQueue.global(qos: .default)
 }
 
 extension DownloadService: DownloadServiceProtocol {
     func downloadMedia(url: String, type: MediaType, progress: @escaping DownloadProgress, completion: @escaping MediaLoadingCompletion) {
         queue.async { [weak self] in
-            guard let self = self , let url = URL(string: url) else { return }
+            guard let self = self,
+                let url = URL(string: url) else { return }
             let req = URLRequest(url: url)
             if let res = URLCache.shared.cachedResponse(for: req) {
                 let data = res.data
@@ -67,10 +68,14 @@ extension DownloadService: DownloadServiceProtocol {
     
     func cancelDownload(image: Image) {
         queue.async { [weak self] in
-            guard let self = self, let url = image.url else { return }
+            guard let self = self,
+                let url = image.url else { return }
             if let task = self.activeDownloads[url]?.task {
                 task.cancel()
-                self.activeDownloads.removeValue(forKey: url)
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    self.activeDownloads.removeValue(forKey: url)
+                }
             }
         }
     }
@@ -98,8 +103,6 @@ extension DownloadService: URLSessionDownloadDelegate {
                        let img = img else { return }
                 if let comp = self.activeDownloads[absoluteUrl]?.completion,
                     let response = downloadTask.response {
-                   
-                        //guard let self = self else { return }
                         if URLCache.shared.cachedResponse(for: req) == nil {
                             URLCache.shared.storeCachedResponse(CachedURLResponse(response: response, data: data), for: req)
                         }

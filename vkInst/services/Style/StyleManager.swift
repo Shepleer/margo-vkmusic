@@ -95,7 +95,7 @@ private struct LightPalette {
 private struct DarkPallete {
     static var black: UIColor { return UIColor(red: 19/255, green: 19/255, blue: 22/255, alpha: 1) }
     static var lightBlack: UIColor { return UIColor(red: 24/255, green: 24/255, blue: 31/255, alpha: 1) }
-    static var white: UIColor { return UIColor.white }
+    static var white: UIColor { return UIColor(red: 255/255, green: 255/255, blue: 255/255, alpha: 1) }
     static var gray: UIColor { return UIColor(red: 167/255, green: 167/255, blue: 169/255, alpha: 1) }
 }
 

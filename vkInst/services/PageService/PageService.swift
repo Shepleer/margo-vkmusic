@@ -44,7 +44,6 @@ extension PageService: PageServiceProtocol {
             .replacingOccurrences(of: "[count]", with: "\(RequestConfigurations.postsCount)")
             .replacingOccurrences(of: "[offset]", with: "\(offset)")
             .replacingOccurrences(of: "[token]", with: token)
-        print(url)
         requestService.getData(urlStr: url, method: .get, body: nil, headers: nil, completion: { [weak self] (response: PostResponse?, err) in
             if let self = self, let response = response, let count = response.count {
                 self.offset += RequestConfigurations.offsetMultiplier

@@ -18,7 +18,6 @@ protocol UploadPostViewControllerProtocol: class {
 
 class UploadPostViewController: UIViewController {
     
-    
     @IBOutlet weak var collectionViewHeightConstraint: NSLayoutConstraint!
     @IBOutlet weak var endSelectPhotosButton: UIButton!
     @IBOutlet weak var photoPickerCollectionView: UICollectionView!
@@ -34,8 +33,6 @@ class UploadPostViewController: UIViewController {
     @IBOutlet weak var openGalleryView: UIView!
     @IBOutlet weak var cancelButton: UIButton!
     @IBOutlet weak var textViewContainer: UIView!
-    
-    
     
     private struct Constants {
         static let pickerCollectionViewCellReuseIdentifier = "galleryPhotoCell"
@@ -223,8 +220,6 @@ extension UploadPostViewController: UITextViewDelegate {
         }
         updateDoneButtonState()
     }
-    
-    
     
     func textViewDidEndEditing(_ textField: UITextView) {
         let currentTheme = ThemeService.currentTheme()

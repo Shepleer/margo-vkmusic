@@ -18,9 +18,9 @@ class DetailPostTableViewCell: UITableViewCell {
     
     override func layoutSubviews() {
         super.layoutSubviews()
-        let currentTheme = ThemeService.currentTheme()
-        contentView.backgroundColor = currentTheme.backgroundColor
-        commentLabel.textColor      = currentTheme.primaryColor
+        let currentTheme                = ThemeService.currentTheme()
+        contentView.backgroundColor     = currentTheme.backgroundColor
+        commentLabel.textColor          = currentTheme.primaryColor
     }
     
     func configureCell(data: Comment) {

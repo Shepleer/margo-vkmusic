@@ -18,7 +18,7 @@ class APIParser: APIParserProtocol {
     func parse<T: Mappable>(data: Data) throws -> T? {
         do {
             let json = try JSONSerialization.jsonObject(with: data, options: .allowFragments)
-            print(json)
+            //print(json)
             guard let dictionary = json as? [String: Any] else {
                 throw RequestError.invalidJSON
             }

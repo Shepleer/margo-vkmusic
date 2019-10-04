@@ -59,6 +59,7 @@ struct Post {
     //var groups: [Group]?
     var photos: [Image]?
     var gifs: [Gif]?
+    var previewUrl: String?
 }
 
 extension Post: Mappable {
@@ -90,6 +91,11 @@ extension Post: Mappable {
         } else {
             photos <- (map["copy_history"], CopyHistoryTransform())
             gifs <- (map["copy_history"], CopyHistoryGifTransform())
+        }
+        if let gifUrl = gifs?.first?.url {
+            previewUrl = gifUrl
+        } else if let photoUrl = photos?.first?.url {
+            previewUrl = photoUrl
         }
     }
 }
