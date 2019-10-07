@@ -29,26 +29,23 @@ enum MediaType {
 class DownloadService: NSObject {
     private var activeDownloads: Downloads = [:]
     var session: URLSession? = nil
-    let queue = DispatchQueue.global(qos: .background)
+    let queue = DispatchQueue.global(qos: .unspecified)
 }
 
 extension DownloadService: DownloadServiceProtocol {
     func downloadMedia(url: String, type: MediaType, progress: @escaping DownloadProgress, completion: @escaping MediaLoadingCompletion) {
-        queue.async { [weak self] in
+        queue.sync { [weak self] in
             guard let self = self,
                 let request = self.buildRequest(with: url)
                 else { return }
-            
-            if let image = self.getCachedResponse(for: request, type: type) {
-                DispatchQueue.main.async {
+                if let image = self.getCachedResponse(for: request, type: type) {
                     completion(image, url)
                     return
                 }
-            }
+            
             guard let task = self.session?.downloadTask(with: request) else { return }
-            DispatchQueue.main.async {
+            
                 self.activeDownloads[url] = (completion, progress, task, type) as TaskCompletion
-            }
             task.resume()
         }
     }
@@ -71,9 +68,9 @@ extension DownloadService: DownloadServiceProtocol {
 
 extension DownloadService: URLSessionDownloadDelegate {
     func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didFinishDownloadingTo location: URL) {
-        queue.sync { [weak self] in
+        queue.sync { //[weak self] in
             do {
-                guard let self = self,
+                guard //let self = self,
                     let urlLiteral = downloadTask.originalRequest?.url?.absoluteString,
                     let request = downloadTask.originalRequest,
                     let type = self.activeDownloads[urlLiteral]?.type
@@ -95,12 +92,15 @@ extension DownloadService: URLSessionDownloadDelegate {
     }
     
     func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didWriteData bytesWritten: Int64, totalBytesWritten: Int64, totalBytesExpectedToWrite: Int64) {
-        queue.async { [weak self] in
+        queue.sync { [weak self] in
+            print(Thread.current)
             guard let self = self,
                 let urlLiteral = downloadTask.originalRequest?.url?.absoluteString
                 else { return }
             let progress = Float(totalBytesWritten) / Float(totalBytesExpectedToWrite)
+            DispatchQueue.main.async {
             self.sendProgress(on: urlLiteral, progress: progress)
+            }
         }
     }
 }
@@ -113,35 +113,30 @@ private extension DownloadService {
     }
     
     func getCachedResponse(for request: URLRequest, type: MediaType) -> UIImage? {
-            guard let response = URLCache.shared.cachedResponse(for: request) else { return nil }
-            let data = response.data
-            return createMediaFile(with: type, data: data)
+        guard let response = URLCache.shared.cachedResponse(for: request) else { return nil }
+        let data = response.data
+        return createMediaFile(with: type, data: data)
     }
     
     func createMediaFile(with type: MediaType, data: Data) -> UIImage? {
         switch type {
         case .gif:
-            return UIImage(data: data)
-        case .image:
             return UIImage.gif(data: data)
+        case .image:
+            return UIImage(data: data)
         }
     }
     
     func sendProgress(on urlLiteral: String, progress: Float) {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self,
-                let progressCompletion = self.activeDownloads[urlLiteral]?.progress
-                else { return }
-            progressCompletion(progress)
-        }
+        
+        guard let progressCompletion = self.activeDownloads[urlLiteral]?.progress else { return }
+        progressCompletion(progress)
     }
     
     func storeMediaFile(with request: URLRequest, response: URLResponse, data: Data) {
-        queue.sync {
-            if URLCache.shared.cachedResponse(for: request) == nil {
-                let cachedUrlResponse = CachedURLResponse(response: response, data: data)
-                URLCache.shared.storeCachedResponse(cachedUrlResponse, for: request)
-            }
+        if URLCache.shared.cachedResponse(for: request) == nil {
+            let cachedUrlResponse = CachedURLResponse(response: response, data: data)
+            URLCache.shared.storeCachedResponse(cachedUrlResponse, for: request)
         }
     }
 }

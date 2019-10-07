@@ -41,7 +41,11 @@ extension Image: Mappable {
     
     mutating func mapping(map: Map) {
         accessKey <- (map["access_key"])
-        url <- (map["sizes"], UrlTransform())
+        if map["ext"].value() == "jpg" {
+            url <- (map["url"])
+        } else {
+            url <- (map["sizes"], UrlTransform())
+        }
         id <- (map["id"])
         albumId <- (map["album_id"])
         ownerId <- (map["owner_id"])

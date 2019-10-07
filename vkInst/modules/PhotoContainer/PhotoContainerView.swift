@@ -79,11 +79,11 @@ extension PhotoContainerView: PhotoContainerViewProtocol {
             downloadGif(withUrl: url, progress: { [weak self] (progress) in
                 guard let self = self else { return }
                 self.progressView.setProgressWithAnimation(value: progress)
-            }) { [weak self] (image, url) in
+            }) { [weak self] (gif, url) in
                 DispatchQueue.main.async { [weak self] in
                     guard let self = self else { return }
                     if self.url == url {
-                        self.photoView.image = image
+                        self.photoView.image = gif
                         UIView.animate(withDuration: Constants.mediaApperanceAnimationDuration, animations: {
                             self.photoView.alpha = 1
                         })

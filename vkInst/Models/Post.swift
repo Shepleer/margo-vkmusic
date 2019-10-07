@@ -112,6 +112,12 @@ fileprivate struct AttachmentsTransform: TransformType {
                     if let img = Image.init(map: Map(mappingType: .fromJSON, JSON: photo)) {
                         photos.append(img)
                     }
+                } else if let document = item["doc"] as? [String: Any] {
+                    if (document["ext"] as? String) == "jpg" {
+                        if let image = Image(map: Map(mappingType: .fromJSON, JSON: document)) {
+                            photos.append(image)
+                        }
+                    }
                 }
             }
         }
@@ -135,6 +141,12 @@ fileprivate struct CopyHistoryTransform: TransformType {
                     if let photo = item["photo"] as? [String: Any] {
                         if let img = Image.init(map: Map(mappingType: .fromJSON, JSON: photo)) {
                             photos.append(img)
+                        }
+                    } else if let document = item["doc"] as? [String: Any] {
+                        if (document["ext"] as? String) == "jpg" {
+                            if let img = Image.init(map: Map(mappingType: .fromJSON, JSON: document)) {
+                                photos.append(img)
+                            }
                         }
                     }
                 }

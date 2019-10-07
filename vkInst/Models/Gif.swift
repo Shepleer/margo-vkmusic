@@ -30,8 +30,6 @@ extension Gif: Mappable {
 }
 
 fileprivate struct previewUrlTransform: TransformType {
-  
-    
     typealias Object = String
     
     typealias JSON = [String: Any]
