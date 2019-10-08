@@ -45,7 +45,8 @@ extension DownloadService: DownloadServiceProtocol {
             
             guard let task = self.session?.downloadTask(with: request) else { return }
             
-                self.activeDownloads[url] = (completion, progress, task, type) as TaskCompletion
+            let taskCompletion: TaskCompletion = (completion, progress, task, type)
+            self.activeDownloads.updateValue(taskCompletion, forKey: url)
             task.resume()
         }
     }
