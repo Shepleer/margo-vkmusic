@@ -12,16 +12,25 @@ protocol PageServiceProtocol {
     func nextFetch(completion: @escaping (_ photos: [Post]) -> ()) -> ()
     func fetchComplete()
     func checkIsAllLoaded() -> Bool
+    func refreshPageService()
 }
 
 class PageService {
     private var offset: Int = 0
     private var isLoading: Bool = false
     private var isAllLoaded: Bool = false
-    var requestService: APIService?
+    var requestService: APIService
+    
+    private var userId = UserDefaults.standard.string(forKey: "userId") ?? "Token has expired"
+    private var token = UserDefaults.standard.string(forKey: "accessToken") ?? "Token has expired"
     private struct RequestConfigurations {
-        static let userId = UserDefaults.standard.string(forKey: "userId")!
-        static let token = UserDefaults.standard.string(forKey: "accessToken")!
+        static let offsetMultiplier = 30
+        static let postsCount = 30
+        static var fetchPostUrlTemplate = "https://api.vk.com/method/wall.get?count=[count]&offset=[offset]&extended=1&access_token=[token]&v=5.101"
+    }
+    
+    init(requestService: APIService) {
+        self.requestService = requestService
     }
 }
 
@@ -31,11 +40,14 @@ extension PageService: PageServiceProtocol {
             return
         }
         isLoading = true
-        let url = "https://api.vk.com/method/wall.get?owner_id=454963921&count=60&offset=\(offset)&extended=1&access_token=\(RequestConfigurations.token)&v=5.101"
-        requestService?.getData(urlStr: url, method: .get, body: nil, headers: nil, completion: { (response: PostResponse?, err) in
-            if let response = response {
-                self.offset += 60
-                if response.count! <= self.offset {
+        let url = RequestConfigurations.fetchPostUrlTemplate
+            .replacingOccurrences(of: "[count]", with: "\(RequestConfigurations.postsCount)")
+            .replacingOccurrences(of: "[offset]", with: "\(offset)")
+            .replacingOccurrences(of: "[token]", with: token)
+        requestService.getData(urlStr: url, method: .get, body: nil, headers: nil, completion: { [weak self] (response: PostResponse?, err) in
+            if let self = self, let response = response, let count = response.count {
+                self.offset += RequestConfigurations.offsetMultiplier
+                if count <= self.offset {
                     self.isAllLoaded = true
                 }
                 guard let posts = response.items?.filter({ $0.photos?.isEmpty == false || $0.gifs?.isEmpty == false }) else { return }
@@ -50,5 +62,11 @@ extension PageService: PageServiceProtocol {
     
     func fetchComplete() {
         isLoading = false
+    }
+    
+    func refreshPageService() {
+        isLoading = false
+        isAllLoaded = false
+        offset = 0
     }
 }

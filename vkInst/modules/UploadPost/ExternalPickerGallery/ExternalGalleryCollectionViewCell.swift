@@ -9,14 +9,13 @@
 import UIKit
 import Photos
 
-
 class ExternalGalleryCollectionViewCell: UICollectionViewCell {
     @IBOutlet var imageView: UIImageView!
     @IBOutlet weak var circularView: UIView!
     @IBOutlet weak var serialNumberLabel: UILabel!
     
     var representedAssetIdentifier: String!
-    var requestManager = PHCachingImageManager()
+    var requestManager = PHImageManager()
     
     override func awakeFromNib() {
         super.awakeFromNib()

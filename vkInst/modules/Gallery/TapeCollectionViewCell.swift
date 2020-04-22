@@ -9,15 +9,32 @@
 import UIKit
 
 class TapeCollectionViewCell: UICollectionViewCell {
+    private struct Constants {
+        static let activeBigLikeSizeAnchor = CGFloat(70.0)
+        static let activeLikeSizeAnchor = CGFloat(25.0)
+        static let bigLikeAnimationDuration = 0.4
+        static let likeAnimationDuration = 0.15
+        static let animationSpringWithDamping = CGFloat(0.5)
+        static let selectLikeAnimationDelay = 0.1
+        static let animationLikeAlpha = CGFloat(0.5)
+        static let activeBigLikeAlpha = CGFloat(0.7)
+        static let hideBigLikeAnimationDuration = 0.2
+        static let summaryRowHeightMultiplier = CGFloat(5)
+        static let numberOfSections = 1
+        static let scaleEndAnimationDuration = 0.3
+        static let likesCountLabel = "likes"
+        static let fillHearthImage = UIImage(named: "HearthFill")
+        static let emptyHearthImage = UIImage(named: "HearthDeselected")
+    }
     
+    @IBOutlet weak var bigLikeWidthAnchor: NSLayoutConstraint!
+    @IBOutlet weak var bigLikeHeightAnchor: NSLayoutConstraint!
+    @IBOutlet weak var bigLikeImageView: UIImageView!
+    @IBOutlet weak var photoWidthAnchor: NSLayoutConstraint!
+    @IBOutlet weak var scrollViewHeightAnchor: NSLayoutConstraint!
     
-    @IBOutlet weak var commentLabel: UILabel!
-    @IBOutlet weak var viewsCountLabel: UILabel!
-    @IBOutlet weak var avatarImageView: UIImageView!
-    @IBOutlet weak var nicknameLabel: UILabel!
-    @IBOutlet weak var imageView: UIImageView! {
+    @IBOutlet weak var mediaContentStackView: UIStackView! {
         didSet {
-            imageView.layer.zPosition = -1
             let doubleTapGesture = UITapGestureRecognizer(target: self, action: #selector(tapped(sender:)))
             doubleTapGesture.numberOfTapsRequired = 2
             self.addGestureRecognizer(doubleTapGesture)
@@ -28,124 +45,81 @@ class TapeCollectionViewCell: UICollectionViewCell {
             self.addGestureRecognizer(panGesture)
         }
     }
+    @IBOutlet weak var mediaContentScrollView: UIScrollView! {
+        didSet {
+            mediaContentScrollView.delegate = self
+            mediaContentScrollView.isPagingEnabled = true
+        }
+    }
+    @IBOutlet weak var pageControl: UIPageControl!
+    @IBOutlet weak var viewsCountLabel: UILabel!
+    @IBOutlet weak var avatarImageView: UIImageView!
+    @IBOutlet weak var nicknameLabel: UILabel!
     @IBOutlet weak var likeButton: UIButton!
     @IBOutlet weak var likesCountLabel: UILabel!
-
-    @IBOutlet weak var profileView: TapeCollectionViewCell! 
-    
+    @IBOutlet weak var profileView: TapeCollectionViewCell!
     @IBOutlet weak var commentButton: UIButton!
+    @IBOutlet weak var hearthImageViewHeightAnchor: NSLayoutConstraint!
+    @IBOutlet weak var hearthImageViewWidthAnchor: NSLayoutConstraint!
+    @IBOutlet weak var hearthImageView: UIImageView!
+    @IBOutlet weak var viewsCountImage: UIImageView!
+    @IBOutlet weak var postMetadataView: UIView!
     
-    weak var vc: ImagesViewController?
-    private var progress: LoadingProgress?
+    weak var vc: GalleryViewControllerCellDelegate?
+    private var downloadProgress: DownloadProgress?
     private var completion: LoadingCompletion?
     var data: Post? = nil
     private var isZooming = false
     private var originalImageCenter: CGPoint?
-    private let placeholder = UIImage(named: "placeholder")
     private var isLoaded = false
     private var isHeightCalculated = false
+    private lazy var mediaItemWidth: CGFloat = {
+        let fullContentWidth = mediaContentStackView.bounds.width
+        let itemWidth = fullContentWidth / CGFloat(integerLiteral: pageControl.numberOfPages)
+        return itemWidth
+    }()
     
     override func awakeFromNib() {
-
+        photoWidthAnchor.constant = UIScreen.main.bounds.width
     }
     
-    override func preferredLayoutAttributesFitting(_ layoutAttributes: UICollectionViewLayoutAttributes) -> UICollectionViewLayoutAttributes {
-        setNeedsLayout()
-        layoutIfNeeded()
-        let size = contentView.systemLayoutSizeFitting(layoutAttributes.size)
-        var newFrame = layoutAttributes.bounds
-        newFrame.size.height = CGFloat(ceilf(Float(size.height)))
-        newFrame.size.height = size.height
-        layoutAttributes.bounds = newFrame
-        return layoutAttributes
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        configureUI()
     }
     
     func configure(postData: Post) {
-        guard postData.photos?.first?.url != data?.photos?.first?.url || postData.gifs?.first?.url == data?.gifs?.first?.url else { return }
         self.data = postData
-        imageView.image = placeholder
-        
-        if postData.isUserLikes == true {
-            likeButton.isSelected = true
-        } else {
-            likeButton.isSelected = false
-        }
-        if let likesCount = postData.likesCount {
-            likesCountLabel.text = "\(likesCount) likes"
-        }
-        
-        if let viewsCount = postData.viewsCount {
-            viewsCountLabel.text = "\(viewsCount)"
-        }
+        setPostMetadata()
+        var mediaFiles = [Any]()
         
         vc?.loadProfileInformation(setAvatar: { (img) in
             avatarImageView.image = img
-            avatarImageView.layer.cornerRadius = avatarImageView.frame.width / 2
         }, setName: { (label) in
             nicknameLabel.text = label
         })
-        
-        /*
-        guard let photos = postData.photos else { return }
-        for photo in photos {
-            if let originalUrl = photo.url {
-                loadImage(url: originalUrl, progress: { (progress) in
 
-                }) { (img, url) in
-                    if url == originalUrl {
-                        self.data?.photos
-                        //god help me
-                    }
-                }
+        if let photos = postData.photos {
+            for photo in photos {
+                mediaFiles.append(photo)
             }
         }
-        */
-        
-        if let url = postData.gifs?.first?.url {
-            loadGif(url: url, progress: { (progress) in
-            }) { (gif, url) in
-                if url == self.data?.gifs?.first?.url {
-                    self.data?.gifs?[0].gif = gif
-                    self.isLoaded = true
-                    self.imageView.image = gif
-                }
-            }
-        } else if let url = postData.photos?.first?.url {
-            loadImage(url: url, progress: { (progress) in
-                self.updateProgressView(progress: progress)
-            }) { (img, url) in
-                if url == self.data?.photos?.first?.url {
-                    self.data?.photos?[0].img = img
-                    self.isLoaded = true
-                    self.imageView.image = img
-                }
+        if let gifs = postData.gifs {
+            for gif in gifs {
+                mediaFiles.append(gif)
             }
         }
-    }
-    
-    func loadImage(url: String, progress: @escaping LoadingProgress, completion: @escaping PhotoLoadingCompletion) {
-        isLoaded = false
-        vc?.cellIsLoading(url: url, progress: progress, completion: completion)
-    }
-    
-    func loadGif(url: String, progress: @escaping LoadingProgress, completion: @escaping PhotoLoadingCompletion) {
-        isLoaded = false
-        vc?.loadGif(url: url, progress: progress, completion: completion)
-    }
-    
-    func fetchPhotoComments() {
-        guard let postId = data?.id else { return }
-        guard let ownerId = data?.ownerId else { return }
-        vc?.fetchPostData(postId: postId, ownerId: ownerId, completion: { (response) in
-            guard let comments = response?.comments else { return }
-            if comments.isEmpty {
-                self.commentLabel.isHidden = true
-            } else {
-                self.commentLabel.isHidden = false
-                guard let text = comments.first?.text else { return }
-                self.commentLabel.text = text
+        pageControl.numberOfPages = mediaFiles.count
+        for mediaFile in mediaFiles {
+            let PhotoContainerView: PhotoContainerView = .fromNib()
+            PhotoContainerView.cell = self
+            if let gif = mediaFile as? Gif {
+                PhotoContainerView.setMediaContent(mediaFile: gif)
+            } else if let image = mediaFile as? Image {
+                PhotoContainerView.setMediaContent(mediaFile: image)
             }
-        })
+            mediaContentStackView.addArrangedSubview(PhotoContainerView)
+        }
     }
     
     func updateProgressView(progress: Float) {
@@ -156,11 +130,14 @@ class TapeCollectionViewCell: UICollectionViewCell {
     }
     
     override func prepareForReuse() {
+        for subview in mediaContentStackView.subviews {
+            subview.removeFromSuperview()
+        }
     }
     
     @IBAction func commentButtonTapped(_ sender: UIButton) {
         if let data = data {
-            vc?.moveToDetailPhotoScreen(post: data)
+            vc?.moveToDetailPhotoScreen(post: data, currentPage: pageControl.currentPage)
         }
     }
     
@@ -168,70 +145,155 @@ class TapeCollectionViewCell: UICollectionViewCell {
         guard let postId = data?.id else { return }
         guard let ownerId = data?.ownerId else { return }
         if data?.isUserLikes == true {
+            startLikeAnimation(setLike: false)
             data?.isUserLikes = false
             likeButton.isSelected = false
-            vc?.removeLike(postId: postId, ownerId: ownerId, completion: { (likesCount) in
-                self.data?.likesCount = likesCount
-                self.likesCountLabel.text = "\(likesCount) likes"
+            vc?.removeLike(postId: postId, ownerId: ownerId, completion: { [weak self] (likesCount, error, url) in
+                guard let self = self else { return }
+                if let likesCount = likesCount {
+                    self.data?.likesCount = likesCount
+                    self.likesCountLabel.text = "\(likesCount) \(Constants.likesCountLabel)"
+                } else if let error = error {
+                    self.vc?.showError(error: error)
+                }
             })
         } else {
+            startLikeAnimation(setLike: true)
             data?.isUserLikes = true
             likeButton.isSelected = true
-            vc?.setLike(postId: postId, ownerId: ownerId, completion: { (likesCount) in
-                self.data?.likesCount = likesCount
-                self.likesCountLabel.text = "\(likesCount) likes"
+            vc?.setLike(postId: postId, ownerId: ownerId, completion: { [weak self] (likesCount, error, url) in
+                guard let self = self else { return }
+                if let likesCount = likesCount {
+                    self.data?.likesCount = likesCount
+                    self.likesCountLabel.text = "\(likesCount) \(Constants.likesCountLabel)"
+                } else if let error = error {
+                    self.vc?.showError(error: error)
+                }
             })
         }
     }
     
+    func setPostMetadata() {
+        guard let isUserLikes = data?.isUserLikes,
+            let likesCount = data?.likesCount,
+            let viewsCount = data?.viewsCount
+            else { return }
+        if isUserLikes {
+            likeButton.isSelected = true
+            hearthImageView.image = Constants.fillHearthImage
+        } else {
+            likeButton.isSelected = false
+            hearthImageView.image = Constants.emptyHearthImage
+        }
+        
+        likesCountLabel.text = "\(likesCount) \(Constants.likesCountLabel)"
+        viewsCountLabel.text = "\(viewsCount)"
+    }
+    
+    func configureUI() {
+        let currentTheme = ThemeService.currentTheme()
+        let primary = currentTheme.primaryColor
+        let background = currentTheme.backgroundColor
+        
+        avatarImageView.layer.cornerRadius = avatarImageView.frame.width / 2
+        commentButton.tintColor          = primary
+        hearthImageView.tintColor        = primary
+        viewsCountImage.tintColor        = primary
+        viewsCountLabel.textColor        = primary
+        nicknameLabel.textColor          = primary
+        profileView.backgroundColor      = background
+        postMetadataView.backgroundColor = background
+        likesCountLabel.textColor        = primary
+        bigLikeImageView.tintColor       = UIColor.white
+        
+        updateImagesWidth()
+    }
+}
+
+extension TapeCollectionViewCell: UIScrollViewDelegate {
+    func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
+        guard scrollView == mediaContentScrollView else { return }
+        let contentOffset = scrollView.contentOffset.x
+        let currentPage = (Int(contentOffset) / Int(mediaItemWidth))
+        pageControl.currentPage = currentPage
+    }
+}
+
+extension TapeCollectionViewCell: UIGestureRecognizerDelegate {
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
+        return true
+    }
+}
+
+extension TapeCollectionViewCell: DownloadMediaProtocol {
+    func downloadPhoto(url: String, progress: @escaping DownloadProgress, completion: @escaping MediaLoadingCompletion) {
+        isLoaded = false
+        vc?.cellIsLoading(url: url, progress: progress, completion: completion)
+    }
+    
+    func downloadGif(url: String, progress: @escaping DownloadProgress, completion: @escaping MediaLoadingCompletion) {
+        isLoaded = false
+        vc?.loadGif(url: url, progress: progress, completion: completion)
+    }
+}
+
+private extension TapeCollectionViewCell {
     @objc func tapped(sender: UITapGestureRecognizer) {
         if sender.state == .ended {
             let location = sender.location(in: self)
-            if imageView.frame.contains(location) {
+            if mediaContentStackView.frame.contains(location) {
                 if data?.isUserLikes == false {
                     guard let postId = data?.id else { return }
                     guard let ownerId = data?.ownerId else { return }
-                    vc?.setLike(postId: postId, ownerId: ownerId, completion: { (likesCount) in
-                        self.data?.isUserLikes = true
-                        self.likeButton.isSelected = true
-                        self.likesCountLabel.text = "\(likesCount) likes"
+                    vc?.setLike(postId: postId, ownerId: ownerId, completion: { [weak self] (likesCount, error, url) in
+                        guard let self = self else { return }
+                        if let likesCount = likesCount {
+                            self.data?.isUserLikes = true
+                            self.likeButton.isSelected = true
+                            self.likesCountLabel.text = "\(likesCount) \(Constants.likesCountLabel)"
+                        } else if let error = error {
+                            self.vc?.showError(error: error)
+                        }
                     })
                 }
+                startBigLikeAppearAnimation()
+                startLikeAnimation(setLike: true)
             }
         }
     }
     
     @objc func scaled(sender: UIPinchGestureRecognizer) {
         let location = sender.location(in: self)
-        if imageView.frame.contains(location) {
+        if mediaContentStackView.frame.contains(location) {
             if sender.state == .began {
                 vc?.disableScrollView()
-                let currentState = self.imageView.frame.width / self.imageView.bounds.width
+                let currentState = self.mediaContentStackView.frame.width / self.mediaContentStackView.bounds.width
                 let newScale = currentState * sender.scale
                 if newScale > 1 { self.isZooming = true }
             } else if sender.state == .changed {
-                let pinchCenter = CGPoint(x: sender.location(in: imageView).x - imageView.bounds.midX,
-                                          y: sender.location(in: imageView).y - imageView.bounds.midY)
-                let transform = imageView.transform.translatedBy(x: pinchCenter.x, y: pinchCenter.y)
-                                                                .scaledBy(x: sender.scale, y: sender.scale)
-                                                                .translatedBy(x: -pinchCenter.x, y: -pinchCenter.y)
-                let currentScale = self.imageView.frame.width / self.imageView.bounds.width
+                let pinchCenter = CGPoint(x: sender.location(in: mediaContentStackView).x - mediaContentStackView.bounds.midX,
+                                          y: sender.location(in: mediaContentStackView).y - mediaContentStackView.bounds.midY)
+                let transform = mediaContentStackView.transform.translatedBy(x: pinchCenter.x, y: pinchCenter.y)
+                    .scaledBy(x: sender.scale, y: sender.scale)
+                    .translatedBy(x: -pinchCenter.x, y: -pinchCenter.y)
+                let currentScale = self.mediaContentStackView.frame.width / self.mediaContentStackView.bounds.width
                 var newScale = currentScale * sender.scale
                 if newScale < 1 {
                     newScale = 1
                     let transform = CGAffineTransform(scaleX: newScale, y: newScale)
-                    self.imageView.transform = transform
+                    self.mediaContentStackView.transform = transform
                     sender.scale = 1
                 } else {
-                    imageView.transform = transform
+                    mediaContentStackView.transform = transform
                     sender.scale = 1
                 }
             } else if sender.state == .ended || sender.state == .failed || sender.state == .cancelled {
                 vc?.enableScrollView()
-                UIView.animate(withDuration: 0.3, animations: {
-                    self.imageView.transform = CGAffineTransform.identity
+                UIView.animate(withDuration: Constants.scaleEndAnimationDuration, animations: {
+                    self.mediaContentStackView.transform = CGAffineTransform.identity
                     guard let center = self.originalImageCenter else { return }
-                    self.imageView.center = center
+                    self.mediaContentStackView.center = center
+                    
                 }) { _ in
                     self.isZooming = false
                 }
@@ -242,19 +304,86 @@ class TapeCollectionViewCell: UICollectionViewCell {
     
     @objc func imageViewScrolled(sender: UIPanGestureRecognizer) {
         if self.isZooming && sender.state == .began {
-            self.originalImageCenter = sender.view?.center
+            self.originalImageCenter = mediaContentStackView.center
         } else if self.isZooming && sender.state == .changed {
-            let translation = sender.translation(in: imageView.superview)
-            if let view = imageView {
-                view.center = CGPoint(x: imageView.center.x + translation.x, y: imageView.center.y + translation.y)
+            let translation = sender.translation(in: mediaContentStackView.superview)
+            if let view = mediaContentStackView {
+                view.center = CGPoint(x: mediaContentStackView.center.x + translation.x, y: mediaContentStackView.center.y + translation.y)
             }
             sender.setTranslation(CGPoint.zero, in: self)
         }
     }
-}
-
-extension TapeCollectionViewCell: UIGestureRecognizerDelegate {
-    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
-        return true
+    
+    func startBigLikeAppearAnimation() {
+        bigLikeWidthAnchor.constant = Constants.activeBigLikeSizeAnchor
+        bigLikeHeightAnchor.constant = Constants.activeBigLikeSizeAnchor
+        UIView.animate(withDuration: Constants.bigLikeAnimationDuration,
+                       delay: 0,
+                       usingSpringWithDamping: Constants.animationSpringWithDamping,
+                       initialSpringVelocity: 0.0,
+                       options: .curveEaseOut,
+                       animations: {
+                        self.bigLikeImageView.alpha = Constants.activeBigLikeAlpha
+                        self.layoutIfNeeded()
+        }) { (complete) in
+            if complete {
+                self.bigLikeHeightAnchor.constant = 0
+                self.bigLikeWidthAnchor.constant = 0
+                UIView.animateKeyframes(withDuration: Constants.hideBigLikeAnimationDuration,
+                                        delay: Constants.selectLikeAnimationDelay,
+                                        options: .calculationModeLinear, animations: {
+                                            self.bigLikeImageView.alpha = 0
+                                            self.layoutIfNeeded()
+                }, completion: { (complete) in
+                })
+            }
+        }
+    }
+    
+    
+    func startLikeAnimation(setLike: Bool) {
+        hearthImageViewWidthAnchor.constant = 0
+        hearthImageViewHeightAnchor.constant = 0
+        UIView.animate(withDuration: Constants.likeAnimationDuration,
+                       delay: Constants.selectLikeAnimationDelay,
+                       usingSpringWithDamping: Constants.animationSpringWithDamping,
+                       initialSpringVelocity: 0.0,
+                       options: .curveEaseOut,
+                       animations: {
+                        self.layoutIfNeeded()
+                        if setLike {
+                            self.hearthImageView.alpha = Constants.animationLikeAlpha
+                        } else {
+                            self.hearthImageView.alpha = 0
+                        }
+        }) { (complete) in
+            if setLike {
+                self.hearthImageView.image = Constants.fillHearthImage
+            } else {
+                self.hearthImageView.image = Constants.emptyHearthImage
+            }
+            self.hearthImageViewHeightAnchor.constant = Constants.activeLikeSizeAnchor
+            self.hearthImageViewWidthAnchor.constant = Constants.activeLikeSizeAnchor
+            UIView.animate(withDuration: Constants.likeAnimationDuration,
+                           delay: 0.0,
+                           usingSpringWithDamping: Constants.animationSpringWithDamping,
+                           initialSpringVelocity: 0.0,
+                           options: .curveEaseOut,
+                           animations: {
+                            self.layoutIfNeeded()
+                            self.hearthImageView.alpha = 1.0
+            }, completion: { (complete) in
+                
+            })
+        }
+    }
+    
+    func updateImagesWidth() {
+        for view in mediaContentStackView.arrangedSubviews {
+            if let photoContainer = view as? PhotoContainerView {
+                photoContainer.imageWidthAnchor.constant = self.frame.size.width
+            }
+        }
+        mediaContentStackView.layoutIfNeeded()
     }
 }

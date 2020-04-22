@@ -9,16 +9,68 @@
 import UIKit
 import ImageIO
 
+extension UIViewController {
+    func showToast(message: String, completion: @escaping () -> ()) {
+        let toastLabel = UILabel(frame: CGRect(x: view.center.x, y: view.center.y + 400, width: 200, height: 100))
+        toastLabel.backgroundColor = ThemeService.currentTheme().secondaryColor.withAlphaComponent(0.6)
+        toastLabel.textColor = ThemeService.currentTheme().primaryColor
+        toastLabel.numberOfLines = 0
+        toastLabel.textAlignment = .center
+        toastLabel.text = message
+        toastLabel.alpha = 1.0
+        toastLabel.layer.cornerRadius = toastLabel.frame.width / 12
+        toastLabel.clipsToBounds = true
+        
+        view.addSubview(toastLabel)
+        
+
+        toastLabel.translatesAutoresizingMaskIntoConstraints = false
+        toastLabel.heightAnchor.constraint(equalToConstant: 100).isActive = true
+        toastLabel.widthAnchor.constraint(equalToConstant: 300).isActive = true
+        
+        toastLabel.centerXAnchor.constraint(equalToSystemSpacingAfter: view.centerXAnchor, multiplier: 1).isActive = true
+        toastLabel.centerYAnchor.constraint(equalToSystemSpacingBelow: view.centerYAnchor, multiplier: 1).isActive = true
+        
+        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 3) {
+            UIView.animate(withDuration: 2,
+                           delay: 0.1,
+                           options: .curveLinear,
+                           animations: {
+                            toastLabel.alpha = 0.0
+            }) { (completed) in
+                if completed {
+                    toastLabel.removeFromSuperview()
+                    completion()
+                }
+            }
+        }
+    }
+}
 
 extension UIView {
-    func setGradientBackground(firstColor: UIColor, secondColor: UIColor) {
-        let gradientLayer = CAGradientLayer()
-        gradientLayer.frame = bounds
-        gradientLayer.colors = [firstColor.cgColor, secondColor.cgColor]
-        gradientLayer.locations = [0.0, 1.0]
-        gradientLayer.startPoint = CGPoint(x: 1.0, y: 1.0)
-        gradientLayer.endPoint = CGPoint(x: 0.0, y: 0.0)
-        layer.insertSublayer(gradientLayer, at: 0)
+    class func fromNib<T: UIView>() -> T {
+        return Bundle.main.loadNibNamed(String(describing: T.self), owner: self, options: nil)![0] as! T
+    }
+    
+    func loadNib() -> PhotoContainerView {
+        let bundle = Bundle(for: type(of: self))
+        let nibName = type(of: self).description().components(separatedBy: ".").last!
+        let nib = UINib(nibName: nibName, bundle: bundle)
+        return nib.instantiate(withOwner: self, options: nil).first as! PhotoContainerView
+    }
+    
+    
+    func pinSubview(_ subview: UIView) {
+        guard let superview = subview.superview, superview == self else {
+            debugPrint("pinSubview has failed. Subview not in the view hierarchy.")
+            return
+        }
+        subview.translatesAutoresizingMaskIntoConstraints = false
+        
+        subview.leadingAnchor.constraint(equalTo: leadingAnchor).isActive = true
+        subview.trailingAnchor.constraint(equalTo: trailingAnchor).isActive = true
+        subview.topAnchor.constraint(equalTo: topAnchor).isActive = true
+        subview.bottomAnchor.constraint(equalTo: bottomAnchor).isActive = true
     }
 }
 
@@ -167,7 +219,6 @@ extension UIImage {
             }
         }
         
-        // Heyhey
         let animation = UIImage.animatedImage(with: frames,
                                               duration: Double(duration) / 1000.0)
         

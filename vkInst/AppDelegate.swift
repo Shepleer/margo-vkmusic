@@ -18,15 +18,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let rootVC: UIViewController?
         let tokenEndDate = UserDefaults.standard.double(forKey: "lifetime")
         let presentTime = NSTimeIntervalSince1970
-        if UserDefaults.standard.string(forKey: "accessToken") != nil && tokenEndDate > presentTime {
-            rootVC = Builder.shared.createGalleryVC()
-        } else {
+        if UserDefaults.standard.string(forKey: "accessToken") == nil || tokenEndDate < presentTime {
             rootVC = Builder.shared.buildLogInScreen()
+        } else {
+            rootVC = Builder.shared.createGalleryVC()
         }
         if let rootVC = rootVC {
             window?.rootViewController = rootVC
             window?.makeKeyAndVisible()
         }
+        ThemeService.applyTheme(theme: ThemeService.currentTheme())
+        
         return true
     }
     
@@ -39,7 +41,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
          application to it. This property is optional since there are legitimate
          error conditions that could cause the creation of the store to fail.
         */
-        let container = NSPersistentContainer(name: "margo_telegram")
+        let container = NSPersistentContainer(name: "Photos")
         container.loadPersistentStores(completionHandler: { (storeDescription, error) in
             if let error = error as NSError? {
                 // Replace this implementation with code to handle the error appropriately.

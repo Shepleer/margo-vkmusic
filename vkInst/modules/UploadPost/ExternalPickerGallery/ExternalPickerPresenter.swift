@@ -9,8 +9,6 @@
 import UIKit
 import Photos
 
-
-
 protocol ExternalPickerPresenterProtocol {
     func pickDidEnded(assets: [PHAsset])
 }
@@ -41,7 +39,7 @@ private extension ExternalPickerPresenter {
     func fetchGalleryAssets() {
         if fetchResult == nil {
             let allPhotosOptions = PHFetchOptions()
-            allPhotosOptions.sortDescriptors = [NSSortDescriptor(key: Constants.photosSortDescriptorKey, ascending: true)]
+            allPhotosOptions.sortDescriptors = [NSSortDescriptor(key: Constants.photosSortDescriptorKey, ascending: false)]
             fetchResult = PHAsset.fetchAssets(with: allPhotosOptions)
             vc?.fetchComplete(fetchResult: fetchResult)
         }

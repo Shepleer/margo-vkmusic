@@ -17,6 +17,11 @@ struct User {
     var screenName: String?
     var counters: Counters?
     var avatarImage: UIImage?
+    var fullName: String {
+        guard let first = firstName,
+            let last = lastName else { return "" }
+        return "\(first) \(last)"
+    }
 }
 
 extension User: Mappable {

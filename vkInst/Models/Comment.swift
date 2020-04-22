@@ -13,7 +13,7 @@ struct CommentsResponse {
     var comments: [Comment]?
     var count: Int?
     var profiles: [User]?
-    var groups: [Comment]?
+    var groups: [Group]?
 }
 
 extension CommentsResponse: Mappable {
@@ -23,6 +23,8 @@ extension CommentsResponse: Mappable {
     mutating func mapping(map: Map) {
         comments <- (map["items"])
         count <- (map["count"])
+        profiles <- (map["profiles"])
+        groups <- (map["groups"])
     }
 }
 
@@ -32,6 +34,7 @@ struct Comment {
     var date: Int?
     var text: String?
     var postId: Int?
+    var name: String?
 }
 
 extension Comment: Mappable {

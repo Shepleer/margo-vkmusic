@@ -15,12 +15,12 @@ protocol ConformRouterProtocol {
 class ConformRouter: ConformRouterProtocol {
     func moveToMainVC() {
         guard let vc = Builder.shared.createGalleryVC() else { return }
-        let window = UIApplication.shared.keyWindow
-        let rootViewController = window?.rootViewController
-        vc.view.frame = (rootViewController?.view.frame)!
+        guard let window = UIApplication.shared.keyWindow else { return }
+        guard let rootViewController = window.rootViewController else { return }
+        vc.view.frame = rootViewController.view.frame
         vc.view.layoutIfNeeded()
-        UIView.transition(with: window!, duration: 0.3, options: .transitionCrossDissolve, animations: {
-            window?.rootViewController = vc
+        UIView.transition(with: window, duration: 0.3, options: .transitionCrossDissolve, animations: {
+            window.rootViewController = vc
         }, completion: nil)
     }
 }

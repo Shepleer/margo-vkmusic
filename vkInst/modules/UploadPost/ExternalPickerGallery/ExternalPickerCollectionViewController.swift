@@ -19,7 +19,6 @@ class ExternalPickerCollectionViewController: UICollectionViewController {
         static let pickerCollectionViewCellReuseIdentifier = "externalGalleryCell"
         static let photosSortDescriptorKey = "creationDate"
         static let collectionViewInitFatalErrorDescription = "Unexpected cell in collection view"
-        
     }
     
     var selectedItems = [Int]()
@@ -30,6 +29,8 @@ class ExternalPickerCollectionViewController: UICollectionViewController {
     var presenter: ExternalPickerPresenter?
     
     @IBOutlet weak var collectionViewFlowLayout: UICollectionViewFlowLayout!
+    
+    
     
     fileprivate var thumbnailSize: CGSize!
     
@@ -44,6 +45,7 @@ class ExternalPickerCollectionViewController: UICollectionViewController {
     
     override func viewWillLayoutSubviews() {
         super.viewWillLayoutSubviews()
+        configureUIPresentation()
         adjustCollectionViewItemSize()
     }
     
@@ -110,11 +112,23 @@ private extension ExternalPickerCollectionViewController {
         self.clearsSelectionOnViewWillAppear = false
         self.collectionView.allowsSelection = true
         self.collectionView.allowsMultipleSelection = true
-        navigationController?.isToolbarHidden = false
-        navigationController?.navigationBar.barTintColor = UIColor.black
-        navigationController?.toolbar.barTintColor = UIColor.black
         let addSelectedImages = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(addSelectedImagesButtonPressed))
         navigationItem.rightBarButtonItem = addSelectedImages
+    }
+    
+    func configureUIPresentation() {
+        navigationController?.isToolbarHidden = false
+        navigationController?.isNavigationBarHidden = false
+        let currentTheme = ThemeService.currentTheme()
+        let primary = currentTheme.primaryColor
+        let secondary = currentTheme.secondaryColor
+        let background = currentTheme.backgroundColor
+        let secondaryBackground = currentTheme.secondaryBackgroundColor
+        
+        navigationController?.navigationBar.barTintColor = secondaryBackground
+        navigationController?.toolbar.barTintColor = secondaryBackground
+        view.backgroundColor           = background
+        collectionView.backgroundColor = background
     }
     
     func checkSelectedImages() {

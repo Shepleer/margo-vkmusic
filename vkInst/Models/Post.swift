@@ -38,6 +38,7 @@ extension PostResponse: Mappable {
 }
 
 struct Post {
+    var uuid = UUID().uuidString
     var id: Int?
     var ownerId: Int?
     var fromId: Int?
@@ -58,6 +59,7 @@ struct Post {
     //var groups: [Group]?
     var photos: [Image]?
     var gifs: [Gif]?
+    var previewUrl: String?
 }
 
 extension Post: Mappable {
@@ -90,6 +92,11 @@ extension Post: Mappable {
             photos <- (map["copy_history"], CopyHistoryTransform())
             gifs <- (map["copy_history"], CopyHistoryGifTransform())
         }
+        if let gifUrl = gifs?.first?.previewUrl {
+            previewUrl = gifUrl
+        } else if let photoUrl = photos?.first?.url {
+            previewUrl = photoUrl
+        }
     }
 }
 
@@ -104,6 +111,12 @@ fileprivate struct AttachmentsTransform: TransformType {
                 if let photo = item["photo"] as? [String: Any] {
                     if let img = Image.init(map: Map(mappingType: .fromJSON, JSON: photo)) {
                         photos.append(img)
+                    }
+                } else if let document = item["doc"] as? [String: Any] {
+                    if (document["ext"] as? String) == "jpg" {
+                        if let image = Image(map: Map(mappingType: .fromJSON, JSON: document)) {
+                            photos.append(image)
+                        }
                     }
                 }
             }
@@ -128,6 +141,12 @@ fileprivate struct CopyHistoryTransform: TransformType {
                     if let photo = item["photo"] as? [String: Any] {
                         if let img = Image.init(map: Map(mappingType: .fromJSON, JSON: photo)) {
                             photos.append(img)
+                        }
+                    } else if let document = item["doc"] as? [String: Any] {
+                        if (document["ext"] as? String) == "jpg" {
+                            if let img = Image.init(map: Map(mappingType: .fromJSON, JSON: document)) {
+                                photos.append(img)
+                            }
                         }
                     }
                 }
